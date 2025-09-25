@@ -32,6 +32,28 @@ const ITEMS: Testimonial[] = [
     author: "Youssef L.",
     role: "PM",
   },
+  {
+    rating: 4.5,
+    tags: ["Retail", "Ongoing"],
+    text: "The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.",
+    author: "Atif Hussain",
+    role: "Co-Founder at Kinetik",
+    avatar: "/avatars/atif.jpg",
+  },
+  {
+    rating: 5,
+    tags: ["SaaS"],
+    text: "From scope to visuals in days. Exactly the velocity we needed.",
+    author: "Sara B.",
+    role: "Brand Lead",
+  },
+  {
+    rating: 5,
+    tags: ["Fintech"],
+    text: "They turned vague goals into a crisp, actionable roadmap.",
+    author: "Youssef L.",
+    role: "PM",
+  },
   // add more…
 ];
 
@@ -76,7 +98,7 @@ export default function TestimonialsMarquee() {
           <article
             key={i}
             className="
-              w-[85vw] sm:w-[60vw] md:w-[44vw] lg:w-[32vw] xl:w-[28vw]
+              w-[85vw] sm:w-[60vw] md:w-[44vw] lg:w-[32vw] xl:w-[25vw]
               shrink-0 rounded-3xl border border-gray-300 bg-white/70
               p-6 md:p-8 flex flex-col
             "

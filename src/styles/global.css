@@ -48,3 +48,7 @@
 .hover-slide:hover {
   --_t: var(--h);
 }
+
+html {
+  scroll-behavior: smooth;
+}

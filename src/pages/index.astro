@@ -44,6 +44,13 @@ import GlobeBackground from "../components/GlobeBackground";
     <main class="max-w-8xl mx-auto px-4 md:px-12 py-12">
       <!-- Make the section relative so the globe can be absolutely positioned inside it -->
       <section class="relative grid grid-cols-12 gap-8 items-start">
+        <!-- Arabic HoudLab SVG (behind globe but above background) -->
+        <div
+          class="absolute -left-[3vw] top-[30vh] w-[160vmin] opacity-100 z-0 pointer-events-none overflow-visible"
+        >
+          <img src="/houd.svg" alt="HoudLab Arabic" class="w-full h-auto" />
+        </div>
+
         <!-- 🌍 Globe sits behind the content -->
 
         <!-- Soft radial fade + optional blue highlight arc over the globe -->
@@ -71,12 +78,12 @@ import GlobeBackground from "../components/GlobeBackground";
         <div class="col-span-2 hidden md:block"></div>
 
         <!-- 2) Chat column (7) -->
-        <div class="col-span-12 md:col-span-7 pl-10">
+        <div class="col-span-12 md:col-span-7 pl-10 z-10" id="chat-section">
           <ChatPanel client:load />
         </div>
 
         <!-- 3) Video + description column (3) -->
-        <aside class="col-span-12 md:col-span-3 flex flex-col gap-4">
+        <aside class="col-span-12 md:col-span-3 flex flex-col gap-4 z-10">
           <!-- Description -->
           <div class="mt-10 mb-5">
             <p
@@ -162,7 +169,7 @@ import GlobeBackground from "../components/GlobeBackground";
     <!-- Testimonials header -->
 
     <div class="">
-      <section class="flex items-center justify-center gap-6 mb-12">
+      <section class="flex items-center justify-center gap-6 mb-16">
         <!-- Left laurel -->
 
         <img
@@ -185,9 +192,9 @@ import GlobeBackground from "../components/GlobeBackground";
     </div>
 
     <!-- Footer Navigation -->
-    <footer class="mt-16 border-t border-neutral-200 bg-white">
+    <footer class="mt-16 border-0 border-neutral-200 bg-white">
       <div
-        class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 px-6 py-8"
+        class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 py-8"
       >
         <!-- Left nav links -->
         <nav class="flex flex-wrap items-center gap-6 font-medium text-md">
@@ -207,10 +214,11 @@ import GlobeBackground from "../components/GlobeBackground";
 
         <!-- Right CTA -->
 
-        <a
-          href="/contact"
+        <button
+          type="button"
+          data-scroll-to-chat
           aria-label="Start your project"
-          class="group inline-flex items-center select-none"
+          class="group inline-flex items-center select-none cursor-pointer"
         >
           <!-- Left icon (shrinks away on hover) -->
           <span
@@ -236,7 +244,7 @@ import GlobeBackground from "../components/GlobeBackground";
           <span
             class="relative rounded-full bg-[#FABC4B] text-neutral-900 text-sm
 				 px-4 md:px-6 py-2.5 font-semibold tracking-wide
-				   transition-transform duration-300 ease-out
+				 transition-transform duration-300 ease-out
 				 group-hover:-translate-x-2 -mr-2"
           >
             START YOUR PROJECT
@@ -261,8 +269,55 @@ import GlobeBackground from "../components/GlobeBackground";
               <path d="M5 12h14M12 5l7 7-7 7"></path>
             </svg>
           </span>
-        </a>
+        </button>
       </div>
     </footer>
   </body>
+  <!-- Put this near the end of index.astro (before </body>) -->
+  <script type="module">
+    const btns = document.querySelectorAll("[data-scroll-to-chat]");
+    const chatSection = document.getElementById("chat");
+    const chatInput = document.getElementById("chat-input");
+
+    function focusInputAfterScroll() {
+      // Give the browser a tick to finish smooth scroll & layout
+      setTimeout(() => {
+        chatInput?.focus({ preventScroll: true });
+      }, 450);
+    }
+
+    btns.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        // If it's an anchor with #chat, default smooth behavior will run thanks to CSS.
+        // We only ensure focus after.
+        if (chatSection) {
+          focusInputAfterScroll();
+        }
+      });
+    });
+
+    // Also handle direct #chat visits / hash changes
+    if (location.hash === "#chat-section") focusInputAfterScroll();
+    window.addEventListener("hashchange", () => {
+      if (location.hash === "#chat-section") focusInputAfterScroll();
+    });
+  </script>
+
+  <script type="module">
+    const btn = document.querySelector("[data-scroll-to-chat]");
+    const chatSection = document.getElementById("chat-section");
+    const chatInput = document.getElementById("chat-input");
+
+    btn?.addEventListener("click", () => {
+      if (!chatSection) return;
+
+      // Smooth scroll
+      chatSection.scrollIntoView({ behavior: "smooth", block: "center" });
+
+      // Focus input after scroll
+      setTimeout(() => {
+        chatInput?.focus({ preventScroll: true });
+      }, 500); // adjust timing if needed
+    });
+  </script>
 </html>

@@ -54,6 +54,12 @@ export default function ChatPanel() {
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, typing]);
 
+  useEffect(() => {
+    if (window.location.hash === "#chat-section") {
+      inputRef.current?.focus();
+    }
+  }, []);
+
   function handleQuickPrompt(t: string) {
     setInput(t);
     requestAnimationFrame(() => inputRef.current?.focus());
@@ -231,26 +237,33 @@ export default function ChatPanel() {
       <form onSubmit={onSubmit} className="mt-4">
         <div className="relative flex items-center">
           <input
+            id="chat-input"
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Describe your project.."
-            className="w-full rounded-full border border-neutral-300 bg-white pl-5 pr-14 py-3 text-neutral-900 placeholder:text-neutral-400 outline-none focus:ring-0 focus:ring-neutral-200"
+            className="flex-1 rounded-full border border-neutral-300 bg-white px-4 py-3 text-neutral-900 placeholder:text-neutral-400 outline-none focus:ring-2 focus:ring-neutral-200"
           />
+
           <button
             type="submit"
             disabled={!input.trim()}
-            className="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full bg-neutral-900 text-white shadow-sm disabled:opacity-40 mr-1"
+            className="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full bg-neutral-900 text-white shadow-sm disabled:opacity-40 mr-1 cursor-pointer"
             aria-label="Send message"
             title="Send"
           >
             <svg
+              xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
-              className="h-5 w-5"
+              className="h-6 w-6 mr-[1.25px] mt-[1.25px]"
               fill="currentColor"
               aria-hidden="true"
             >
-              <path d="M2 21l20-9L2 3l5 8-5 10zm6.4-8.6L20 12 8.4 11.6 7 8.9l-1.7-3 3 1.7 2.7 1.4L12 12l-.9 2.9-1.7 3 1.7-3 .3-2.5z" />
+              <path
+                xmlns="http://www.w3.org/2000/svg"
+                d="M20.33 3.66996C20.1408 3.48213 19.9035 3.35008 19.6442 3.28833C19.3849 3.22659 19.1135 3.23753 18.86 3.31996L4.23 8.19996C3.95867 8.28593 3.71891 8.45039 3.54099 8.67255C3.36307 8.89471 3.25498 9.16462 3.23037 9.44818C3.20576 9.73174 3.26573 10.0162 3.40271 10.2657C3.5397 10.5152 3.74754 10.7185 4 10.85L10.07 13.85L13.07 19.94C13.1906 20.1783 13.3751 20.3785 13.6029 20.518C13.8307 20.6575 14.0929 20.7309 14.36 20.73H14.46C14.7461 20.7089 15.0192 20.6023 15.2439 20.4239C15.4686 20.2456 15.6345 20.0038 15.72 19.73L20.67 5.13996C20.7584 4.88789 20.7734 4.6159 20.7132 4.35565C20.653 4.09541 20.5201 3.85762 20.33 3.66996ZM4.85 9.57996L17.62 5.31996L10.53 12.41L4.85 9.57996ZM14.43 19.15L11.59 13.47L18.68 6.37996L14.43 19.15Z"
+                fill="#FFFFFF"
+              />{" "}
             </svg>
           </button>
         </div>
