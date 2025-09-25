@@ -11,9 +11,9 @@ type Testimonial = {
 
 const ITEMS: Testimonial[] = [
   {
-    rating: 5,
+    rating: 4.5,
     tags: ["Retail", "Ongoing"],
-    text: "The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.",
+    text: "The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.",
     author: "Atif Hussain",
     role: "Co-Founder at Kinetik",
     avatar: "/avatars/atif.jpg",
@@ -36,11 +36,16 @@ const ITEMS: Testimonial[] = [
 ];
 
 function Stars({ n }: { n: number }) {
+  const max = 5;
   return (
     <div className="flex items-center gap-1">
-      <span className="font-semibold">{n.toFixed(1)}</span>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <svg key={i} viewBox="0 0 20 20" className="h-4 w-4 fill-current">
+      <span className="font-semibold pr-2">{n.toFixed(1)}</span>
+      {Array.from({ length: max }).map((_, i) => (
+        <svg
+          key={i}
+          viewBox="0 0 20 20"
+          className={`h-4 w-4 ${i < n ? "fill-[#FABC4B]" : "fill-gray-300"}`}
+        >
           <path d="M10 1.5 12.7 7l6 .9-4.3 4.2 1 6-5.4-2.9L4.6 18l1-6L1.3 7.9 7.3 7 10 1.5z" />
         </svg>
       ))}
@@ -55,8 +60,7 @@ export default function TestimonialsMarquee() {
   return (
     <section
       aria-label="Client testimonials"
-      className="group relative overflow-hidden"
-      // subtle edge fade like your mock
+      className="relative overflow-hidden"
       style={{
         WebkitMaskImage:
           "linear-gradient(90deg, transparent 0, black 6%, black 94%, transparent 100%)",
@@ -64,9 +68,8 @@ export default function TestimonialsMarquee() {
           "linear-gradient(90deg, transparent 0, black 6%, black 94%, transparent 100%)",
       }}
     >
-      {/* animation duration is adjustable via CSS var */}
       <div
-        className="marquee flex gap-6"
+        className="marquee flex gap-6 will-change-transform"
         style={{ ["--marquee-duration" as any]: "35s" }}
       >
         {row.map((t, i) => (
@@ -74,31 +77,35 @@ export default function TestimonialsMarquee() {
             key={i}
             className="
               w-[85vw] sm:w-[60vw] md:w-[44vw] lg:w-[32vw] xl:w-[28vw]
-              shrink-0 rounded-3xl border bg-white/70 backdrop-blur
-              p-6 md:p-8 shadow-sm
+              shrink-0 rounded-3xl border border-gray-300 bg-white/70
+              p-6 md:p-8 flex flex-col
             "
           >
-            <div className="flex items-center justify-between">
-              <Stars n={t.rating} />
+            {/* Top section */}
+            <div className="flex-1">
+              <div className="flex items-center justify-between text-xl">
+                <Stars n={t.rating} />
+              </div>
+
+              <hr className="my-4 opacity-20" />
+
+              <div className="flex gap-2 my-4 mt-6">
+                {t.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-sm px-3 py-1 rounded-full border border-gray-300 bg-white text-gray-700"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              <p className="text-sm md:text-base font-medium leading-relaxed mt-4">
+                {t.text}
+              </p>
             </div>
 
-            <hr className="my-4 opacity-20" />
-
-            <div className="flex gap-2 mb-4">
-              {t.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs px-3 py-1 rounded-full border bg-white"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <p className="text-sm md:text-base leading-relaxed opacity-90">
-              “{t.text}”
-            </p>
-
+            {/* Bottom section: avatar + role */}
             <div className="mt-6 flex items-center gap-3">
               {t.avatar ? (
                 <img
@@ -119,21 +126,16 @@ export default function TestimonialsMarquee() {
         ))}
       </div>
 
-      {/* Component-scoped styles */}
       <style>
         {`
         @keyframes marquee {
           from { transform: translateX(0); }
-          to   { transform: translateX(-50%); } /* move left by half (because content is duplicated) */
+          to   { transform: translateX(-50%); }
         }
         .marquee {
           width: max-content;
           animation: marquee var(--marquee-duration, 35s) linear infinite;
         }
-        /* Pause when user hovers anywhere over the strip or a card */
-        .group:hover .marquee { animation-play-state: paused; }
-
-        /* Respect reduced motion */
         @media (prefers-reduced-motion: reduce) {
           .marquee { animation: none; transform: translateX(0); }
         }

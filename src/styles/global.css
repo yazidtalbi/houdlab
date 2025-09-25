@@ -35,3 +35,16 @@
   scrollbar-width: thin; /* make it thinner */
   scrollbar-color: #bfbfbf transparent; /* thumb color, transparent track */
 }
+
+.hover-slide {
+  --h: 1.2em; /* line height */
+  line-height: var(--h);
+  color: #0000; /* transparent text */
+  text-shadow: 0 calc(-1 * var(--_t, 0em)) #000,
+    0 calc(var(--h) - var(--_t, 0em)) #fabc4b; /* bottom color */
+  overflow: hidden;
+  transition: 0.3s;
+}
+.hover-slide:hover {
+  --_t: var(--h);
+}

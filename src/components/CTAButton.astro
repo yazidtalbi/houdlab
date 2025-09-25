@@ -1,0 +1,133 @@
+---
+/**
+ * CTAButton.astro
+ *
+ * Props:
+ * - href?: string                // link target; if omitted, renders a <button>
+ * - label?: string               // fallback label (also used for aria-label if no custom)
+ * - pillColor?: string           // HEX or CSS color for pill bg (default "#FABC4B")
+ * - textColorClass?: string      // Tailwind class for text color (default "text-neutral-900")
+ * - size?: "sm" | "md" | "lg"    // adjusts paddings & icon size (default "md")
+ * - className?: string           // extra classes on the root container
+ *
+ * Slots:
+ * - default: inner text (overrides `label`)
+ * - leftIcon: replace default left arrow svg
+ * - rightIcon: replace default right arrow svg
+ */
+
+ interface Props {
+  href?: string;
+  label?: string;
+  pillColor?: string;
+  textColorClass?: string;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}
+
+const {
+  href,
+  label = "START YOUR PROJECT",
+  pillColor = "#FABC4B",
+  textColorClass = "text-neutral-900",
+  size = "md",
+  className = "",
+} = Astro.props;
+
+// sizing presets
+const padMap = {
+  sm: { px: "px-3", pxMd: "md:px-4", py: "py-2", icon: "w-8 h-8", iconSvg: "w-3.5 h-3.5" },
+  md: { px: "px-4", pxMd: "md:px-6", py: "py-2.5", icon: "w-9 h-9", iconSvg: "w-4 h-4" },
+  lg: { px: "px-6", pxMd: "md:px-8", py: "py-3", icon: "w-10 h-10", iconSvg: "w-5 h-5" },
+}[size];
+---
+
+{href ? (
+  <a href={href} aria-label={label} class={`group inline-flex items-center select-none ${className}`}>
+    <!-- Left icon (shrinks away on hover) -->
+    <span
+      class={`grid place-items-center flex-none ${padMap.icon}
+              rounded-full bg-neutral-900 text-white shadow
+              transition-all duration-300 ease-out
+              group-hover:w-0 group-hover:h-0`}
+    >
+      <slot name="leftIcon">
+        <svg viewBox="0 0 24 24" class={`${padMap.iconSvg} transition-transform duration-300 ease-out group-hover:scale-0`}
+             fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </slot>
+    </span>
+
+    <!-- Pill with label -->
+    <span
+      class={`relative rounded-full ${textColorClass}
+              ${padMap.px} ${padMap.pxMd} ${padMap.py}
+              font-semibold tracking-wide shadow
+              transition-transform duration-300 ease-out
+              overflow-hidden group-hover:-translate-x-2`}
+      style={`background-color:${pillColor}`}
+    >
+      <slot>{label}</slot>
+    </span>
+
+    <!-- Right icon (grows in on hover) -->
+    <span
+      class={`grid place-items-center flex-none w-0 h-0
+              rounded-full bg-neutral-900 text-white shadow
+              transition-all duration-300 ease-out
+              group-hover:${padMap.icon.split(" ").join(" ")}`}
+    >
+      <slot name="rightIcon">
+        <svg viewBox="0 0 24 24" class={`${padMap.iconSvg} scale-0 transition-transform duration-300 ease-out group-hover:scale-100`}
+             fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </slot>
+    </span>
+  </a>
+) : (
+  <button type="button" aria-label={label} class={`group inline-flex items-center select-none ${className}`}>
+    <!-- Left icon -->
+    <span
+      class={`grid place-items-center flex-none ${padMap.icon}
+              rounded-full bg-neutral-900 text-white shadow
+              transition-all duration-300 ease-out
+              group-hover:w-0 group-hover:h-0`}
+    >
+      <slot name="leftIcon">
+        <svg viewBox="0 0 24 24" class={`${padMap.iconSvg} transition-transform duration-300 ease-out group-hover:scale-0`}
+             fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </slot>
+    </span>
+
+    <!-- Pill -->
+    <span
+      class={`relative rounded-full ${textColorClass}
+              ${padMap.px} ${padMap.pxMd} ${padMap.py}
+              font-semibold tracking-wide shadow
+              transition-transform duration-300 ease-out
+              overflow-hidden group-hover:-translate-x-2`}
+      style={`background-color:${pillColor}`}
+    >
+      <slot>{label}</slot>
+    </span>
+
+    <!-- Right icon -->
+    <span
+      class={`grid place-items-center flex-none w-0 h-0
+              rounded-full bg-neutral-900 text-white shadow
+              transition-all duration-300 ease-out
+              group-hover:${padMap.icon.split(" ").join(" ")}`}
+    >
+      <slot name="rightIcon">
+        <svg viewBox="0 0 24 24" class={`${padMap.iconSvg} scale-0 transition-transform duration-300 ease-out group-hover:scale-100`}
+             fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </slot>
+    </span>
+  </button>
+)}
