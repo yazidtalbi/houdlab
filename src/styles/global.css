@@ -1,0 +1,37 @@
+/* src/styles/global.css */
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap");
+
+/* helper class for your display headings */
+.font-display {
+  font-family: "Inter Display", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
+}
+
+/* Tailwind v4: configure theme via CSS */
+@theme {
+  --font-display: "Inter Display", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
+}
+
+/* Hide scrollbar track background, only show the thumb */
+::-webkit-scrollbar {
+  width: 8px; /* scrollbar width */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* remove the track bg */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #bfbfbf; /* thumb color */
+  border-radius: 9999px; /* pill shape */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin; /* make it thinner */
+  scrollbar-color: #bfbfbf transparent; /* thumb color, transparent track */
+}
