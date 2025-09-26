@@ -1,43 +1,54 @@
 export const prerender = false;
 
-import type { APIRoute } from "astro";
+import type { APIContext } from "astro";
 import { supabase } from "../../../lib/supabaseServer";
-import { json, assertCors } from "../../../lib/utils";
 
-/**
- * GET /api/chat/history?conversationId=UUID&since=ISO(optional)
- * Returns messages for a conversation (newest last).
- * Maps DB role "agent" -> UI role "assistant".
- */
-export const GET: APIRoute = async ({ request, url }) => {
+// simple UUID check (keeps logs cleaner)
+const UUID_RE = /^[0-9a-fA-F-]{36}$/;
+
+export async function GET(ctx: APIContext) {
   try {
-    assertCors(request);
+    const url = new URL(ctx.request.url);
+    const conversationId = url.searchParams.get("conversationId") || "";
+    const since = url.searchParams.get("since"); // optional ISO
 
-    const conversationId = url.searchParams.get("conversationId");
-    if (!conversationId) return json(400, { error: "Missing conversationId" });
+    if (!UUID_RE.test(conversationId)) {
+      return json({ error: "Invalid conversationId" }, 400);
+    }
 
-    const since = url.searchParams.get("since"); // optional ISO timestamp
+    // ✅ Admin gate: this route is for the admin panel only
+    const adminCookie = ctx.cookies.get("houdlab_admin")?.value;
+    const expected = import.meta.env.ADMIN_PASSWORD;
+    if (!expected) {
+      return json({ error: "ADMIN_PASSWORD not configured" }, 500);
+    }
+    if (adminCookie !== expected) {
+      return json({ error: "Forbidden" }, 403);
+    }
 
-    let q = supabase
+    // ✅ Use SERVICE ROLE on the server – bypasses RLS safely
+    let query = supabase
       .from("messages")
-      .select("id, conversation_id, created_at, role, text")
+      .select("id, role, text, created_at")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
 
-    if (since) q = q.gte("created_at", since);
+    if (since) {
+      query = query.gt("created_at", since);
+    }
 
-    const { data, error } = await q;
-    if (error) throw error;
+    const { data, error } = await query;
+    if (error) return json({ error: error.message }, 500);
 
-    const items = (data || []).map((m: any) => ({
-      id: String(m.id),
-      role: m.role === "agent" ? "assistant" : m.role,
-      text: m.text,
-      created_at: m.created_at as string,
-    }));
-
-    return json(200, { messages: items });
-  } catch (err: any) {
-    return json(err.status || 500, { error: err.message || "Server error" });
+    return json({ messages: data ?? [] });
+  } catch (e: any) {
+    return json({ error: e?.message || "Server error" }, 500);
   }
-};
+}
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
