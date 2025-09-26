@@ -1,74 +1,64 @@
-// src/pages/api/chat/message.ts
 export const prerender = false;
 
 import type { APIRoute } from "astro";
 import { supabase } from "../../../lib/supabaseServer";
-
-type Body = {
-  conversationId: string;
-  role: "user" | "agent";
-  text: string;
-  agent_id?: string;
-};
-
-function bad(status: number, msg: string) {
-  return new Response(JSON.stringify({ error: msg }), {
-    status,
-    headers: { "content-type": "application/json" },
-  });
-}
+import { notifySlack, slackBlocks } from "../../../lib/notifySlack";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const body = (await request.json()) as Body;
-    if (!body?.conversationId || !body?.role || !body?.text) {
-      return bad(400, "Missing required fields");
+    const { conversationId, role, text, agent_id } = await request.json();
+
+    if (!conversationId || !role || !text) {
+      return new Response(JSON.stringify({ error: "Missing fields" }), {
+        status: 400,
+        headers: { "content-type": "application/json" },
+      });
     }
 
-    const text = String(body.text).trim().slice(0, 2000);
-    if (!text) return bad(400, "Empty message");
+    // ✅ Insert into Supabase
+    const row: any = {
+      conversation_id: conversationId,
+      role, // "user" | "agent"
+      text,
+      agent_id: role === "agent" ? agent_id ?? null : null,
+    };
 
-    const ip =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip") ||
-      "";
-    const ua = request.headers.get("user-agent") || "";
-
-    const { data: msg, error } = await supabase
+    const { data, error } = await supabase
       .from("messages")
-      .insert({
-        conversation_id: body.conversationId,
-        role: body.role,
-        text,
-        ip,
-        user_agent: ua,
-        agent_id: body.agent_id || null,
-      })
-      .select("id, conversation_id, created_at, role, text, agent_id")
+      .insert(row)
+      .select("id, conversation_id, role, text, created_at")
       .single();
 
-    if (error) throw error;
-
-    // --- Optional: Slack notification for new USER messages ---
-    if (body.role === "user" && process.env.SLACK_WEBHOOK_URL) {
-      try {
-        await fetch(process.env.SLACK_WEBHOOK_URL, {
-          method: "POST",
+    if (error || !data) {
+      return new Response(
+        JSON.stringify({ error: error?.message || "insert failed" }),
+        {
+          status: 500,
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            text: `💬 New user message in conversation ${body.conversationId}\n\n${text}`,
-          }),
-        });
-      } catch (e) {
-        console.error("[Slack webhook failed]", e);
-      }
+        }
+      );
     }
 
-    return new Response(JSON.stringify({ message: msg }), {
-      status: 200,
+    // ✅ Slack only for USER messages
+    if (role === "user") {
+      const preview = text.length > 240 ? text.slice(0, 240) + "…" : text;
+      notifySlack(
+        slackBlocks("💬 New user message", {
+          Conversation: conversationId,
+          Preview: preview,
+          At: data.created_at,
+        })
+      );
+    }
+
+    return new Response(JSON.stringify({ message: data }), {
       headers: { "content-type": "application/json" },
     });
   } catch (e: any) {
-    return bad(500, e.message || "Server error");
+    console.error("[/api/chat/message] error", e);
+    return new Response(JSON.stringify({ error: e?.message || "error" }), {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
   }
 };

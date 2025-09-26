@@ -1,43 +1,55 @@
-// src/pages/api/chat/start.ts
 export const prerender = false;
-import type { APIContext } from "astro";
+
+import type { APIRoute } from "astro";
 import { supabase } from "../../../lib/supabaseServer";
+import { notifySlack, slackBlocks } from "../../../lib/notifySlack";
 
-export async function POST({ request }: APIContext) {
-  const { origin } = await request.json().catch(() => ({ origin: "" }));
-  const ip =
-    request.headers.get("x-forwarded-for") ||
-    request.headers.get("cf-connecting-ip") ||
-    "";
-  const ua = request.headers.get("user-agent") || "";
+export const POST: APIRoute = async ({ request }) => {
+  try {
+    const ip =
+      request.headers.get("x-forwarded-for") ||
+      request.headers.get("cf-connecting-ip") ||
+      request.headers.get("x-real-ip") ||
+      "";
+    const ua = request.headers.get("user-agent") || "";
 
-  const { data, error } = await supabase
-    .from("conversations")
-    .insert({ origin, ip, user_agent: ua }) // add any fields you track
-    .select("id")
-    .single();
+    const { origin } = await request.json().catch(() => ({ origin: null }));
 
-  if (error || !data)
-    return new Response(
-      JSON.stringify({ error: error?.message || "insert failed" }),
-      { status: 500 }
+    // create conversation (you already had this — keep your existing fields)
+    const { data, error } = await supabase
+      .from("conversations")
+      .insert({ origin, ip, user_agent: ua })
+      .select("id, created_at")
+      .single();
+
+    if (error || !data) {
+      return new Response(
+        JSON.stringify({ error: error?.message || "insert failed" }),
+        {
+          status: 500,
+          headers: { "content-type": "application/json" },
+        }
+      );
+    }
+
+    // 🔔 Slack (non-blocking)
+    notifySlack(
+      slackBlocks("🆕 New conversation started", {
+        Conversation: data.id,
+        Origin: origin || undefined,
+        IP: ip || undefined,
+        "User-Agent": ua || undefined,
+        At: data.created_at,
+      })
     );
 
-  // 🔔 Slack ping
-  const webhook = import.meta.env.SLACK_WEBHOOK_URL;
-  if (webhook) {
-    const url = `${import.meta.env.SITE_ORIGIN || ""}/admin?c=${data.id}`;
-    const text = `🆕 New conversation started\n• id: *${data.id}*\n• origin: ${
-      origin || "/"
-    }\n${url}`;
-    fetch(webhook, {
-      method: "POST",
+    return new Response(JSON.stringify({ conversationId: data.id }), {
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ text }),
-    }).catch(() => {});
+    });
+  } catch (e: any) {
+    return new Response(JSON.stringify({ error: e?.message || "error" }), {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
   }
-
-  return new Response(JSON.stringify({ conversationId: data.id }), {
-    headers: { "content-type": "application/json" },
-  });
-}
+};

@@ -1,8 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  supabaseBrowser,
-  supabaseForConversation,
-} from "../lib/supabaseBrowser";
+import { supabaseForConversation } from "../lib/supabaseBrowser";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string; at: string };
 
@@ -33,16 +30,44 @@ export default function ChatPanel() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const creatingConv = useRef<Promise<string> | null>(null);
-  const seenIds = useRef<Set<string>>(new Set());
-  const tempToDb = useRef<Map<string, string>>(new Map()); // tempId → dbId
 
-  // client for history (RLS header)
-  const sbConv = useMemo(
+  // de-dupe helpers
+  const seenIds = useRef<Set<string>>(new Set());
+  const tempToDb = useRef<Map<string, string>>(new Map()); // tempId -> dbId
+  const lastSeenIso = useRef<string | null>(null);
+  const stopPollingRef = useRef(false);
+
+  // scoped client (adds x-conversation-id header for RLS)
+  const sb = useMemo(
     () => (conversationId ? supabaseForConversation(conversationId) : null),
     [conversationId]
   );
 
-  // load persisted messages + convId
+  function appendUnique(
+    list: Array<{
+      id: string;
+      role: "user" | "assistant";
+      text: string;
+      created_at: string;
+    }>
+  ) {
+    if (!list.length) return;
+    const add: Msg[] = [];
+    for (const m of list) {
+      const id = String(m.id);
+      if (seenIds.current.has(id)) continue;
+      seenIds.current.add(id);
+      add.push({ id, role: m.role, text: m.text, at: fmtTime(m.created_at) });
+    }
+    if (add.length) {
+      setMessages((prev) => [...prev, ...add]);
+      lastSeenIso.current = list[list.length - 1].created_at;
+      // if the last one is assistant, stop typing dots
+      if (list[list.length - 1].role === "assistant") setTyping(false);
+    }
+  }
+
+  // Load persisted state
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORE_KEY);
@@ -52,6 +77,7 @@ export default function ChatPanel() {
           setMessages(parsed);
           setShowPrompts(false);
           parsed.forEach((m) => seenIds.current.add(String(m.id)));
+          lastSeenIso.current = null; // let history reset it
         }
       }
     } catch {}
@@ -59,14 +85,14 @@ export default function ChatPanel() {
     if (conv) setConversationId(conv);
   }, []);
 
-  // persist messages
+  // Persist messages
   useEffect(() => {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(messages));
     } catch {}
   }, [messages]);
 
-  // auto-scroll
+  // Auto-scroll
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -76,37 +102,53 @@ export default function ChatPanel() {
     if (window.location.hash === "#chat-section") inputRef.current?.focus();
   }, []);
 
-  // load history (select with RLS header)
+  // Load full history when we have a conversation
   useEffect(() => {
-    if (!sbConv || !conversationId) return;
+    if (!sb || !conversationId) return;
     (async () => {
-      const { data, error } = await sbConv
+      const { data, error } = await sb
         .from("messages")
         .select("id, role, text, created_at")
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true });
+
       if (error) {
         console.warn("[ChatPanel] history error:", error.message);
         return;
       }
+
       const mapped =
         data?.map((r: any) => ({
           id: String(r.id),
-          role: r.role === "agent" ? "assistant" : "user",
+          role: (r.role === "agent" ? "assistant" : "user") as
+            | "user"
+            | "assistant",
           text: String(r.text),
-          at: fmtTime(r.created_at),
+          created_at: String(r.created_at),
         })) ?? [];
+
       seenIds.current = new Set(mapped.map((m) => m.id));
-      setMessages(mapped);
+      lastSeenIso.current = mapped.length
+        ? mapped[mapped.length - 1].created_at
+        : null;
+
+      setMessages(
+        mapped.map((m) => ({
+          id: m.id,
+          role: m.role,
+          text: m.text,
+          at: fmtTime(m.created_at),
+        }))
+      );
       setShowPrompts(mapped.length === 0);
     })();
-  }, [sbConv, conversationId]);
+  }, [sb, conversationId]);
 
-  // realtime via DB (optional; may be blocked by RLS — safe to keep)
+  // Realtime (best-effort). If RLS/table settings block, our polling (below) fills the gap.
   useEffect(() => {
-    if (!conversationId) return;
+    if (!sb || !conversationId) return;
 
-    const ch = supabaseBrowser
+    const ch = sb
       .channel(`client:${conversationId}`)
       .on(
         "postgres_changes",
@@ -119,12 +161,15 @@ export default function ChatPanel() {
         (payload) => {
           const row: any = payload.new;
           const dbId = String(row.id);
+
+          // de-dup (ignore if already reconciled or fetched)
           if (seenIds.current.has(dbId)) return;
           for (const [, v] of tempToDb.current.entries()) {
             if (v === dbId) return;
           }
 
-          const role = row.role === "agent" ? "assistant" : "user";
+          const role: "user" | "assistant" =
+            row.role === "agent" ? "assistant" : "user";
           seenIds.current.add(dbId);
           setMessages((prev) => [
             ...prev,
@@ -132,65 +177,99 @@ export default function ChatPanel() {
               id: dbId,
               role,
               text: String(row.text),
-              at: fmtTime(row.created_at),
+              at: fmtTime(String(row.created_at)),
             },
           ]);
+          lastSeenIso.current = String(row.created_at);
           if (role === "assistant") setTyping(false);
         }
       )
       .subscribe();
 
     return () => {
-      supabaseBrowser.removeChannel(ch);
+      sb.removeChannel(ch);
     };
-  }, [conversationId]);
+  }, [sb, conversationId]);
 
-  // realtime broadcast: typing + direct message payloads
+  // Typing (broadcast) — unaffected by RLS
   useEffect(() => {
-    if (!conversationId) return;
+    if (!sb || !conversationId) return;
 
-    const typingCh = supabaseBrowser
+    const typingCh = sb
       .channel(`typing:${conversationId}`, {
         config: { broadcast: { self: false } },
       })
       .on("broadcast", { event: "typing" }, (payload) => {
-        const p: any = payload.payload || {};
+        const p: any = payload?.payload || {};
         if (p.from !== "agent") return;
         if (p.active) {
           setTyping(true);
-          clearTimeout((typingCh as any)._t);
-          (typingCh as any)._t = setTimeout(() => setTyping(false), 4000);
+          clearTimeout((typingCh as any)._hideTimer);
+          (typingCh as any)._hideTimer = setTimeout(
+            () => setTyping(false),
+            4000
+          );
         } else {
           setTyping(false);
         }
       })
-      // NEW: receive message payloads directly from admin
-      .on("broadcast", { event: "msg" }, (payload) => {
-        const m: any = payload.payload || {};
-        if (!m || !m.id || !m.text) return;
-        const dbId = String(m.id);
-        if (seenIds.current.has(dbId)) return;
-        // normalize to assistant
-        seenIds.current.add(dbId);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: dbId,
-            role: "assistant",
-            text: String(m.text),
-            at: fmtTime(m.created_at),
-          },
-        ]);
-        setTyping(false);
-      })
       .subscribe();
 
     return () => {
-      supabaseBrowser.removeChannel(typingCh);
+      sb.removeChannel(typingCh);
     };
-  }, [conversationId]);
+  }, [sb, conversationId]);
 
-  // ensure conversation
+  // ✅ Polling fallback — fetch only "new since lastSeenIso" every ~2s
+  useEffect(() => {
+    if (!sb || !conversationId) return;
+    stopPollingRef.current = false;
+
+    const tick = async () => {
+      if (stopPollingRef.current) return;
+      try {
+        let q = sb
+          .from("messages")
+          .select("id, role, text, created_at")
+          .eq("conversation_id", conversationId)
+          .order("created_at", { ascending: true });
+
+        if (lastSeenIso.current) {
+          // strictly newer than last seen
+          q = q.gt("created_at", lastSeenIso.current);
+        }
+
+        const { data, error } = await q;
+        if (!error && data && data.length) {
+          const list = data.map((r: any) => ({
+            id: String(r.id),
+            role: (r.role === "agent" ? "assistant" : "user") as
+              | "user"
+              | "assistant",
+            text: String(r.text),
+            created_at: String(r.created_at),
+          }));
+          appendUnique(list);
+        }
+      } catch (e) {
+        // swallow
+      } finally {
+        setTimeout(tick, 2000);
+      }
+    };
+
+    tick();
+    return () => {
+      stopPollingRef.current = true;
+    };
+  }, [sb, conversationId]);
+
+  function handleQuickPrompt(t: string) {
+    setInput(t);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }
+
+  // Create conversation lazily (single-flight)
   async function ensureConversation(): Promise<string> {
     if (conversationId) return conversationId;
     if (!creatingConv.current) {
@@ -216,8 +295,10 @@ export default function ChatPanel() {
   async function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed) return;
+
     if (showPrompts) setShowPrompts(false);
 
+    // Ensure conversation exists
     let convId = conversationId;
     try {
       if (!convId) convId = await ensureConversation();
@@ -226,12 +307,17 @@ export default function ChatPanel() {
       return;
     }
 
+    // Optimistic user message
     const tempId = crypto.randomUUID();
-    setMessages((m) => [
-      ...m,
-      { id: tempId, role: "user", text: trimmed, at: fmtTime() },
-    ]);
+    const optimistic: Msg = {
+      id: tempId,
+      role: "user",
+      text: trimmed,
+      at: fmtTime(),
+    };
+    setMessages((m) => [...m, optimistic]);
     seenIds.current.add(tempId);
+    lastSeenIso.current = new Date().toISOString(); // so poll only fetches newer
     setInput("");
 
     try {
@@ -244,7 +330,7 @@ export default function ChatPanel() {
           text: trimmed,
         }),
       });
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch(() => ({} as any));
       const dbMsg = data?.message;
       if (res.ok && dbMsg?.id) {
         const dbId = String(dbMsg.id);
@@ -254,7 +340,7 @@ export default function ChatPanel() {
         setMessages((prev) =>
           prev.map((m) =>
             m.id === tempId
-              ? { ...m, id: dbId, at: fmtTime(dbMsg.created_at) }
+              ? { ...m, id: dbId, at: fmtTime(String(dbMsg.created_at)) }
               : m
           )
         );
