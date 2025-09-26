@@ -37,7 +37,7 @@ export default function ChatPanel() {
   const lastSeenIso = useRef<string | null>(null);
   const stopPollingRef = useRef(false);
 
-  // scoped client (adds x-conversation-id header for RLS)
+  // per-conversation client (adds x-conversation-id header for RLS)
   const sb = useMemo(
     () => (conversationId ? supabaseForConversation(conversationId) : null),
     [conversationId]
@@ -62,7 +62,6 @@ export default function ChatPanel() {
     if (add.length) {
       setMessages((prev) => [...prev, ...add]);
       lastSeenIso.current = list[list.length - 1].created_at;
-      // if the last one is assistant, stop typing dots
       if (list[list.length - 1].role === "assistant") setTyping(false);
     }
   }
@@ -77,7 +76,7 @@ export default function ChatPanel() {
           setMessages(parsed);
           setShowPrompts(false);
           parsed.forEach((m) => seenIds.current.add(String(m.id)));
-          lastSeenIso.current = null; // let history reset it
+          lastSeenIso.current = null; // history effect will reset properly
         }
       }
     } catch {}
@@ -102,7 +101,7 @@ export default function ChatPanel() {
     if (window.location.hash === "#chat-section") inputRef.current?.focus();
   }, []);
 
-  // Load full history when we have a conversation
+  // Load full history (MERGE — do NOT overwrite optimistic UI)
   useEffect(() => {
     if (!sb || !conversationId) return;
     (async () => {
@@ -118,7 +117,7 @@ export default function ChatPanel() {
       }
 
       const mapped =
-        data?.map((r: any) => ({
+        (data || []).map((r: any) => ({
           id: String(r.id),
           role: (r.role === "agent" ? "assistant" : "user") as
             | "user"
@@ -127,24 +126,13 @@ export default function ChatPanel() {
           created_at: String(r.created_at),
         })) ?? [];
 
-      seenIds.current = new Set(mapped.map((m) => m.id));
-      lastSeenIso.current = mapped.length
-        ? mapped[mapped.length - 1].created_at
-        : null;
+      appendUnique(mapped); // ✅ merge into existing state (keeps 1st optimistic msg)
 
-      setMessages(
-        mapped.map((m) => ({
-          id: m.id,
-          role: m.role,
-          text: m.text,
-          at: fmtTime(m.created_at),
-        }))
-      );
-      setShowPrompts(mapped.length === 0);
+      if (mapped.length > 0) setShowPrompts(false);
     })();
   }, [sb, conversationId]);
 
-  // Realtime (best-effort). If RLS/table settings block, our polling (below) fills the gap.
+  // Realtime (best-effort)
   useEffect(() => {
     if (!sb || !conversationId) return;
 
@@ -191,7 +179,7 @@ export default function ChatPanel() {
     };
   }, [sb, conversationId]);
 
-  // Typing (broadcast) — unaffected by RLS
+  // Typing broadcast (from admin → { from: "agent", active })
   useEffect(() => {
     if (!sb || !conversationId) return;
 
@@ -204,6 +192,7 @@ export default function ChatPanel() {
         if (p.from !== "agent") return;
         if (p.active) {
           setTyping(true);
+          // hide after 4s of silence
           clearTimeout((typingCh as any)._hideTimer);
           (typingCh as any)._hideTimer = setTimeout(
             () => setTyping(false),
@@ -220,7 +209,7 @@ export default function ChatPanel() {
     };
   }, [sb, conversationId]);
 
-  // ✅ Polling fallback — fetch only "new since lastSeenIso" every ~2s
+  // Polling fallback (fills gaps if realtime / replication lags)
   useEffect(() => {
     if (!sb || !conversationId) return;
     stopPollingRef.current = false;
@@ -235,7 +224,6 @@ export default function ChatPanel() {
           .order("created_at", { ascending: true });
 
         if (lastSeenIso.current) {
-          // strictly newer than last seen
           q = q.gt("created_at", lastSeenIso.current);
         }
 
@@ -251,10 +239,10 @@ export default function ChatPanel() {
           }));
           appendUnique(list);
         }
-      } catch (e) {
-        // swallow
+      } catch {
+        // ignore
       } finally {
-        setTimeout(tick, 2000);
+        setTimeout(tick, 1800);
       }
     };
 
@@ -317,7 +305,7 @@ export default function ChatPanel() {
     };
     setMessages((m) => [...m, optimistic]);
     seenIds.current.add(tempId);
-    lastSeenIso.current = new Date().toISOString(); // so poll only fetches newer
+    lastSeenIso.current = new Date().toISOString(); // polling only fetches newer
     setInput("");
 
     try {
@@ -360,7 +348,7 @@ export default function ChatPanel() {
       {/* Top banner */}
       <div className="rounded-2xl bg-white p-5">
         <h1 className="font-display text-4xl md:text-6xl font-semibold leading-[1.1] tracking-[-0.02em]">
-          xxxESTABLISHING <br />
+          ESTABLISHING <br />
           <span className="text-amber-400">BRANDS</span> &{" "}
           <span className="text-amber-400">PRODUCTS</span>
         </h1>
@@ -437,7 +425,7 @@ export default function ChatPanel() {
           </div>
         ))}
 
-        {/* Typing indicator */}
+        {/* Typing indicator (from admin broadcast) */}
         {typing && (
           <div className="mb-4 flex items-start gap-3">
             <img
