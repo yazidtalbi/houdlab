@@ -1,12 +1,17 @@
+// src/lib/supabaseServer.ts
 import { createClient } from "@supabase/supabase-js";
 
-const url = import.meta.env.SUPABASE_URL;
-const serviceKey = import.meta.env.SUPABASE_SERVICE_ROLE;
-
-if (!url || !serviceKey) {
-  throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE");
+function must(name: string, v?: string) {
+  if (!v) throw new Error(`Missing env: ${name}`);
+  return v;
 }
 
-export const supabase = createClient(url, serviceKey, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
+const url = process.env.SUPABASE_URL ?? import.meta.env.SUPABASE_URL;
+const serviceKey =
+  process.env.SUPABASE_SERVICE_ROLE ?? import.meta.env.SUPABASE_SERVICE_ROLE;
+
+export const supabase = createClient(
+  must("SUPABASE_URL", url),
+  must("SUPABASE_SERVICE_ROLE", serviceKey),
+  { auth: { persistSession: false, autoRefreshToken: false } }
+);

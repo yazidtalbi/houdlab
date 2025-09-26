@@ -1,9 +1,9 @@
+// src/lib/supabaseBrowser.ts
 import { createClient } from "@supabase/supabase-js";
 
-export const supabaseBrowser = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
-  {
-    realtime: { params: { eventsPerSecond: 10 } },
-  }
-);
+const url = import.meta.env.PUBLIC_SUPABASE_URL!;
+const anon = import.meta.env.PUBLIC_SUPABASE_ANON_KEY!;
+
+export const supabaseBrowser = createClient(url, anon, {
+  auth: { persistSession: false },
+});
