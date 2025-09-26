@@ -1,25 +1,43 @@
+// src/pages/api/chat/start.ts
 export const prerender = false;
-
-import type { APIRoute } from "astro";
+import type { APIContext } from "astro";
 import { supabase } from "../../../lib/supabaseServer";
-import { json, assertCors, getIp } from "../../../lib/utils";
 
-export const POST: APIRoute = async ({ request }) => {
-  try {
-    assertCors(request);
-    const ip = getIp(request);
-    const ua = request.headers.get("user-agent") || undefined;
-    const { origin } = await request.json().catch(() => ({} as any));
+export async function POST({ request }: APIContext) {
+  const { origin } = await request.json().catch(() => ({ origin: "" }));
+  const ip =
+    request.headers.get("x-forwarded-for") ||
+    request.headers.get("cf-connecting-ip") ||
+    "";
+  const ua = request.headers.get("user-agent") || "";
 
-    const { data, error } = await supabase
-      .from("conversations")
-      .insert({ origin, ip, user_agent: ua })
-      .select("id")
-      .single();
+  const { data, error } = await supabase
+    .from("conversations")
+    .insert({ origin, ip, user_agent: ua }) // add any fields you track
+    .select("id")
+    .single();
 
-    if (error) throw error;
-    return json(200, { conversationId: data.id });
-  } catch (err: any) {
-    return json(err.status || 500, { error: err.message || "Server error" });
+  if (error || !data)
+    return new Response(
+      JSON.stringify({ error: error?.message || "insert failed" }),
+      { status: 500 }
+    );
+
+  // 🔔 Slack ping
+  const webhook = import.meta.env.SLACK_WEBHOOK_URL;
+  if (webhook) {
+    const url = `${import.meta.env.SITE_ORIGIN || ""}/admin?c=${data.id}`;
+    const text = `🆕 New conversation started\n• id: *${data.id}*\n• origin: ${
+      origin || "/"
+    }\n${url}`;
+    fetch(webhook, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text }),
+    }).catch(() => {});
   }
-};
+
+  return new Response(JSON.stringify({ conversationId: data.id }), {
+    headers: { "content-type": "application/json" },
+  });
+}
