@@ -346,15 +346,15 @@ export default function ChatPanel() {
   return (
     <div className="rounded-3xl bg-[#F0F0F1] p-2 md:p-3">
       {/* Top banner */}
-      <div className="rounded-2xl bg-white p-5">
+      <div className="rounded-2xl bg-white md:p-5 p-4">
         <h1 className="font-display text-4xl md:text-6xl font-semibold leading-[1.1] tracking-[-0.02em]">
           ESTABLISHING <br />
           <span className="text-amber-400">BRANDS</span> &{" "}
           <span className="text-amber-400">PRODUCTS</span>
         </h1>
-        <hr className="mt-5 border-neutral-200" />
+        <hr className="md:mt-5 mt-2 border-neutral-200" />
 
-        <div className="mt-4 flex items-center gap-3">
+        <div className="md:mt-5 mt-3 flex items-center gap-3">
           <div className="flex -space-x-2">
             <img
               src="/avatars/a1.png"
@@ -378,10 +378,9 @@ export default function ChatPanel() {
             />
           </div>
 
-          <p className="text-sm text-neutral-600">
+          <p className="text-xs md:text-sm text-neutral-600">
             Chat with an expert right now,
-            <br className="hidden sm:block" /> and get your project scope in
-            minutes.
+            <br className="block" /> and get your project scope in minutes.
           </p>
         </div>
       </div>
@@ -389,7 +388,7 @@ export default function ChatPanel() {
       {/* Messages area */}
       <div
         ref={scrollRef}
-        className="mt-4 h-[340px] md:h-[400px] overflow-y-auto rounded-2xl p-4"
+        className="mt-4 min-h-[50vh] md:h-[400px] overflow-y-auto rounded-2xl p-4"
       >
         {messages.map((m) => (
           <div key={m.id} className="mb-4">

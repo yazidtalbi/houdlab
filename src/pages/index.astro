@@ -41,9 +41,9 @@ import GlobeBackground from "../components/GlobeBackground";
     >
     </div>
 
-    <main class="max-w-8xl mx-auto px-4 md:px-12 py-12">
+    <main class="container mx-auto px-4 py-12">
       <!-- Make the section relative so the globe can be absolutely positioned inside it -->
-      <section class="relative grid grid-cols-12 gap-8 items-start">
+      <section class="relative grid grid-cols-12 gap-4 lg:gap-8 items-start">
         <!-- Arabic HoudLab SVG (behind globe but above background) -->
         <div
           class="absolute -left-[3vw] top-[30vh] w-[160vmin] opacity-100 z-0 pointer-events-none overflow-visible"
@@ -75,35 +75,41 @@ import GlobeBackground from "../components/GlobeBackground";
         <GlobeBackground client:load />
 
         <!-- 1) Empty column (2) — shows background -->
-        <div class="col-span-2 hidden md:block"></div>
+        <div class="col-span-2 hidden xl:block"></div>
 
         <!-- 2) Chat column (7) -->
-        <div class="col-span-12 md:col-span-7 pl-10 z-10" id="chat-section">
+        <div
+          class="col-span-12 lg:col-span-8 xl:col-span-7 z-10"
+          id="chat-section"
+        >
           <ChatPanel client:load />
         </div>
 
         <!-- 3) Video + description column (3) -->
-        <aside class="col-span-12 md:col-span-3 flex flex-col gap-4 z-10">
+        <aside
+          class="col-span-12 lg:col-span-4 xl:col-span-3 flex flex-col gap-4 z-10"
+        >
           <!-- Description -->
-          <div class="mt-10 mb-5">
+          <div class="order-2 lg:order-1 mt-5 md:mt-5 lg:mt-10 mb-5">
             <p
-              class="text-neutral-800 max-w-prose font-display leading-snug font-semibold"
+              class="text-neutral-800 max-w-prose font-display leading-tight md:leading-snug font-semibold lg:text-base text-xl"
             >
-              We’re a Tech & Design agency, <br />based in Casablanca, Morocco. <br
-              />
-              We focus on delivering Design and <br /> Frontend Development Services.
+              We’re a Tech & Design agency, <br class="hidden lg:block" />based
+              in Casablanca, Morocco. <br class="hidden lg:block" />
+              We focus on delivering Design and <br class="hidden lg:block" /> Frontend
+              Development Services.
             </p>
             <a
               href="/"
               aria-label=" DISCOVER MORE"
               class="group inline-flex items-center select-none mt-6"
             >
-              <!-- Left icon (shrinks away on hover) -->
+              <!-- Left icon -->
               <span
                 class="grid place-items-center flex-none w-9 h-9
-				 rounded-full bg-neutral-900 text-white
-				 transition-all duration-300 ease-out
-				 group-hover:w-0 group-hover:h-0"
+			  rounded-full bg-neutral-900 text-white
+			  transition-all duration-300 ease-out
+			  group-hover:w-0 group-hover:h-0"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -121,19 +127,19 @@ import GlobeBackground from "../components/GlobeBackground";
               <!-- Pill button text -->
               <span
                 class="relative rounded-full bg-[#FABC4B] text-neutral-900 text-sm
-				 px-4 md:px-6 py-2.5 font-semibold tracking-wide
-				   transition-transform duration-300 ease-out
-				 group-hover:-translate-x-2 -mr-2"
+			  px-4 md:px-6 py-2.5 font-semibold tracking-wide
+			  transition-transform duration-300 ease-out
+			  group-hover:-translate-x-2 -mr-2"
               >
                 DISCOVER MORE
               </span>
 
-              <!-- Right icon (grows in on hover) -->
+              <!-- Right icon -->
               <span
                 class="grid place-items-center flex-none w-0 h-0
-				 rounded-full bg-neutral-900 text-white
-				 transition-all duration-300 ease-out
-				 group-hover:w-9 group-hover:h-9"
+			  rounded-full bg-neutral-900 text-white
+			  transition-all duration-300 ease-out
+			  group-hover:w-9 group-hover:h-9"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -151,7 +157,9 @@ import GlobeBackground from "../components/GlobeBackground";
           </div>
 
           <!-- Video -->
-          <div class="aspect-video rounded-2xl overflow-hidden bg-neutral-200">
+          <div
+            class="order-1 lg:order-2 aspect-video rounded-2xl overflow-hidden bg-neutral-200"
+          >
             <video
               src="/reels/demo.mp4"
               autoplay
@@ -169,7 +177,7 @@ import GlobeBackground from "../components/GlobeBackground";
     <!-- Testimonials header -->
 
     <div class="">
-      <section class="flex items-center justify-center gap-6 mb-16">
+      <section class="flex items-center justify-center gap-6 mb-12 md:mb-16">
         <!-- Left laurel -->
 
         <img
@@ -192,12 +200,14 @@ import GlobeBackground from "../components/GlobeBackground";
     </div>
 
     <!-- Footer Navigation -->
-    <footer class="mt-16 border-0 border-neutral-200 bg-white">
+    <footer class="mt-16 md:mt-16 border-0 border-neutral-200 bg-white">
       <div
-        class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 py-8"
+        class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-2 md:gap-6 py-8 items-start md:items-center px-8 md:px-0"
       >
         <!-- Left nav links -->
-        <nav class="flex flex-wrap items-center gap-6 font-medium text-md">
+        <nav
+          class="flex flex-col md:flex-row gap-4 md:gap-6 font-medium text-xl md:text-md items-start md:items-center"
+        >
           <a href="/" class="px-4 py-2 rounded-full bg-neutral-900 text-white">
             Home
           </a>
@@ -218,11 +228,11 @@ import GlobeBackground from "../components/GlobeBackground";
           type="button"
           data-scroll-to-chat
           aria-label="Start your project"
-          class="group inline-flex items-center select-none cursor-pointer"
+          class="group inline-flex items-center select-none cursor-pointer mt-10 md:mt-0"
         >
           <!-- Left icon (shrinks away on hover) -->
           <span
-            class="grid place-items-center flex-none w-9 h-9
+            class="grid place-items-center flex-none w-11 h-11 md:w-9 md:h-9
 				 rounded-full bg-neutral-900 text-white shadow
 				 transition-all duration-300 ease-out
 				 group-hover:w-0 group-hover:h-0"
@@ -242,7 +252,7 @@ import GlobeBackground from "../components/GlobeBackground";
 
           <!-- Pill button text -->
           <span
-            class="relative rounded-full bg-[#FABC4B] text-neutral-900 text-sm
+            class="relative rounded-full bg-[#FABC4B] text-neutral-900 text-lg md:text-sm
 				 px-4 md:px-6 py-2.5 font-semibold tracking-wide
 				 transition-transform duration-300 ease-out
 				 group-hover:-translate-x-2 -mr-2"
