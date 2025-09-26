@@ -13,8 +13,8 @@ type Conv = {
 type Agent = { id: string; name: string; avatar_url?: string | null };
 type Msg = { id: string; role: "user" | "assistant"; text: string; at: string };
 
-function toTime(iso: string | Date) {
-  const d = typeof iso === "string" ? new Date(iso) : iso;
+function toTime(iso: string) {
+  const d = new Date(iso);
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
@@ -27,50 +27,27 @@ export default function AdminPanel() {
   const [input, setInput] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("");
+
+  // URL param remembered before fetch to avoid race on hard refresh
+  const [initialConvFromUrl, setInitialConvFromUrl] = useState<string | null>(
+    null
+  );
+
+  // typing state (user typing indicator in admin view)
   const [userTyping, setUserTyping] = useState(false);
 
+  // de-dupe + plumbing
   const seenIds = useRef<Set<string>>(new Set());
   const lastSeenIso = useRef<string | null>(null);
-  const listRef = useRef<HTMLDivElement>(null);
   const tempToDb = useRef<Map<string, string>>(new Map());
+  const listRef = useRef<HTMLDivElement>(null);
 
-  // typing channel + timers
+  // typing broadcast channel refs
   const typingChanRef = useRef<ReturnType<
     typeof supabaseBrowser.channel
   > | null>(null);
   const typingExpireTimer = useRef<number | null>(null);
   const lastTypingSentAt = useRef<number>(0);
-
-  // keep a channel reference for messages too (for cleanup)
-  const msgChanRef = useRef<ReturnType<typeof supabaseBrowser.channel> | null>(
-    null
-  );
-
-  const selectedConvId = selectedConv?.id ?? null;
-
-  const header = useMemo(
-    () => (
-      <div className="flex items-center gap-3 p-3 border-b bg-white sticky top-0 z-10">
-        <div className="text-lg font-semibold">HoudLab Admin</div>
-        <div className="ml-auto flex gap-2">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && loadConversations(search)}
-            placeholder="Search text / id / origin / ip..."
-            className="px-3 py-1.5 rounded border"
-          />
-          <button
-            onClick={() => loadConversations(search)}
-            className="px-3 py-1.5 rounded bg-black text-white"
-          >
-            Search
-          </button>
-        </div>
-      </div>
-    ),
-    [search]
-  );
 
   function scrollToBottom() {
     requestAnimationFrame(() => {
@@ -87,6 +64,7 @@ export default function AdminPanel() {
       created_at: string;
     }>
   ) {
+    if (!list.length) return;
     const add: Msg[] = [];
     for (const m of list) {
       const id = String(m.id);
@@ -97,6 +75,7 @@ export default function AdminPanel() {
     if (add.length) {
       setMsgs((prev) => [...prev, ...add]);
       lastSeenIso.current = list[list.length - 1].created_at;
+      if (list[list.length - 1].role === "user") setUserTyping(false);
       scrollToBottom();
     }
   }
@@ -105,36 +84,75 @@ export default function AdminPanel() {
     try {
       const r = await fetch("/api/admin/agents");
       const j = await r.json();
-      if (!r.ok) throw new Error(j?.error || `HTTP ${r.status}`);
       setAgents(j.agents || []);
       if (!selectedAgentId && j.agents?.length)
         setSelectedAgentId(j.agents[0].id);
-    } catch (e: any) {
-      setStatus(`Agents error: ${e?.message || e}`);
+    } catch (e) {
+      console.warn("[admin] loadAgents error", e);
     }
   }
 
-  async function loadConversations(q?: string) {
-    try {
-      const r = await fetch(
-        `/api/admin/conversations${q ? `?q=${encodeURIComponent(q)}` : ""}`
-      );
-      const j = await r.json();
-      if (!r.ok || j.error) throw new Error(j?.error || `HTTP ${r.status}`);
-      setConvs(j.conversations || []);
-      if (!selectedConv && j.conversations?.length)
-        setSelectedConv(j.conversations[0]);
-    } catch (e: any) {
-      setStatus(`Conversations error: ${e?.message || e}`);
+  async function loadConversations(q?: string, preferId?: string) {
+    const r = await fetch(
+      `/api/admin/conversations${q ? `?q=${encodeURIComponent(q)}` : ""}`
+    );
+    const j = await r.json();
+    if (j.error) {
+      console.error("/api/admin/conversations error:", j.error);
+      setStatus(`Conversations error: ${j.error}`);
       setConvs([]);
+      return;
+    }
+    const list: Conv[] = j.conversations || [];
+    setConvs(list);
+
+    // prefer selecting convo from URL param (works on hard refresh too)
+    if (preferId) {
+      const found = list.find((c) => c.id === preferId);
+      if (found) {
+        setSelectedConv(found);
+        const sp = new URLSearchParams(window.location.search);
+        sp.set("c", found.id);
+        history.replaceState({}, "", `${location.pathname}?${sp.toString()}`);
+        return;
+      }
+    }
+
+    // default: first convo
+    if (!selectedConv && list.length) {
+      setSelectedConv(list[0]);
+      const sp = new URLSearchParams(window.location.search);
+      sp.set("c", list[0].id);
+      history.replaceState({}, "", `${location.pathname}?${sp.toString()}`);
     }
   }
 
   useEffect(() => {
+    // Capture URL param BEFORE fetching to avoid race on hard refresh
+    const sp = new URLSearchParams(window.location.search);
+    const id = sp.get("c") || sp.get("conversation");
+    setInitialConvFromUrl(id);
+
     loadAgents();
-    loadConversations();
+    loadConversations(undefined, id || undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Keep selection in sync when user navigates back/forward (optional)
+  useEffect(() => {
+    const onPop = () => {
+      const sp = new URLSearchParams(window.location.search);
+      const id = sp.get("c") || sp.get("conversation");
+      if (!id) return;
+      if (!convs.length) return;
+      const found = convs.find((c) => c.id === id);
+      if (found) setSelectedConv(found);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [convs]);
+
+  // Load history for selected conversation
   async function loadHistory(convId: string) {
     setStatus("Loading history…");
     try {
@@ -142,8 +160,11 @@ export default function AdminPanel() {
         `/api/chat/history?conversationId=${encodeURIComponent(convId)}`
       );
       const j = await r.json();
-      if (!r.ok || j.error) throw new Error(j?.error || `HTTP ${r.status}`);
-
+      if (j.error) {
+        setStatus(`History error: ${j.error}`);
+        setMsgs([]);
+        return;
+      }
       const list: any[] = j.messages || [];
       const mapped = list.map((x) => ({
         id: String(x.id),
@@ -153,7 +174,6 @@ export default function AdminPanel() {
         text: String(x.text),
         created_at: String(x.created_at),
       }));
-
       seenIds.current = new Set(mapped.map((m) => m.id));
       lastSeenIso.current = mapped.length
         ? mapped[mapped.length - 1].created_at
@@ -170,29 +190,29 @@ export default function AdminPanel() {
       scrollToBottom();
     } catch (e: any) {
       setStatus(`History error: ${e?.message || e}`);
-      setMsgs([]);
     }
   }
 
   useEffect(() => {
-    if (selectedConvId) loadHistory(selectedConvId);
-  }, [selectedConvId]);
+    if (selectedConv) loadHistory(selectedConv.id);
+  }, [selectedConv?.id]);
 
-  // realtime + typing + light polling
+  // Realtime + typing + polling (admin view)
   useEffect(() => {
-    if (!selectedConvId) return;
+    if (!selectedConv) return;
     let stop = false;
+    const convId = selectedConv.id;
 
-    // messages realtime
-    const msgChan = supabaseBrowser
-      .channel(`admin:${selectedConvId}`)
+    // realtime new inserts
+    const ch = supabaseBrowser
+      .channel(`admin:${convId}`)
       .on(
         "postgres_changes",
         {
           event: "INSERT",
           schema: "public",
           table: "messages",
-          filter: `conversation_id=eq.${selectedConvId}`,
+          filter: `conversation_id=eq.${convId}`,
         },
         (payload) => {
           const row: any = payload.new;
@@ -220,16 +240,14 @@ export default function AdminPanel() {
         }
       )
       .subscribe();
-    msgChanRef.current = msgChan;
 
-    // typing channel (listen to user typing; broadcast agent typing)
-    const typingChan = supabaseBrowser.channel(`typing:${selectedConvId}`, {
+    // typing broadcast (listen to user typing)
+    const typingChan = supabaseBrowser.channel(`typing:${convId}`, {
       config: { broadcast: { self: false } },
     });
-
     typingChan
       .on("broadcast", { event: "typing" }, (payload) => {
-        const p: any = payload.payload || {};
+        const p: any = payload?.payload || {};
         if (p.from === "user") {
           setUserTyping(!!p.active);
           if (typingExpireTimer.current)
@@ -243,7 +261,7 @@ export default function AdminPanel() {
       .subscribe();
     typingChanRef.current = typingChan;
 
-    // light poll (fallback)
+    // lightweight polling fallback
     const poll = async () => {
       if (stop) return;
       try {
@@ -252,43 +270,43 @@ export default function AdminPanel() {
           : "";
         const r = await fetch(
           `/api/chat/history?conversationId=${encodeURIComponent(
-            selectedConvId
+            convId
           )}${since}`
         );
         const j = await r.json();
-        if (r.ok) {
-          const list: any[] = j.messages || [];
-          if (list.length) {
-            appendUnique(
-              list.map((m) => ({
-                id: String(m.id),
-                role: (m.role === "agent" ? "assistant" : "user") as
-                  | "user"
-                  | "assistant",
-                text: String(m.text),
-                created_at: String(m.created_at),
-              }))
-            );
-          }
+        const list: any[] = j.messages || [];
+        if (list.length) {
+          appendUnique(
+            list.map((m) => ({
+              id: String(m.id),
+              role: (m.role === "agent" ? "assistant" : "user") as
+                | "user"
+                | "assistant",
+              text: String(m.text),
+              created_at: String(m.created_at),
+            }))
+          );
         }
-      } catch {}
+      } catch (e) {
+        console.warn("[admin poll error]", e);
+      }
       setTimeout(poll, 2000);
     };
     poll();
 
     return () => {
       stop = true;
-      if (msgChanRef.current) supabaseBrowser.removeChannel(msgChanRef.current);
+      supabaseBrowser.removeChannel(ch);
       if (typingChanRef.current)
         supabaseBrowser.removeChannel(typingChanRef.current);
       if (typingExpireTimer.current)
         window.clearTimeout(typingExpireTimer.current);
     };
-  }, [selectedConvId]);
+  }, [selectedConv?.id]);
 
-  // ---- typing broadcast helpers (agent -> client)
+  // emit typing as agent
   function emitTyping(active: boolean) {
-    if (!typingChanRef.current || !selectedConvId) return;
+    if (!typingChanRef.current) return;
     const now = Date.now();
     if (active && now - lastTypingSentAt.current < 800) return; // throttle
     lastTypingSentAt.current = now;
@@ -301,17 +319,21 @@ export default function AdminPanel() {
 
   async function sendAgent() {
     const text = input.trim();
-    if (!text || !selectedConvId || !selectedAgentId) return;
+    if (!text || !selectedConv || !selectedAgentId) return;
 
-    // optimistic as assistant
+    // optimistic
     const tempId = crypto.randomUUID();
     setMsgs((prev) => [
       ...prev,
-      { id: tempId, role: "assistant", text, at: toTime(new Date()) },
+      {
+        id: tempId,
+        role: "assistant",
+        text,
+        at: toTime(new Date().toISOString()),
+      },
     ]);
     seenIds.current.add(tempId);
     setInput("");
-    // immediately stop typing on client
     emitTyping(false);
     scrollToBottom();
 
@@ -320,53 +342,83 @@ export default function AdminPanel() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          conversationId: selectedConvId,
+          conversationId: selectedConv.id,
           role: "agent",
           text,
-          agentId: selectedAgentId, // your API expects camelCase
+          agent_id: selectedAgentId,
         }),
       });
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok || !data?.message?.id) {
+        console.error("[admin send] server error:", data?.error || res.status);
         setStatus(`Send failed: ${data?.error || res.status}`);
         return;
       }
       const dbId = String(data.message.id);
-      const dbAt = toTime(data.message.created_at);
+      const dbAt = toTime(String(data.message.created_at));
       tempToDb.current.set(tempId, dbId);
       seenIds.current.add(dbId);
       seenIds.current.delete(tempId);
       setMsgs((prev) =>
         prev.map((m) => (m.id === tempId ? { ...m, id: dbId, at: dbAt } : m))
       );
-
-      // ✅ broadcast the message to the user panel (so it shows instantly)
-      if (typingChanRef.current) {
-        typingChanRef.current.send({
-          type: "broadcast",
-          event: "msg",
-          payload: { id: dbId, text, created_at: data.message.created_at },
-        });
-      }
-
       setStatus("");
     } catch (e: any) {
+      console.error("[admin send] fetch error:", e?.message || e);
       setStatus(`Send failed: ${e?.message || e}`);
     }
   }
 
+  const header = useMemo(
+    () => (
+      <div className="flex items-center gap-3 p-3 border-b bg-white sticky top-0 z-10">
+        <div className="text-lg font-semibold">HoudLab Admin</div>
+        <div className="ml-auto flex gap-2">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) =>
+              e.key === "Enter" &&
+              loadConversations(search, initialConvFromUrl || undefined)
+            }
+            placeholder="Search text / id / origin / ip..."
+            className="px-3 py-1.5 rounded border"
+          />
+          <button
+            onClick={() =>
+              loadConversations(search, initialConvFromUrl || undefined)
+            }
+            className="px-3 py-1.5 rounded bg-black text-white"
+          >
+            Search
+          </button>
+        </div>
+      </div>
+    ),
+    [search, initialConvFromUrl]
+  );
+
   return (
     <div className="h-screen grid grid-cols-12">
-      {/* Left: conversation list */}
+      {/* Left: conversations list */}
       <div className="col-span-4 border-r bg-white flex flex-col">
         {header}
         <div className="overflow-y-auto">
           {convs.map((c) => (
             <button
               key={c.id}
-              onClick={() => setSelectedConv(c)}
+              onClick={() => {
+                setSelectedConv(c);
+                const sp = new URLSearchParams(window.location.search);
+                sp.set("c", c.id);
+                history.replaceState(
+                  {},
+                  "",
+                  `${location.pathname}?${sp.toString()}`
+                );
+              }}
               className={`w-full text-left px-3 py-3 border-b hover:bg-neutral-50 ${
-                selectedConvId === c.id ? "bg-neutral-100" : ""
+                selectedConv?.id === c.id ? "bg-neutral-100" : ""
               }`}
             >
               <div className="text-xs text-neutral-500">
@@ -392,7 +444,7 @@ export default function AdminPanel() {
       <div className="col-span-8 flex flex-col">
         <div className="p-3 border-b bg-white flex items-center gap-3">
           <div className="text-sm text-neutral-500">Conversation</div>
-          <div className="font-medium truncate">{selectedConvId || "—"}</div>
+          <div className="font-medium truncate">{selectedConv?.id || "—"}</div>
           <div className="ml-auto flex items-center gap-2">
             <label className="text-sm text-neutral-600">Agent</label>
             <select
@@ -410,12 +462,6 @@ export default function AdminPanel() {
         </div>
 
         <div ref={listRef} className="flex-1 overflow-y-auto p-4 bg-neutral-50">
-          {!!status && (
-            <div className="mb-3 text-[13px] text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded">
-              {status}
-            </div>
-          )}
-
           {msgs.map((m) =>
             m.role === "assistant" ? (
               <div key={m.id} className="mb-4 flex items-start gap-3">
@@ -451,7 +497,7 @@ export default function AdminPanel() {
             )
           )}
 
-          {/* User typing bubble at the bottom */}
+          {/* User typing bubble (appears after last message) */}
           {userTyping && (
             <div className="mb-4 flex flex-row-reverse items-start gap-3">
               <div>
@@ -483,8 +529,16 @@ export default function AdminPanel() {
               value={input}
               onChange={(e) => {
                 setInput(e.target.value);
+                // emit agent typing while there's text
                 const active = !!e.target.value.trim();
-                if (active) emitTyping(true); // throttle inside
+                if (active) {
+                  const now = Date.now();
+                  if (now - (lastTypingSentAt.current || 0) > 800) {
+                    emitTyping(true);
+                  }
+                } else {
+                  emitTyping(false);
+                }
               }}
               onBlur={() => emitTyping(false)}
               placeholder="Reply as selected agent…"
@@ -492,11 +546,12 @@ export default function AdminPanel() {
             />
             <button
               className="px-4 py-2 rounded-full bg-black text-white"
-              disabled={!input.trim() || !selectedConvId || !selectedAgentId}
+              disabled={!input.trim() || !selectedConv || !selectedAgentId}
             >
               Send
             </button>
           </form>
+          {status && <div className="mt-2 text-xs text-red-600">{status}</div>}
         </div>
       </div>
     </div>

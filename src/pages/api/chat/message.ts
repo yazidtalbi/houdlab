@@ -42,9 +42,13 @@ export const POST: APIRoute = async ({ request }) => {
     // ✅ Slack only for USER messages
     if (role === "user") {
       const preview = text.length > 240 ? text.slice(0, 240) + "…" : text;
+      const url = `https://www.houdlab.com/admin?c=${encodeURIComponent(
+        conversationId
+      )}`;
+
       notifySlack(
         slackBlocks("💬 New user message", {
-          Conversation: conversationId,
+          Conversation: `<${url}|${conversationId}>`, // clickable link
           Preview: preview,
           At: data.created_at,
         })
