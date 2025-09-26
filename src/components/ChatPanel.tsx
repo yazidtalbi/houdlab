@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { supabaseBrowser } from "../lib/supabaseBrowser";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string; at: string };
 
@@ -11,23 +12,58 @@ const QUICK_PROMPTS = [
 ];
 
 const STORE_KEY = "houdlab_chat_messages_v1";
-const ASSISTANT_NAME = "Yazid from HoudLab"; // change to "Yazid" if you prefer
+const CONV_KEY = "houdlab_conversation_id_v1";
+const ASSISTANT_NAME = "Yazid from HoudLab";
 
 function timeNow() {
   const d = new Date();
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+function toTime(iso: string | null | undefined) {
+  if (!iso) return timeNow();
+  const d = new Date(iso);
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 export default function ChatPanel() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [showPrompts, setShowPrompts] = useState(true);
-  const [typing, setTyping] = useState(false);
+  const [peerTyping, setPeerTyping] = useState(false); // ← agent typing
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load persisted messages
+  const seenIds = useRef<Set<string>>(new Set());
+  const lastSeenIso = useRef<string | null>(null);
+
+  // typing channel refs
+  const typingChanRef = useRef<ReturnType<
+    typeof supabaseBrowser.channel
+  > | null>(null);
+  const typingExpireTimer = useRef<number | null>(null);
+  const lastTypingSentAt = useRef<number>(0);
+
+  function appendUnique(
+    list: Array<{
+      id: string;
+      role: "user" | "assistant";
+      text: string;
+      created_at?: string;
+    }>
+  ) {
+    const add: Msg[] = [];
+    for (const m of list) {
+      const id = String(m.id);
+      if (seenIds.current.has(id)) continue;
+      seenIds.current.add(id);
+      add.push({ id, role: m.role, text: m.text, at: toTime(m.created_at) });
+    }
+    if (add.length) setMessages((prev) => [...prev, ...add]);
+  }
+
+  // Load persisted + start conversation if needed
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORE_KEY);
@@ -35,13 +71,31 @@ export default function ChatPanel() {
         const parsed = JSON.parse(raw) as Msg[];
         if (Array.isArray(parsed)) {
           setMessages(parsed);
+          parsed.forEach((m) => seenIds.current.add(String(m.id)));
           if (parsed.length > 0) setShowPrompts(false);
         }
+      }
+      const conv = localStorage.getItem(CONV_KEY);
+      if (conv) setConversationId(conv);
+      else {
+        fetch("/api/chat/start", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ origin: window.location.pathname }),
+        })
+          .then((r) => r.json())
+          .then((res) => {
+            if (res?.conversationId) {
+              localStorage.setItem(CONV_KEY, res.conversationId);
+              setConversationId(res.conversationId);
+            }
+          })
+          .catch((e) => console.error("chat/start", e));
       }
     } catch {}
   }, []);
 
-  // Save messages
+  // Persist messages
   useEffect(() => {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(messages));
@@ -52,48 +106,195 @@ export default function ChatPanel() {
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages, typing]);
+  }, [messages, peerTyping]);
 
   useEffect(() => {
-    if (window.location.hash === "#chat-section") {
-      inputRef.current?.focus();
-    }
+    if (window.location.hash === "#chat-section") inputRef.current?.focus();
   }, []);
+
+  // History + Realtime + Polling + Typing channel
+  useEffect(() => {
+    if (!conversationId) return;
+    let stop = false;
+
+    // initial sync
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/chat/history?conversationId=${encodeURIComponent(
+            conversationId
+          )}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const list: any[] = data?.messages || [];
+          if (list.length) {
+            lastSeenIso.current = list[list.length - 1].created_at;
+            appendUnique(
+              list.map((m) => ({
+                id: String(m.id),
+                role: m.role as "user" | "assistant",
+                text: m.text as string,
+                created_at: m.created_at as string,
+              }))
+            );
+          }
+        }
+      } catch {}
+    })();
+
+    // realtime messages
+    const ch = supabaseBrowser
+      .channel(`messages:${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const row: any = payload.new;
+          if (row.role === "user") return;
+          const id = String(row.id);
+          if (seenIds.current.has(id)) return;
+          seenIds.current.add(id);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id,
+              role: "assistant",
+              text: row.text as string,
+              at: toTime(row.created_at),
+            },
+          ]);
+          lastSeenIso.current = row.created_at as string;
+          // clear typing when an agent message arrives
+          setPeerTyping(false);
+        }
+      )
+      .subscribe();
+
+    // typing channel (broadcast, ephemeral)
+    const typingChan = supabaseBrowser.channel(`typing:${conversationId}`, {
+      config: { broadcast: { self: false } },
+    });
+    typingChan
+      .on("broadcast", { event: "typing" }, (payload) => {
+        const p: any = payload.payload || {};
+        if (p.from === "agent") {
+          setPeerTyping(!!p.active);
+          if (typingExpireTimer.current)
+            window.clearTimeout(typingExpireTimer.current);
+          typingExpireTimer.current = window.setTimeout(
+            () => setPeerTyping(false),
+            2500
+          );
+        }
+      })
+      .subscribe();
+    typingChanRef.current = typingChan;
+
+    // polling fallback
+    const poll = async () => {
+      if (stop) return;
+      try {
+        const since = lastSeenIso.current
+          ? `&since=${encodeURIComponent(lastSeenIso.current)}`
+          : "";
+        const res = await fetch(
+          `/api/chat/history?conversationId=${encodeURIComponent(
+            conversationId
+          )}${since}`
+        );
+        const data = await res.json();
+        const list: any[] = data?.messages || [];
+        if (list.length) {
+          lastSeenIso.current = list[list.length - 1].created_at;
+          appendUnique(
+            list.map((m) => ({
+              id: String(m.id),
+              role: m.role as "user" | "assistant",
+              text: String(m.text),
+              created_at: String(m.created_at),
+            }))
+          );
+        }
+      } catch {}
+      setTimeout(poll, 3000);
+    };
+    poll();
+
+    return () => {
+      stop = true;
+      supabaseBrowser.removeChannel(ch);
+      if (typingChanRef.current)
+        supabaseBrowser.removeChannel(typingChanRef.current);
+      if (typingExpireTimer.current)
+        window.clearTimeout(typingExpireTimer.current);
+    };
+  }, [conversationId]);
 
   function handleQuickPrompt(t: string) {
     setInput(t);
     requestAnimationFrame(() => inputRef.current?.focus());
+    emitTyping(true);
   }
 
-  function send(text: string) {
+  // ---- typing emitter (user) ----
+  function emitTyping(active: boolean) {
+    if (!typingChanRef.current) return;
+    const now = Date.now();
+    // throttle to ~1 event / 800ms
+    if (active && now - lastTypingSentAt.current < 800) return;
+    lastTypingSentAt.current = now;
+    typingChanRef.current.send({
+      type: "broadcast",
+      event: "typing",
+      payload: { from: "user", active },
+    });
+  }
+
+  async function send(text: string) {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || !conversationId) return;
 
     if (showPrompts) setShowPrompts(false);
 
-    const userMsg: Msg = {
-      id: crypto.randomUUID(),
-      role: "user",
-      text: trimmed,
-      at: timeNow(),
-    };
-    setMessages((m) => [...m, userMsg]);
+    // optimistic user bubble with temp id
+    const tempId = crypto.randomUUID();
+    seenIds.current.add(tempId);
+    setMessages((m) => [
+      ...m,
+      { id: tempId, role: "user", text: trimmed, at: timeNow() },
+    ]);
     setInput("");
+    emitTyping(false);
 
-    // demo assistant reply
-    setTyping(true);
-    setTimeout(() => {
-      setMessages((m) => [
-        ...m,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          text: "Got it! I’ll draft a quick scope. Do you have a deadline or budget range?",
-          at: timeNow(),
-        },
-      ]);
-      setTyping(false);
-    }, 600);
+    try {
+      const res = await fetch("/api/chat/message", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ conversationId, role: "user", text: trimmed }),
+      });
+      const data = await res.json().catch(() => null);
+      const saved = data?.message;
+      if (saved?.id) {
+        const dbId = String(saved.id);
+        seenIds.current.add(dbId);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === tempId
+              ? { ...m, id: dbId, at: toTime(saved.created_at) }
+              : m
+          )
+        );
+        seenIds.current.delete(tempId);
+      }
+    } catch (err) {
+      console.error("[send] failed", err);
+    }
   }
 
   function onSubmit(e: React.FormEvent) {
@@ -111,7 +312,6 @@ export default function ChatPanel() {
           <span className="text-amber-400">PRODUCTS</span>
         </h1>
         <hr className="mt-5 border-neutral-200" />
-
         <div className="mt-4 flex items-center gap-3">
           <div className="flex -space-x-2">
             <img
@@ -135,7 +335,6 @@ export default function ChatPanel() {
               alt=""
             />
           </div>
-
           <p className="text-sm text-neutral-600">
             Chat with an expert right now,
             <br className="hidden sm:block" /> and get your project scope in
@@ -159,7 +358,6 @@ export default function ChatPanel() {
                   className="h-8 w-8 rounded-full object-cover ring-1 ring-neutral-200"
                 />
                 <div>
-                  {/* Assistant name above bubble */}
                   <div className="mb-1.5 text-xs font-medium text-neutral-500">
                     {ASSISTANT_NAME}
                   </div>
@@ -184,8 +382,8 @@ export default function ChatPanel() {
           </div>
         ))}
 
-        {/* Typing indicator */}
-        {typing && (
+        {/* Live typing indicator from AGENT */}
+        {peerTyping && (
           <div className="mb-4 flex items-start gap-3">
             <img
               src="/avatars/yazid.jpg"
@@ -233,18 +431,21 @@ export default function ChatPanel() {
         </div>
       )}
 
-      {/* Composer with button inside the field */}
+      {/* Composer */}
       <form onSubmit={onSubmit} className="mt-4">
         <div className="relative flex items-center">
           <input
             id="chat-input"
             ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              emitTyping(!!e.target.value.trim());
+            }}
+            onBlur={() => emitTyping(false)}
             placeholder="Describe your project.."
             className="flex-1 rounded-full border border-neutral-300 bg-white px-4 py-3 text-neutral-900 placeholder:text-neutral-400 outline-none focus:ring-2 focus:ring-neutral-200"
           />
-
           <button
             type="submit"
             disabled={!input.trim()}
@@ -257,13 +458,8 @@ export default function ChatPanel() {
               viewBox="0 0 24 24"
               className="h-6 w-6 mr-[1.25px] mt-[1.25px]"
               fill="currentColor"
-              aria-hidden="true"
             >
-              <path
-                xmlns="http://www.w3.org/2000/svg"
-                d="M20.33 3.66996C20.1408 3.48213 19.9035 3.35008 19.6442 3.28833C19.3849 3.22659 19.1135 3.23753 18.86 3.31996L4.23 8.19996C3.95867 8.28593 3.71891 8.45039 3.54099 8.67255C3.36307 8.89471 3.25498 9.16462 3.23037 9.44818C3.20576 9.73174 3.26573 10.0162 3.40271 10.2657C3.5397 10.5152 3.74754 10.7185 4 10.85L10.07 13.85L13.07 19.94C13.1906 20.1783 13.3751 20.3785 13.6029 20.518C13.8307 20.6575 14.0929 20.7309 14.36 20.73H14.46C14.7461 20.7089 15.0192 20.6023 15.2439 20.4239C15.4686 20.2456 15.6345 20.0038 15.72 19.73L20.67 5.13996C20.7584 4.88789 20.7734 4.6159 20.7132 4.35565C20.653 4.09541 20.5201 3.85762 20.33 3.66996ZM4.85 9.57996L17.62 5.31996L10.53 12.41L4.85 9.57996ZM14.43 19.15L11.59 13.47L18.68 6.37996L14.43 19.15Z"
-                fill="#FFFFFF"
-              />{" "}
+              <path d="M20.33 3.67c-.19-.19-.43-.32-.69-.38a1.3 1.3 0 0 0-.78.03L4.23 8.2a1.32 1.32 0 0 0-.69.47c-.18.22-.29.49-.31.78a1.3 1.3 0 0 0 .13.81c.13.25.34.45.58.57l6.08 3 3 6.09c.12.24.31.44.54.57.23.13.5.2.77.2h.1c.29-.02.57-.13.8-.31.23-.18.39-.43.48-.71l4.95-14.59c.09-.25.1-.52.04-.78a1.3 1.3 0 0 0-.38-.69ZM4.85 9.58l12.77-4.26-7.09 7.09-5.68-2.83Zm9.58 9.57-2.84-5.68 7.09-7.09-4.25 12.77Z" />
             </svg>
           </button>
         </div>
