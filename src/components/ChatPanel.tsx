@@ -360,7 +360,7 @@ export default function ChatPanel() {
       {/* Top banner */}
       <div className="rounded-2xl bg-white p-5">
         <h1 className="font-display text-4xl md:text-6xl font-semibold leading-[1.1] tracking-[-0.02em]">
-          ESTABLISHING <br />
+          xxxESTABLISHING <br />
           <span className="text-amber-400">BRANDS</span> &{" "}
           <span className="text-amber-400">PRODUCTS</span>
         </h1>
