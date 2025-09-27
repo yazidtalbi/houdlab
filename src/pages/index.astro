@@ -41,21 +41,14 @@ import GlobeBackground from "../components/GlobeBackground";
     >
     </div>
 
-    <main class="container mx-auto px-4 py-12">
+    <main class="container mx-auto px-4 py-12 mr-[65px]">
       <!-- Make the section relative so the globe can be absolutely positioned inside it -->
       <section class="relative grid grid-cols-12 gap-4 lg:gap-8 items-start">
-        <!-- Arabic HoudLab SVG (behind globe but above background) -->
-        <div
-          class="absolute -left-[3vw] top-[30vh] w-[160vmin] opacity-100 z-0 pointer-events-none overflow-visible"
-        >
-          <img src="/houd.svg" alt="HoudLab Arabic" class="w-full h-auto" />
-        </div>
-
         <!-- 🌍 Globe sits behind the content -->
 
         <!-- Soft radial fade + optional blue highlight arc over the globe -->
         <div
-          class="pointer-events-none absolute -z-5 left-[10vw] top-[35vh] w-[95vmin] h-[95vmin]"
+          class="pointer-events-none absolute -z-5 left-[2vw] top-[35vh] w-[95vmin] h-[95vmin]"
         >
           <!-- 1) Soft white radial fade (makes the globe blend into the background) -->
           <div
@@ -82,6 +75,13 @@ import GlobeBackground from "../components/GlobeBackground";
           class="col-span-12 lg:col-span-8 xl:col-span-7 z-10"
           id="chat-section"
         >
+          <!-- Arabic SVG anchored behind the chat panel -->
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute -z-10 left-[-230px] top-[70vh] -translate-y-1/2 w-[512px] h-[512px] -rotate-5 opacity-75"
+          >
+            <img src="/houdarab.svg" alt="" class="w-full h-full" />
+          </div>
           <ChatPanel client:load />
         </div>
 
@@ -90,7 +90,7 @@ import GlobeBackground from "../components/GlobeBackground";
           class="col-span-12 lg:col-span-4 xl:col-span-3 flex flex-col gap-4 z-10"
         >
           <!-- Description -->
-          <div class="order-2 lg:order-1 mt-5 md:mt-5 lg:mt-10 mb-5">
+          <div class="order-2 lg:order-1 mt-5 md:mt-5 lg:mt-6 mb-5">
             <p
               class="text-neutral-800 max-w-prose font-display leading-tight md:leading-snug font-semibold lg:text-base text-xl"
             >
@@ -206,20 +206,35 @@ import GlobeBackground from "../components/GlobeBackground";
       >
         <!-- Left nav links -->
         <nav
-          class="flex flex-col md:flex-row gap-4 md:gap-6 font-medium text-xl md:text-md items-start md:items-center"
+          class="flex flex-col md:flex-row gap-4 md:gap-6 font-medium text-xl md:text-base items-start md:items-center"
         >
           <a href="/" class="px-4 py-2 rounded-full bg-neutral-900 text-white">
             Home
           </a>
           <a href="/about" class="hover:text-neutral-600 transition">About Us</a
           >
-          <a href="/projects" class="hover:text-neutral-600 transition"
-            >Projects</a
+
+          <a
+            href="/projects"
+            class="hover:text-neutral-600 transition flex items-center gap-2"
           >
-          <a href="/services" class="hover:text-neutral-600 transition"
-            >Services</a
+            Projects
+            <span
+              class="text-xs font-semibold text-amber-500 bg-amber-100 px-2 rounded-full uppercase"
+              >Soon</span
+            >
+          </a>
+
+          <a
+            href="/blog"
+            class="hover:text-neutral-600 transition flex items-center gap-2"
           >
-          <a href="/blog" class="hover:text-neutral-600 transition">Blog</a>
+            Blog
+            <span
+              class="text-xs font-semibold text-amber-500 bg-amber-100 px-2 rounded-full uppercase"
+              >Soon</span
+            >
+          </a>
         </nav>
 
         <!-- Right CTA -->
@@ -252,7 +267,7 @@ import GlobeBackground from "../components/GlobeBackground";
 
           <!-- Pill button text -->
           <span
-            class="relative rounded-full bg-[#FABC4B] text-neutral-900 text-lg md:text-sm
+            class="relative rounded-full bg-[#FABC4B] text-neutral-900 text-md md:text-sm
 				 px-4 md:px-6 py-2.5 font-semibold tracking-wide
 				 transition-transform duration-300 ease-out
 				 group-hover:-translate-x-2 -mr-2"

@@ -11,6 +11,14 @@ const QUICK_PROMPTS = [
   "I need social media visuals",
 ];
 
+const COLOR_CLASSES = [
+  "bg-rose-500",
+  "bg-amber-500",
+  "bg-emerald-500",
+  "bg-sky-500",
+  "bg-violet-500",
+];
+
 const STORE_KEY = "houdlab_chat_messages_v1";
 const CONV_KEY = "houdlab_conversation_id_v1";
 const ASSISTANT_NAME = "Yazid from HoudLab";
@@ -388,7 +396,13 @@ export default function ChatPanel() {
       {/* Messages area */}
       <div
         ref={scrollRef}
-        className="mt-4 min-h-[50vh] md:h-[400px] overflow-y-auto rounded-2xl p-4"
+        className={`mt-4 overflow-y-auto rounded-2xl p-4
+    ${
+      showPrompts
+        ? "min-h-[50vh] md:min-h-[33vh]"
+        : "min-h-[62vh] md:min-h-[45vh]"
+    }
+  `}
       >
         {messages.map((m) => (
           <div key={m.id} className="mb-4">
@@ -459,14 +473,22 @@ export default function ChatPanel() {
             Quick chat prompts
           </div>
           <div className="flex flex-wrap gap-2">
-            {QUICK_PROMPTS.map((q) => (
+            {QUICK_PROMPTS.map((q, i) => (
               <button
                 key={q}
                 type="button"
                 onClick={() => handleQuickPrompt(q)}
-                className="rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-800 hover:bg-neutral-50 active:scale-[0.99] transition"
+                className="group rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-800 hover:bg-neutral-50 active:scale-[0.99] transition hover:cursor-pointer"
               >
-                {q}
+                <span className="inline-flex items-center gap-2">
+                  <span
+                    className={`h-2.5 w-2.5 rounded-full ${
+                      COLOR_CLASSES[i % COLOR_CLASSES.length]
+                    }`}
+                    aria-hidden="true"
+                  />
+                  <span>{q}</span>
+                </span>
               </button>
             ))}
           </div>

@@ -143,7 +143,7 @@ export default function GlobeBackground() {
       ref={mountRef}
       className="
         pointer-events-none absolute -z-10
-        left-[1vw] top-[0vh]
+        left-[-5vw] top-[0vh]
         w-[80vmin] h-[80vmin]
         opacity-70
       "

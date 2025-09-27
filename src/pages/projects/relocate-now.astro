@@ -1,0 +1,610 @@
+---
+/**
+ * Case Study — minimal layout as per your mock:
+ * 1) Right-aligned banner (bg image + black 50% overlay + text inside)
+ * 2) Stats section (Industry / Services / Timeline / Website)
+ * 3) Intro title with two paragraphs
+ * 4) Full-width image
+ * 5) Challenge (label on the left, paragraph on the right)
+ * 6) Process section  ⟵ NEW
+ */
+
+import "../../styles/global.css";
+const heroImage =
+  "https://i.pinimg.com/736x/df/34/be/df34be4b0f897bfdeac542b4774c54c1.jpg";
+
+const stats = {
+  industry: ["Real estate", "Relocation services"],
+  services: ["Branding", "Web design", "Webflow development"],
+  timeline: "3.5 months",
+  website: { label: "zemium.co", url: "https://zemium.co" },
+};
+
+const intro = {
+  title:
+    "All-In-One solution for stress-free global moves where no detail is ever overlooked",
+  left: "Relocate Now, a spin-off of the Portuguese advisory firm Westonbridge, is designed to simplify moving to a new country. With years of experience, the service takes care of everything — from paperwork to finding a place to live.",
+  right:
+    "The team consists of experts in law, tax, accounting, and management. They work together to prepare the necessary documents, help with pet transporting, and other details to make the relocation effortless and worry-free.",
+};
+
+// NEW — simple list of steps you can edit per case study
+const processSteps = [
+  "Discovery",
+  "Wireframes",
+  "UI & Branding",
+  "Content",
+  "Frontend",
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Relocate Now — Houd Lab</title>
+  </head>
+  <body class="bg-[#FFFFFF] text-neutral-900 antialiased font-display">
+    <!-- 1) BANNER (right-aligned block) -->
+    <section class="relative">
+      <!-- Right alignment: limit width + push to the right -->
+      <div class="ml-auto w-full lg:w-[80%]">
+        <div
+          class="relative h-[46vh] min-h-[600px] overflow-hidden rounded-bl-[2rem] shadow"
+        >
+          <!-- bg image -->
+          <img
+            src={heroImage}
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover"
+          />
+          <!-- 50% black overlay -->
+          <div class="absolute inset-0 bg-black/50"></div>
+
+          <!-- Decorative SVG (houdbanner.svg) -->
+          <img
+            src="/houdbanner.svg"
+            alt=""
+            class="absolute top-0 right-20 h-72 w-auto object-contain pointer-events-none select-none"
+          />
+
+          <!-- Breadcrumbs -->
+          <div
+            class="relative z-10 flex justify-start px-6 sm:px-10 lg:px-16 pt-10"
+          >
+            <nav class="text-sm font-medium text-white/80 space-x-2">
+              <a href="/projects" class="hover:text-white">ALL PROJECTS</a>
+              <span>›</span>
+              <span class="text-white">RELOCATE NOW</span>
+            </nav>
+          </div>
+
+          <!-- Copy inside banner -->
+          <div class="relative z-10 flex h-full items-end">
+            <div class="px-6 sm:px-10 lg:px-16 pb-28">
+              <!-- 👈 add pb-20 for bottom padding -->
+              <h1
+                class="text-white text-4xl sm:text-5xl lg:text-6xl font-semibold leading-17 max-w-3xl"
+              >
+                Relocate Now — A Memorable Brand Story Inspired By Home
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="mx-auto max-w-6xl">
+      <!-- 3) INTRODUCTION -->
+      <section class="mt-12 md:mt-16 max-w-4xl mx-auto px-16">
+        <!-- 2) STATS (Industry / Services / Timeline / Website) -->
+        <section class="mt-10 md:mt-12">
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-8 gap-x-10"
+          >
+            <!-- Industry -->
+            <div>
+              <div class="text-sm font-semibold tracking-wide text-neutral-500">
+                Industry
+              </div>
+              <ul class="mt-3 space-y-2">
+                {
+                  stats.industry.map((item) => (
+                    <li class="text-base">{item}</li>
+                  ))
+                }
+              </ul>
+            </div>
+
+            <!-- Services -->
+            <div>
+              <div class="text-sm font-semibold tracking-wide text-neutral-500">
+                Services
+              </div>
+              <ul class="mt-3 space-y-2">
+                {
+                  stats.services.map((item) => (
+                    <li class="text-base">{item}</li>
+                  ))
+                }
+              </ul>
+            </div>
+
+            <!-- Timeline -->
+            <div>
+              <div class="text-sm font-semibold tracking-wide text-neutral-500">
+                Timeline
+              </div>
+              <div class="mt-3 text-base">{stats.timeline}</div>
+            </div>
+
+            <!-- Website -->
+            <div>
+              <div class="text-sm font-semibold tracking-wide text-neutral-500">
+                Website
+              </div>
+              <div class="mt-3">
+                <a
+                  href={stats.website.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  class="text-amber-500 hover:text-amber-600 font-medium underline underline-offset-4"
+                >
+                  {stats.website.label}
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <h2 class="text-2xl sm:text-3xl font-semibold max-w-xl mt-16">
+          {intro.title}
+        </h2>
+
+        <div
+          class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 font-medium"
+        >
+          <p class="text-neutral-700 leading-relaxed">{intro.left}</p>
+          <p class="text-neutral-700 leading-relaxed">{intro.right}</p>
+        </div>
+      </section>
+
+      <!-- 4) Full-width image -->
+      <section class="mt-12 md:mt-16">
+        <div
+          class="w-screen relative left-[50%] right-[50%] -ml-[50vw] -mr-[50vw]"
+        >
+          <img
+            src="https://placehold.co/600x350"
+            alt="Placeholder"
+            class="w-full h-auto object-cover"
+          />
+        </div>
+      </section>
+
+      <!-- 5) Challenge -->
+      <section class="mt-16 md:mt-20">
+        <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-8 items-start">
+            <!-- Label pill -->
+            <div class="md:col-span-1">
+              <span
+                class="inline-block rounded-full border border-neutral-300 bg-white px-5 py-2 text-sm font-semibold"
+              >
+                Challenge
+              </span>
+            </div>
+
+            <!-- Text -->
+            <div class="md:col-span-4 text-lg leading-relaxed text-neutral-900">
+              <p>
+                Relocating to a new country can be overwhelming, with endless
+                paperwork, legal hurdles, and logistical nightmares. The process
+                is often so complex that it leaves people stressed and confused,
+                struggling to handle all of the details on their own. This
+                challenge creates a need for a service that simplifies and
+                streamlines every step of the move.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6) PROCESS — NEW -->
+      <section class="mt-16 md:mt-20">
+        <div
+          class="rounded-3xl border border-neutral-200 bg-neutral-50 p-6 sm:p-8 lg:p-10"
+        >
+          <div class="mx-auto max-w-6xl">
+            <h3 class="text-center text-2xl sm:text-3xl font-semibold">
+              Our Process
+            </h3>
+            <p class="mt-2 text-center text-neutral-700 max-w-2xl mx-auto">
+              With your goals at the forefront, we design systems that go beyond
+              visuals to deliver real impact.
+            </p>
+
+            <!-- Steps (pills) -->
+            <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {
+                processSteps.map((step) => (
+                  <div class="rounded-full bg-white border border-neutral-200 px-4 py-2 text-center text-sm font-medium">
+                    {step}
+                  </div>
+                ))
+              }
+            </div>
+
+            <!-- Timeline bar -->
+            <div class="mt-6">
+              <div class="h-2 w-full rounded-full bg-white/70"></div>
+              <div
+                class="mt-3 grid grid-cols-5 text-center text-xs text-neutral-600"
+              >
+                <span>01</span><span>02</span><span>03</span><span>04</span
+                ><span>05</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7) DETAILS + STICKY NAV -->
+      <section class="mt-16 md:mt-20">
+        <div class="">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <!-- LEFT: content -->
+            <div class="lg:col-span-8">
+              <!-- Title + 2 paragraphs (reuse your style) -->
+              <h3 class="text-2xl sm:text-3xl font-semibold max-w-3xl">
+                All-In-One Solution For Stress-Free Global Moves Where No Detail
+                Is Ever Overlooked
+              </h3>
+              <div
+                class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 font-medium"
+              >
+                <p class="text-neutral-500 leading-relaxed">
+                  Relocate Now, a spin-off of the Portuguese advisory firm
+                  Westonbridge, is designed to simplify moving to a new country.
+                  With years of experience, the service takes care of everything
+                  — from paperwork to finding a place to live.
+                </p>
+                <p class="text-neutral-500 leading-relaxed">
+                  The team consists of experts in law, tax, accounting, and
+                  management. They work together to prepare the necessary
+                  documents, help with pet transporting, and other details to
+                  make the relocation effortless and worry-free.
+                </p>
+              </div>
+
+              <!-- Beige mosaic container -->
+              <div
+                class="mt-10 rounded-[1.25rem] border border-neutral-200 bg-[#FFF6E2] p-4 sm:p-6"
+              >
+                <!-- Replace these with your real grid items/images -->
+                <div class="grid gap-3 sm:grid-cols-12">
+                  <div
+                    class="sm:col-span-5 h-44 sm:h-60 rounded-xl bg-black/90"
+                  >
+                  </div>
+                  <div class="sm:col-span-7 h-44 sm:h-60 rounded-xl bg-white">
+                  </div>
+                  <div class="sm:col-span-4 h-40 rounded-xl bg-[#FBDC63]"></div>
+                  <div class="sm:col-span-4 h-40 rounded-xl bg-black"></div>
+                  <div class="sm:col-span-4 h-40 rounded-xl bg-white"></div>
+                </div>
+              </div>
+
+              <!-- Detail sections (targets). Keep the ids; nav uses them but won't change the URL -->
+              <article id="brand-discovery" class="scroll-mt-28 mt-12">
+                <h4 class="text-xl font-semibold">1. Brand discovery</h4>
+                <p class="mt-3 text-neutral-700 leading-relaxed">
+                  Stakeholder interviews, audience research, competitive scan
+                  and positioning narratives.
+                </p>
+              </article>
+
+              <article id="branding-ideas" class="scroll-mt-28 mt-12">
+                <h4 class="text-xl font-semibold">2. Branding ideas</h4>
+                <p class="mt-3 text-neutral-700 leading-relaxed">
+                  Multiple creative directions exploring tone, typography, color
+                  and graphic voice.
+                </p>
+              </article>
+
+              <article id="brand-book" class="scroll-mt-16 mt-12">
+                <!-- Alternative: Two creative takes -->
+                <section class="mt-16 md:mb-20">
+                  <div class="mx-auto">
+                    <h3 class="text-2xl sm:text-3xl font-semibold">
+                      Two creative takes on the relocation industry
+                    </h3>
+
+                    <div class="mt-8 divide-y divide-neutral-200">
+                      <!-- Item 1 -->
+                      <div class="py-8 grid grid-cols-1 md:grid-cols-12 gap-6">
+                        <div class="md:col-span-4 flex items-start gap-3">
+                          <span
+                            class="inline-grid place-items-center h-10 w-10 rounded-full bg-neutral-100 border border-neutral-200"
+                          >
+                            <!-- bell icon -->
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              ><path
+                                d="M12 3a6 6 0 0 0-6 6v3.5l-1.5 3V17h15v-1.5l-1.5-3V9a6 6 0 0 0-6-6Z"
+                                stroke="currentColor"
+                                stroke-width="1.5"></path><path
+                                d="M9.5 19a2.5 2.5 0 0 0 5 0"
+                                stroke="currentColor"
+                                stroke-width="1.5"></path></svg
+                            >
+                          </span>
+                          <div class="font-semibold">Webflow development</div>
+                        </div>
+                        <div
+                          class="md:col-span-8 text-neutral-700 leading-relaxed"
+                        >
+                          The team consists of experts in law, tax, accounting,
+                          and management. They work together to prepare the
+                          necessary documents, help with pet transporting, and
+                          other details to make the relocation effortless and
+                          worry-free.
+                        </div>
+                      </div>
+
+                      <!-- Item 2 -->
+                      <div class="py-8 grid grid-cols-1 md:grid-cols-12 gap-6">
+                        <div class="md:col-span-4 flex items-start gap-3">
+                          <span
+                            class="inline-grid place-items-center h-10 w-10 rounded-full bg-neutral-100 border border-neutral-200"
+                          >
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              ><path
+                                d="M12 3a6 6 0 0 0-6 6v3.5l-1.5 3V17h15v-1.5l-1.5-3V9a6 6 0 0 0-6-6Z"
+                                stroke="currentColor"
+                                stroke-width="1.5"></path><path
+                                d="M9.5 19a2.5 2.5 0 0 0 5 0"
+                                stroke="currentColor"
+                                stroke-width="1.5"></path></svg
+                            >
+                          </span>
+                          <div class="font-semibold">Webflow development</div>
+                        </div>
+                        <div
+                          class="md:col-span-8 text-neutral-700 leading-relaxed"
+                        >
+                          The team consists of experts in law, tax, accounting,
+                          and management. They work together to prepare the
+                          necessary documents, help with pet transporting, and
+                          other details to make the relocation effortless and
+                          worry-free.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </article>
+
+              <article id="web-exploration" class="scroll-mt-28 mt-12">
+                <h4 class="text-xl font-semibold">4. Web exploration</h4>
+                <p class="mt-3 text-neutral-700 leading-relaxed">
+                  Structure, page archetypes, states and early interaction
+                  sketches.
+                </p>
+
+                <!-- Placeholder image -->
+                <div class="mt-6">
+                  <img
+                    src="https://placehold.co/600x400"
+                    alt="Web exploration placeholder"
+                    class="rounded-xl border border-neutral-200 w-full h-auto object-cover"
+                  />
+                </div>
+              </article>
+
+              <article id="web-concept" class="scroll-mt-28 mt-12">
+                <h4 class="text-xl font-semibold">5. Web concept</h4>
+                <p class="mt-3 text-neutral-700 leading-relaxed">
+                  High-fidelity concept with content hierarchy, trust modules
+                  and CTA pathways.
+                </p>
+              </article>
+            </div>
+
+            <!-- RIGHT: sticky section nav (no anchors; smooth scroll via JS) -->
+            <aside class="lg:col-span-4 lg:pl-6">
+              <div
+                class="lg:sticky lg:top-24 rounded-2xl border border-neutral-200 bg-white p-5"
+              >
+                <div class="text-lg font-normal text-neutral-500">
+                  Relocate now
+                </div>
+                <ul id="sectionNav" class="mt-3 space-y-2">
+                  <li>
+                    <button
+                      data-target="brand-discovery"
+                      class="nav-item block w-full text-left rounded-lg px-3 py-2 text-md hover:bg-neutral-50 font-semibold"
+                      ><span class="text-gray-500 mr-2 w-10">1. </span>Brand
+                      discovery</button
+                    >
+                  </li>
+                  <li>
+                    <button
+                      data-target="branding-ideas"
+                      class="nav-item block w-full text-left rounded-lg px-3 py-2 text-md hover:bg-neutral-50 font-semibold"
+                      ><span class="text-gray-500 mr-2 w-10">2.</span>Branding
+                      Ideas</button
+                    >
+                    <li>
+                      <button
+                        data-target="brand-book"
+                        class="nav-item block w-full text-left rounded-lg px-3 py-2 text-md hover:bg-neutral-50 font-semibold"
+                        ><span class="text-gray-500 mr-2 w-10">3.</span>Brand
+                        discovery</button
+                      >
+                    </li>
+                    <li>
+                      <button
+                        data-target="web-exploration"
+                        class="nav-item block w-full text-left rounded-lg px-3 py-2 text-md hover:bg-neutral-50 font-semibold"
+                        ><span class="text-gray-500 mr-2 w-10">4.</span>Web
+                        exploration</button
+                      >
+                    </li>
+                    <li>
+                      <button
+                        data-target="web-concept"
+                        class="nav-item block w-full text-left rounded-lg px-3 py-2 text-md hover:bg-neutral-50 font-semibold"
+                        ><span class="text-gray-500 mr-2 w-10">5.</span>Web
+                        concept</button
+                      >
+                    </li>
+                  </li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+
+          <!-- Smooth scroll + active link highlight (no hash change) -->
+          <script type="module">
+            const items = Array.from(
+              document.querySelectorAll("#sectionNav .nav-item")
+            );
+            const sections = items.map((btn) =>
+              document.getElementById(btn.dataset.target)
+            );
+
+            // Smooth scroll on click
+            items.forEach((btn) => {
+              btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                const el = document.getElementById(btn.dataset.target);
+                if (!el) return;
+                const y = el.getBoundingClientRect().top + window.scrollY - 96; // offset for comfort/sticky headers
+                window.scrollTo({ top: y, behavior: "smooth" });
+              });
+            });
+
+            // Highlight active section
+            const io = new IntersectionObserver(
+              (entries) => {
+                entries.forEach((entry) => {
+                  if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    items.forEach((b) =>
+                      b.classList.toggle(
+                        "text-amber-500",
+                        b.dataset.target === id
+                      )
+                    );
+                  }
+                });
+              },
+              { rootMargin: "-40% 0px -50% 0px", threshold: 0 }
+            );
+
+            sections.forEach((sec) => sec && io.observe(sec));
+          </script>
+        </div>
+      </section>
+
+      <!-- 4) Full-width image -->
+      <section class="mt-12 md:mt-16">
+        <div
+          class="w-screen relative left-[50%] right-[50%] -ml-[50vw] -mr-[50vw]"
+        >
+          <img
+            src="https://placehold.co/600x350"
+            alt="Placeholder"
+            class="w-full h-auto object-cover"
+          />
+        </div>
+      </section>
+
+      <!-- 8) Testimonial -->
+      <section class="my-16 md:my-20">
+        <!-- subtle divider -->
+
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div
+            class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center mt-8"
+          >
+            <!-- Left: logo mark + big quote -->
+            <div class="lg:col-span-8 flex items-start gap-10">
+              <!-- round logo mark -->
+              <div
+                class="hidden sm:inline-grid place-items-center h-16 w-16 rounded-full bg-[#5F0E2F] text-[#F4C644] shrink-0"
+              >
+                <span class="text-3xl font-extrabold">R</span>
+              </div>
+
+              <blockquote
+                class="text-2xl sm:text-2xl font-semibold leading-snug text-neutral-900"
+              >
+                Houd Lab is very organized and methodical in their planning,
+                ensuring goals are met within established deadlines, even when
+                additional features or software customizations are involved.
+                Communication was easy and valuable, making them feel like a
+                part of our internal team project. They exceeded our
+                expectations!
+              </blockquote>
+            </div>
+
+            <!-- Right: review card -->
+            <aside class="lg:col-span-4">
+              <div class="rounded-3xl border border-neutral-200 bg-white p-6">
+                <div class="flex items-center justify-between">
+                  <span class="text-xl font-semibold text-neutral-700"
+                    >Clutch</span
+                  >
+
+                  <!-- stars -->
+                  <div
+                    class="flex gap-1 text-amber-400"
+                    aria-label="5 out of 5 stars"
+                  >
+                    {
+                      Array.from({ length: 5 }).map(() => (
+                        <svg
+                          class="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.02 3.133a1 1 0 00.95.69h3.295c.969 0 1.371 1.24.588 1.81l-2.667 1.94a1 1 0 00-.364 1.118l1.02 3.133c.3.921-.755 1.688-1.54 1.118l-2.667-1.94a1 1 0 00-1.176 0l-2.667 1.94c-.784.57-1.838-.197-1.539-1.118l1.02-3.133a1 1 0 00-.364-1.118L2.096 8.56c-.783-.57-.38-1.81.588-1.81h3.295a1 1 0 00.95-.69l1.02-3.133z" />
+                        </svg>
+                      ))
+                    }
+                  </div>
+                </div>
+
+                <div class="my-4 h-px w-full bg-neutral-200"></div>
+
+                <!-- reviewer -->
+                <div class="flex items-center gap-3">
+                  <img
+                    src="https://placehold.co/64x64"
+                    alt="Reviewer avatar"
+                    class="h-12 w-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <div class="font-semibold">Cristiano Ronaldo</div>
+                    <div class="text-sm text-neutral-500">
+                      Founder &amp; CEO, Relocate Now
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
