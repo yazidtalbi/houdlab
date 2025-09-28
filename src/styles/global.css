@@ -242,3 +242,16 @@ html {
     @apply bg-background text-foreground;
   }
 }
+
+/* Lenis + nested scrollers best-practice */
+html.lenis {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+/* Make sure nested scroll containers behave */
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}

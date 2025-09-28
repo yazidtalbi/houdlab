@@ -444,8 +444,8 @@ export default function ChatPanel() {
         className={`mt-4 overflow-y-auto rounded-2xl p-4
     ${
       showPrompts
-        ? "min-h-[50vh] md:min-h-[33vh]"
-        : "min-h-[62vh] md:min-h-[45vh]"
+        ? "min-h-[50vh] md:min-h-[33vh] md:max-h-[33vh]"
+        : "min-h-[62vh] md:min-h-[45vh] md:max-h-[45vh]"
     }
   `}
       >
@@ -456,7 +456,7 @@ export default function ChatPanel() {
                 <img
                   src="/avatars/yazid.jpg"
                   alt=""
-                  className="h-8 w-8 rounded-full object-cover ring-1 ring-neutral-200"
+                  className="h-8 w-8 rounded-full object-cover ring-2 ring-white "
                 />
                 <div>
                   <AssistantHeader />
@@ -487,7 +487,7 @@ export default function ChatPanel() {
             <img
               src="/avatars/yazid.jpg"
               alt=""
-              className="h-8 w-8 rounded-full object-cover ring-1 ring-neutral-200"
+              className="h-8 w-8 rounded-full object-cover ring-2 ring-white"
             />
             <div>
               <div className="inline-block rounded-2xl rounded-tl-md bg-white px-4 py-2 shadow-sm ring-1 ring-neutral-200">

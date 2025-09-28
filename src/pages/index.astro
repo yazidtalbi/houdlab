@@ -2,7 +2,6 @@
 import "../styles/global.css";
 import "lenis/dist/lenis.css";
 import VideoReel from "../components/VideoReel";
-import ChatCrisp from "../components/ChatCrisp.astro";
 import TestimonialsMarquee from "../components/TestimonialsMarquee";
 import ChatPanel from "../components/ChatPanel";
 import GlobeBackground from "../components/GlobeBackground";
@@ -146,7 +145,16 @@ import VideoPreview from "@/components/VideoPreview";
                 mask="url(#revealMask)"></path>
             </svg>
           </div>
-          <div class="reveal-up"><ChatPanel client:load /></div>
+
+          <!-- Wherever your chat message list lives -->
+          <div
+            data-lenis-prevent
+            data-lenis-prevent-wheel
+            data-lenis-prevent-touch
+            class="h-full overflow-y-auto overscroll-contain touch-pan-y reveal-up"
+          >
+            <ChatPanel client:load />
+          </div>
         </div>
 
         <!-- 3) Video + description column (3) -->

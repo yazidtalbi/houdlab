@@ -6,6 +6,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { X } from "lucide-react";
+import { useLenis } from "lenis/react";
 
 type Props = {
   src: string;
@@ -14,8 +15,17 @@ type Props = {
 };
 
 export default function VideoPreview({ src, poster, className }: Props) {
+  const lenis = useLenis();
+
   return (
-    <Dialog>
+    <Dialog
+      modal
+      onOpenChange={(open) => {
+        if (lenis) {
+          open ? lenis.stop() : lenis.start();
+        }
+      }}
+    >
       {/* Preview card */}
       <div
         className={

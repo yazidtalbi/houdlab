@@ -9,10 +9,7 @@ export default function SmoothScroll() {
 
   return (
     // The <ReactLenis root> must wrap the content you want smoothed
-    <ReactLenis
-      root
-      options={{ duration: 1.1, smoothWheel: true, smoothTouch: false }}
-    >
+    <ReactLenis root options={{ duration: 1.1, smoothWheel: true }}>
       <div className="lenis-wrapper">
         {/* 👇 All your scrollable site content goes here */}
         <slot />
