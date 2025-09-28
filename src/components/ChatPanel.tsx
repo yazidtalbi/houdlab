@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabaseForConversation } from "../lib/supabaseBrowser";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string; at: string };
 
@@ -21,11 +22,63 @@ const COLOR_CLASSES = [
 
 const STORE_KEY = "houdlab_chat_messages_v1";
 const CONV_KEY = "houdlab_conversation_id_v1";
-const ASSISTANT_NAME = "Yazid from HoudLab";
+// old
+// const ASSISTANT_NAME = "Yazid from HoudLab";
+
+// new
+const ASSISTANT_TITLE = "Yazid";
+const ASSISTANT_LABELS = ["Community Manager"];
 
 function fmtTime(iso?: string) {
   const d = iso ? new Date(iso) : new Date();
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      // Stagger everything inside for a cascade feel
+      staggerChildren: 0.06,
+      delayChildren: 0.05,
+      ease: [0.16, 1, 0.3, 1],
+      duration: 0.5,
+    },
+  },
+};
+
+const itemUp = {
+  hidden: { opacity: 0, y: 16 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const itemFade = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+function AssistantHeader() {
+  return (
+    <div className="mb-1.5 flex items-center gap-2 text-xs pb-1">
+      <span className="font-medium text-neutral-800 ">{ASSISTANT_TITLE}</span>
+
+      <div className="flex items-center gap-1.5">
+        {ASSISTANT_LABELS.map((label) => (
+          <span
+            key={label}
+            className="rounded-full font-medium text-gray-700 bg-gray-100 px-2 py-0.5 text-[10px] ring-1 ring-gray-300  "
+          >
+            {label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function ChatPanel() {
@@ -363,26 +416,18 @@ export default function ChatPanel() {
         <hr className="md:mt-5 mt-2 border-neutral-200" />
 
         <div className="md:mt-5 mt-3 flex items-center gap-3">
-          <div className="flex -space-x-2">
+          <div className="flex -space-x-3">
+            <img
+              src="/avatars/a2.png"
+              className="h-10 w-10 rounded-full border-2 border-white"
+            />
+            <img
+              src="/avatars/a3.png"
+              className="h-10 w-10 rounded-full border-2 border-white"
+            />
             <img
               src="/avatars/a1.png"
-              className="h-10 w-10 rounded-full border border-white shadow-sm"
-              alt=""
-            />
-            <img
-              src="/avatars/a2.jpg"
-              className="h-7 w-7 rounded-full border border-white shadow-sm"
-              alt=""
-            />
-            <img
-              src="/avatars/a3.jpg"
-              className="h-7 w-7 rounded-full border border-white shadow-sm"
-              alt=""
-            />
-            <img
-              src="/avatars/a4.jpg"
-              className="h-7 w-7 rounded-full border border-white shadow-sm"
-              alt=""
+              className="h-10 w-10 rounded-full border-2 border-white"
             />
           </div>
 
@@ -414,9 +459,7 @@ export default function ChatPanel() {
                   className="h-8 w-8 rounded-full object-cover ring-1 ring-neutral-200"
                 />
                 <div>
-                  <div className="mb-1.5 text-xs font-medium text-neutral-500">
-                    {ASSISTANT_NAME}
-                  </div>
+                  <AssistantHeader />
                   <div className="inline-block max-w-[68ch] rounded-2xl rounded-tl-md bg-white px-4 py-2 shadow-sm ring-1 ring-neutral-200">
                     {m.text}
                   </div>
@@ -447,16 +490,13 @@ export default function ChatPanel() {
               className="h-8 w-8 rounded-full object-cover ring-1 ring-neutral-200"
             />
             <div>
-              <div className="mb-1 text-xs font-medium text-neutral-500">
-                {ASSISTANT_NAME}
-              </div>
               <div className="inline-block rounded-2xl rounded-tl-md bg-white px-4 py-2 shadow-sm ring-1 ring-neutral-200">
-                <span className="inline-flex gap-1 align-middle">
-                  <span className="animate-pulse">●</span>
-                  <span className="animate-pulse [animation-delay:150ms]">
+                <span className="inline-flex gap-1 align-middle ">
+                  <span className="animate-pulse text-xs">●</span>
+                  <span className="animate-pulse [animation-delay:150ms] text-xs">
                     ●
                   </span>
-                  <span className="animate-pulse [animation-delay:300ms]">
+                  <span className="animate-pulse [animation-delay:300ms] text-xs">
                     ●
                   </span>
                 </span>
@@ -468,7 +508,7 @@ export default function ChatPanel() {
 
       {/* Quick prompts */}
       {showPrompts && (
-        <div className="mt-3 px-5 pb-2">
+        <div className="mt-3 px-5 pb-2 slide-up">
           <div className="text-xs text-neutral-500 mb-2">
             Quick chat prompts
           </div>
@@ -487,7 +527,7 @@ export default function ChatPanel() {
                     }`}
                     aria-hidden="true"
                   />
-                  <span>{q}</span>
+                  <span className="font-medium">{q}</span>
                 </span>
               </button>
             ))}

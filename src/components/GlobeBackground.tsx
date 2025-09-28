@@ -143,9 +143,9 @@ export default function GlobeBackground() {
       ref={mountRef}
       className="
         pointer-events-none absolute -z-10
-        left-[-5vw] top-[0vh]
+        left-[7vw] top-[0vh]
         w-[80vmin] h-[80vmin]
-        opacity-70
+        opacity-70 globe-wrapper
       "
     />
   );
