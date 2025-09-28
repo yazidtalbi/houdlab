@@ -82,7 +82,7 @@ export default function TestimonialsMarquee() {
   return (
     <section
       aria-label="Client testimonials"
-      className="relative overflow-hidden"
+      className="relative overflow-hidden max-w-[1600px] mx-auto"
       style={{
         WebkitMaskImage:
           "linear-gradient(90deg, transparent 0, black 6%, black 94%, transparent 100%)",
