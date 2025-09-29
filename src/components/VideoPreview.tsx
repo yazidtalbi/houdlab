@@ -67,7 +67,7 @@ export default function VideoPreview({ src, poster, className }: Props) {
           border-0 p-0 bg-[#FABC4B]/90 
           w-[96vw] max-w-[1200px] 
           max-h-[90vh] 
-          rounded-none sm:rounded-2xl   /* mobile: full edge, desktop: rounded */
+          rounded-none sm:rounded-2xl    
           overflow-hidden
         "
       >

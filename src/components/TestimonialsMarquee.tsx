@@ -16,7 +16,7 @@ const ITEMS: Testimonial[] = [
     text: "The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.",
     author: "Atif Hussain",
     role: "Co-Founder at Kinetik",
-    avatar: "/avatars/atif.jpg",
+    avatar: "https://placehold.co/60x60",
   },
   {
     rating: 5,
@@ -38,7 +38,7 @@ const ITEMS: Testimonial[] = [
     text: "The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.The client is proud of Houd Lab's work, which their customers praised. Communication was always clear and fast.",
     author: "Atif Hussain",
     role: "Co-Founder at Kinetik",
-    avatar: "/avatars/atif.jpg",
+    avatar: "https://placehold.co/60x60",
   },
   {
     rating: 5,
@@ -109,7 +109,7 @@ export default function TestimonialsMarquee() {
                 <Stars n={t.rating} />
               </div>
 
-              <hr className="my-4 opacity-20" />
+              <hr className="my-4 opacity-70" />
 
               <div className="flex gap-2 my-4 mt-6">
                 {t.tags.map((tag) => (

@@ -1,0 +1,190 @@
+---
+/**
+ * Case Study — minimal layout as per your mock:
+ * 1) Right-aligned banner (bg image + black 50% overlay + text inside)
+ * 2) Stats section (Industry / Services / Timeline / Website)
+ * 3) Intro title with two paragraphs
+ * 4) Full-width image
+ * 5) Challenge (label on the left, paragraph on the right)
+ * 6) Process section  ⟵ NEW
+ */
+
+import ControllerBackground from "@/components/ControllerBackground";
+import "../../styles/global.css";
+
+const heroImage =
+  "https://i.pinimg.com/736x/df/34/be/df34be4b0f897bfdeac542b4774c54c1.jpg";
+
+const stats = {
+  industry: ["Real estate", "Relocation services"],
+  services: ["Branding", "Web design", "Webflow development"],
+  timeline: "3.5 months",
+  website: { label: "zemium.co", url: "https://zemium.co" },
+};
+
+const intro = {
+  title:
+    "All-In-One solution for stress-free global moves where no detail is ever overlooked",
+  left: "Relocate Now, a spin-off of the Portuguese advisory firm Westonbridge, is designed to simplify moving to a new country. With years of experience, the service takes care of everything — from paperwork to finding a place to live.",
+  right:
+    "The team consists of experts in law, tax, accounting, and management. They work together to prepare the necessary documents, help with pet transporting, and other details to make the relocation effortless and worry-free.",
+};
+
+// NEW — simple list of steps you can edit per case study
+const processSteps = [
+  "Discovery",
+  "Wireframes",
+  "UI & Branding",
+  "Content",
+  "Frontend",
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Relocate Now — Houd Lab</title>
+  </head>
+  <body class="bg-[#FFFFFF] text-neutral-900 antialiased font-display">
+    <!-- 1) BANNER (right-aligned block) -->
+    <section class="relative">
+      <!-- Right alignment: limit width + push to the right -->
+      <div class="ml-auto w-full lg:w-[80%]">
+        <div
+          class="relative h-[46vh] min-h-[600px] overflow-hidden rounded-bl-[2rem] shadow"
+        >
+          <!-- bg image -->
+          <img
+            src={heroImage}
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover"
+          />
+          <!-- 50% black overlay -->
+          <div class="absolute inset-0 bg-black/50"></div>
+
+          <!-- Decorative SVG (houdbanner.svg) -->
+          <img
+            src="/houdbanner.svg"
+            alt=""
+            class="absolute top-0 right-20 h-72 w-auto object-contain pointer-events-none select-none"
+          />
+
+          <!-- Breadcrumbs -->
+          <div
+            class="relative z-10 flex justify-start px-6 sm:px-10 lg:px-16 pt-10"
+          >
+            <nav class="text-sm font-medium text-white/80 space-x-2">
+              <a href="/projects" class="hover:text-white">ALL PROJECTS</a>
+              <span>›</span>
+              <span class="text-white">RELOCATE NOW</span>
+            </nav>
+          </div>
+
+          <!-- Copy inside banner -->
+          <div class="relative z-10 flex h-full items-end">
+            <div class="px-6 sm:px-10 lg:px-16 pb-28">
+              <!-- 👈 add pb-20 for bottom padding -->
+              <h1
+                class="text-white text-4xl sm:text-5xl lg:text-6xl font-semibold leading-17 max-w-3xl"
+              >
+                Relocate Now — A Memorable Brand Story Inspired By Home
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="mx-auto max-w-6xl">
+      <!-- 3) INTRODUCTION -->
+      <section class="mt-12 md:mt-16 max-w-4xl mx-auto px-16">
+        <!-- 2) STATS (Industry / Services / Timeline / Website) -->
+        <section class="mt-10 md:mt-12">
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-8 gap-x-10"
+          >
+            <!-- Industry -->
+            <div>
+              <div class="text-sm font-semibold tracking-wide text-neutral-500">
+                Industry
+              </div>
+              <ul class="mt-3 space-y-2">
+                {
+                  stats.industry.map((item) => (
+                    <li class="text-base">{item}</li>
+                  ))
+                }
+              </ul>
+            </div>
+
+            <!-- Services -->
+            <div>
+              <div class="text-sm font-semibold tracking-wide text-neutral-500">
+                Services
+              </div>
+              <ul class="mt-3 space-y-2">
+                {
+                  stats.services.map((item) => (
+                    <li class="text-base">{item}</li>
+                  ))
+                }
+              </ul>
+            </div>
+
+            <!-- Timeline -->
+            <div>
+              <div class="text-sm font-semibold tracking-wide text-neutral-500">
+                Timeline
+              </div>
+              <div class="mt-3 text-base">{stats.timeline}</div>
+            </div>
+
+            <!-- Website -->
+            <div>
+              <div class="text-sm font-semibold tracking-wide text-neutral-500">
+                Website
+              </div>
+              <div class="mt-3">
+                <a
+                  href={stats.website.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  class="text-amber-500 hover:text-amber-600 font-medium underline underline-offset-4"
+                >
+                  {stats.website.label}
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <h2 class="text-2xl sm:text-3xl font-semibold max-w-xl mt-16">
+          {intro.title}
+        </h2>
+
+        <div
+          class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 font-medium"
+        >
+          <p class="text-neutral-700 leading-relaxed">{intro.left}</p>
+          <p class="text-neutral-700 leading-relaxed">{intro.right}</p>
+        </div>
+      </section>
+
+      <!-- 4) Full-width image -->
+      <section class="mt-12 md:mt-16">
+        <div
+          class="w-screen relative left-[50%] right-[50%] -ml-[50vw] -mr-[50vw]"
+        >
+          <img
+            src="https://placehold.co/600x350"
+            alt="Placeholder"
+            class="w-full h-auto object-cover"
+          />
+        </div>
+      </section>
+
+      <ControllerBackground client:load />
+    </main>
+  </body>
+</html>

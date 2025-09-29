@@ -410,8 +410,8 @@ export default function ChatPanel() {
       <div className="rounded-2xl bg-white md:p-5 p-4">
         <h1 className="font-display text-4xl md:text-6xl font-semibold leading-[1.1] tracking-[-0.02em]">
           ESTABLISHING <br />
-          <span className="text-amber-400">BRANDS</span> &{" "}
-          <span className="text-amber-400">PRODUCTS</span>
+          <span className="text-[#FABC4B]">BRANDS</span> &{" "}
+          <span className="text-[#FABC4B]">PRODUCTS</span>
         </h1>
         <hr className="md:mt-5 mt-2 border-neutral-200" />
 
@@ -419,14 +419,17 @@ export default function ChatPanel() {
           <div className="flex -space-x-3">
             <img
               src="/avatars/a2.png"
+              alt="Assistant 1 from Houd Lab"
               className="h-10 w-10 rounded-full border-2 border-white"
             />
             <img
               src="/avatars/a3.png"
+              alt="Assistant 2 from Houd Lab"
               className="h-10 w-10 rounded-full border-2 border-white"
             />
             <img
               src="/avatars/a1.png"
+              alt="Assistant 3 from Houd Lab"
               className="h-10 w-10 rounded-full border-2 border-white"
             />
           </div>

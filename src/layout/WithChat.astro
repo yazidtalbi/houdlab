@@ -1,0 +1,117 @@
+---
+import "../styles/global.css";
+import ChatPanel from "../components/ChatPanel";
+
+/**
+ * Props:
+ * - title: string
+ * - chatOpenDefault: boolean  (home: true, case studies: false)
+ */
+const { title = "Houd Lab", chatOpenDefault = true } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{title}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+
+  <body class="bg-white text-neutral-900 antialiased font-display">
+    <!-- Root shell: carry default state in a data attribute -->
+    <div
+      id="shell"
+      class="min-h-screen grid [--chat-w:320px] lg:[--chat-w:360px] grid-cols-[var(--chat-w)_1fr]"
+      data-chat-open="true"
+      data-default-open={chatOpenDefault ? "1" : "0"}
+    >
+      <!-- CHAT (collapsible) -->
+      <aside
+        id="chat"
+        class="relative border-r border-neutral-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/40"
+      >
+        <!-- Close handle (desktop) -->
+        <button
+          id="chatClose"
+          class="absolute right-2 top-2 z-10 inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white/90 px-3 py-1.5 text-xs font-medium hover:bg-white"
+          aria-expanded="true"
+          aria-controls="chatPanel"
+        >
+          <span class="hidden sm:inline">Close the chat</span>
+          <span aria-hidden>‹</span>
+        </button>
+
+        <!-- Your chat wrapper (Lenis prevent) -->
+        <div
+          id="chatPanel"
+          data-lenis-prevent
+          data-lenis-prevent-wheel
+          data-lenis-prevent-touch
+          class="h-screen overflow-y-auto overscroll-contain touch-pan-y"
+        >
+          <ChatPanel client:load />
+        </div>
+      </aside>
+
+      <!-- PAGE CONTENT -->
+      <main id="content" class="min-h-screen">
+        <slot />
+      </main>
+    </div>
+
+    <!-- Mobile FAB to reopen chat -->
+    <button
+      id="chatFab"
+      class="fixed bottom-5 right-5 z-50 rounded-full bg-amber-500 px-4 py-3 text-sm font-semibold text-white shadow-lg lg:hidden hidden"
+      aria-controls="chat"
+      aria-label="Open chat"
+    >
+      Chat
+    </button>
+
+    <style>
+      /* When chat is closed, give content full width */
+      #shell[data-chat-open="false"] {
+        grid-template-columns: 1fr;
+      }
+      #shell[data-chat-open="false"] #chat {
+        display: none;
+      }
+    </style>
+
+    <script type="module">
+      const shell = document.getElementById("shell");
+      const closeBtn = document.getElementById("chatClose");
+      const fab = document.getElementById("chatFab");
+      const KEY = "houd_chat_open_v1";
+
+      const setOpen = (open) => {
+        shell.dataset.chatOpen = open ? "true" : "false";
+        closeBtn?.setAttribute("aria-expanded", String(open));
+        fab?.classList.toggle("hidden", open);
+        try {
+          localStorage.setItem(KEY, open ? "1" : "0");
+        } catch {}
+      };
+
+      // initial (persisted -> default)
+      let saved = null;
+      try {
+        saved = localStorage.getItem(KEY);
+      } catch {}
+      const defaultOpen = shell.dataset.defaultOpen === "1";
+      const initial = saved === null ? defaultOpen : saved === "1";
+      setOpen(initial);
+
+      // expose helper for global “Talk to us” buttons
+      window.houdChatOpen = (open = true) => setOpen(open);
+
+      // interactions
+      closeBtn?.addEventListener("click", () => setOpen(false));
+      fab?.addEventListener("click", () => setOpen(true));
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") setOpen(false);
+      });
+    </script>
+  </body>
+</html>
