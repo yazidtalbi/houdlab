@@ -2,6 +2,12 @@
 import SmoothScroll from "@/components/SmoothScroll";
 import "../../styles/global.css";
 import { ChevronRight } from "@lucide/astro";
+import ChatPanel from "@/components/ChatPanel";
+import ChatSheet from "@/components/ChatSheet";
+
+import Footer from "../../components/Footer.astro";
+import NextProject from "../../components/NextProject.astro";
+
 const title = "Relocate Now Case Study";
 ---
 
@@ -13,8 +19,16 @@ const title = "Relocate Now Case Study";
     <title>{title}</title>
   </head>
 
-  <body class="bg-[#FFFFFF] text-neutral-900 antialiased font-display">
+  <body
+    class="bg-[#FFFFFF] text-neutral-900 antialiased font-display"
+    id="page-root"
+  >
     <SmoothScroll client:load />
+
+    <!-- Mount the React island -->
+    <ChatSheet client:load title="Chat with Yazid">
+      <ChatPanel client:load />
+    </ChatSheet>
 
     <!-- Put this right after <body> -->
     <a href="/" class="fixed top-14 left-12 z-50 block">
@@ -104,7 +118,7 @@ const title = "Relocate Now Case Study";
                 Services
               </h3>
               <div class="col-span-3">
-                <ul class="text-[18px] leading-7">
+                <ul class="text-[18px] leading-7 font-medium">
                   <li>Web Design</li><li>Development</li><li>Motion Design</li>
                 </ul>
               </div>
@@ -116,7 +130,7 @@ const title = "Relocate Now Case Study";
                 Industries
               </h3>
               <div class="col-span-3">
-                <ul class="text-[18px] leading-7">
+                <ul class="text-[18px] leading-7 font-medium">
                   <li>Business Consulting and Services</li><li>
                     Pediatric Dentistry
                   </li>
@@ -129,7 +143,7 @@ const title = "Relocate Now Case Study";
               <h3 class="col-span-2 text-[18px] leading-6 font-semibold">
                 Challenge
               </h3>
-              <p class="col-span-3 text-[18px] leading-7">
+              <p class="col-span-3 text-[18px] leading-7 font-medium">
                 Create an engaging and light-feeling design for Fireside’s
                 website, showcasing the company’s product, attitude to work,
                 ensuring ease-of-connection with users.
@@ -142,7 +156,9 @@ const title = "Relocate Now Case Study";
                 What we did
               </h3>
               <div class="col-span-3">
-                <ul class="list-disc pl-5 text-[18px] leading-7 space-y-1">
+                <ul
+                  class="list-disc pl-5 text-[18px] leading-7 space-y-1 font-medium"
+                >
                   <li>Created the website’s structure from scratch</li>
                   <li>
                     Found a positive design direction that the Fireside team was
@@ -172,7 +188,7 @@ const title = "Relocate Now Case Study";
 
         <!-- All-In-One Solution section -->
         <section class="relative z-20 bg-white">
-          <div class="max-w-3xl py-16 md:py-32">
+          <div class="max-w-3xl pt-16 md:pt-32">
             <!-- Heading -->
             <h2
               class="max-w-xl text-[34px] sm:text-[42px] md:text-[52px] lg:text-4xl
@@ -186,18 +202,14 @@ const title = "Relocate Now Case Study";
             <div
               class="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20"
             >
-              <p
-                class="text-[18px] leading-8 text-neutral-600 max-w-prose font-medium"
-              >
+              <p class="text-[18px] leading-8 font-medium max-w-prose">
                 Relocate Now, a spin-off of the Portuguese advisory firm
                 Westonbridge, is designed to simplify moving to a new country.
                 With years of experience, the service takes care of everything —
                 from paperwork to finding a place to live.
               </p>
 
-              <p
-                class="text-[18px] leading-8 text-neutral-600 max-w-prose font-medium"
-              >
+              <p class="text-[18px] leading-8 font-medium max-w-prose">
                 The team consists of experts in law, tax, accounting, and
                 management. They work together to prepare the necessary
                 documents, help with pet transporting, and other details to make
@@ -211,10 +223,48 @@ const title = "Relocate Now Case Study";
 
     <!-- …keep the rest of your sections; just give each: class="relative z-20 bg-white" -->
 
-    <footer class="relative z-20 bg-white py-12 border-t border-gray-200">
-      <div class="max-w-7xl mx-auto px-6 text-center text-gray-500 text-sm">
-        <p>© 2025 All rights reserved</p>
+    <!-- NEXT PROJECT SECTION 
+    <section class="relative z-20 bg-white border-t border-neutral-200">
+      <div
+        class="max-w-7xl mx-auto px-6 pt-24 flex flex-col items-center text-center"
+      >
+        <h3
+          class="col-span-2 text-[18px] leading-6 font-medium pb-10 text-gray-500"
+        >
+          Next project
+        </h3>
+    
+        <div class="flex flex-col items-center mb-4">
+          <p class="text-2xl md:text-3xl font-semibold">زيميوم</p>
+        </div>
+
+   
+        <div class="relative w-full max-w-xs">
+     
+          <span
+            class="absolute left-0 top-1/2 -translate-y-1/2 text-sm font-medium"
+            >2021</span
+          >
+          <a href="/projects/zemium" class="block overflow-hidden">
+            <img
+              src="https://media.istockphoto.com/id/185100762/photo/the-white-house.jpg?s=612x612&w=0&k=20&c=26cn1EMuBRUPKL1FGxMyjtVKNeEKjZhUpaCC8vGMvKE="
+              alt="Next Project Preview"
+              class="w-full h-[400px] object-cover hover:scale-105 transition-transform duration-500 rounded-lg"
+            />
+          </a>
+          <span
+            class="absolute right-0 top-1/2 -translate-y-1/2 text-sm font-medium"
+            >2025</span
+          >
+        </div>
+
+   
+        <div class="flex flex-col items-center mt-4">
+          <h3 class="text-2xl md:text-3xl font-semibold">Zemium</h3>
+        </div>
       </div>
-    </footer>
+    </section>-->
+    <!--  <NextProject />-->
+    <Footer />
   </body>
 </html>

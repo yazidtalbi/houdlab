@@ -25,6 +25,9 @@ const CONV_KEY = "houdlab_conversation_id_v1";
 // old
 // const ASSISTANT_NAME = "Yazid from HoudLab";
 
+const LAST_READ_KEY = "houdlab_chat_last_read_at_v1";
+const LAST_ASSISTANT_KEY = "houdlab_chat_last_assistant_at_v1";
+
 // new
 const ASSISTANT_TITLE = "Yazid";
 const ASSISTANT_LABELS = ["Community Manager"];
@@ -124,6 +127,15 @@ export default function ChatPanel() {
       setMessages((prev) => [...prev, ...add]);
       lastSeenIso.current = list[list.length - 1].created_at;
       if (list[list.length - 1].role === "assistant") setTyping(false);
+      // mark "unread" for the button
+      const last = list[list.length - 1];
+      if (last.role === "assistant") {
+        try {
+          localStorage.setItem(LAST_ASSISTANT_KEY, String(last.created_at));
+        } catch {}
+        // Let listeners (ChatSheet) update immediately
+        window.dispatchEvent(new Event("houd:chat:assistant"));
+      }
     }
   }
 
@@ -231,6 +243,12 @@ export default function ChatPanel() {
           ]);
           lastSeenIso.current = String(row.created_at);
           if (role === "assistant") setTyping(false);
+          if (role === "assistant") {
+            try {
+              localStorage.setItem(LAST_ASSISTANT_KEY, String(row.created_at));
+            } catch {}
+            window.dispatchEvent(new Event("houd:chat:assistant"));
+          }
         }
       )
       .subscribe();
@@ -404,6 +422,22 @@ export default function ChatPanel() {
     send(input);
   }
 
+  // under your other hooks
+  const groups = useMemo(() => {
+    type G = { role: "user" | "assistant"; items: Msg[] };
+    const out: G[] = [];
+    let prev: "user" | "assistant" | null = null;
+    for (const m of messages) {
+      if (m.role !== prev) {
+        out.push({ role: m.role, items: [m] });
+        prev = m.role;
+      } else {
+        out[out.length - 1].items.push(m);
+      }
+    }
+    return out;
+  }, [messages]);
+
   return (
     <div className="rounded-3xl bg-[#F0F0F1] p-2 md:p-3">
       {/* Top banner */}
@@ -452,32 +486,49 @@ export default function ChatPanel() {
     }
   `}
       >
-        {messages.map((m) => (
-          <div key={m.id} className="mb-4">
-            {m.role === "assistant" ? (
+        {groups.map((g, gi) => (
+          <div key={gi} className="mb-4">
+            {g.role === "assistant" ? (
               <div className="flex items-start gap-3">
+                {/* avatar only once per group */}
                 <img
                   src="/avatars/yazid.jpg"
                   alt=""
-                  className="h-8 w-8 rounded-full object-cover ring-2 ring-white "
+                  className="h-8 w-8 rounded-full object-cover ring-2 ring-white"
                 />
                 <div>
+                  {/* header only once per group */}
                   <AssistantHeader />
-                  <div className="inline-block max-w-[68ch] rounded-2xl rounded-tl-md bg-white px-4 py-2 shadow-sm ring-1 ring-neutral-200">
-                    {m.text}
+
+                  {/* stacked assistant bubbles */}
+
+                  <div className="space-y-1.5">
+                    {g.items.map((m) => (
+                      <div key={m.id}>
+                        <div className="inline-block max-w-[68ch] rounded-2xl rounded-tl-md bg-white px-4 py-2 shadow-sm ring-1 ring-neutral-200">
+                          {m.text}
+                        </div>
+                        <div className="mt-1 text-xs text-neutral-500">
+                          {m.at}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="mt-1 text-xs text-neutral-500">{m.at}</div>
                 </div>
               </div>
             ) : (
               <div className="flex flex-row-reverse items-start gap-3">
-                <div>
-                  <div className="inline-block max-w-[68ch] rounded-2xl rounded-tr-md bg-neutral-900 text-white px-4 py-2 shadow-sm">
-                    {m.text}
-                  </div>
-                  <div className="mt-1 text-right text-xs text-neutral-500">
-                    {m.at}
-                  </div>
+                <div className="space-y-1.5 text-right">
+                  {g.items.map((m) => (
+                    <div key={m.id}>
+                      <div className="inline-block max-w-[68ch] rounded-2xl rounded-tr-md bg-neutral-900 text-white px-4 py-2 shadow-sm">
+                        {m.text}
+                      </div>
+                      <div className="mt-1 text-right text-xs text-neutral-500">
+                        {m.at}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

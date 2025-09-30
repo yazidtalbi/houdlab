@@ -7,6 +7,8 @@ import ChatPanel from "../components/ChatPanel";
 import GlobeBackground from "../components/GlobeBackground";
 import SmoothScroll from "../components/SmoothScroll";
 import VideoPreview from "@/components/VideoPreview";
+
+import Footer from "../components/Footer.astro";
 ---
 
 <html lang="en">
@@ -294,103 +296,7 @@ import VideoPreview from "@/components/VideoPreview";
     </div>
 
     <!-- Footer Navigation -->
-    <footer class="mt-16 md:mt-16 border-0 border-neutral-200 bg-white">
-      <div
-        class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-2 md:gap-6 py-8 items-start md:items-center px-8 md:px-0"
-      >
-        <!-- Left nav links -->
-        <nav
-          class="flex flex-col md:flex-row gap-4 md:gap-6 font-medium text-xl md:text-base items-start md:items-center"
-        >
-          <a href="/" class="px-4 py-2 rounded-full bg-neutral-900 text-white">
-            Home
-          </a>
-          <a href="/about" class="hover:text-neutral-600 transition">About Us</a
-          >
-
-          <a
-            href="/projects"
-            class="hover:text-neutral-600 transition flex items-center gap-2"
-          >
-            Projects
-            <span
-              class="text-xs font-semibold text-amber-500 bg-amber-100 px-2 rounded-full uppercase"
-              >Soon</span
-            >
-          </a>
-
-          <a
-            href="/blog"
-            class="hover:text-neutral-600 transition flex items-center gap-2"
-          >
-            Blog
-            <span
-              class="text-xs font-semibold text-amber-500 bg-amber-100 px-2 rounded-full uppercase"
-              >Soon</span
-            >
-          </a>
-        </nav>
-
-        <!-- Right CTA -->
-
-        <button
-          type="button"
-          data-scroll-to-chat
-          aria-label="Start your project"
-          class="group inline-flex items-center select-none cursor-pointer mt-10 md:mt-0"
-        >
-          <!-- Left icon (shrinks away on hover) -->
-          <span
-            class="grid place-items-center flex-none w-11 h-11 md:w-9 md:h-9
-				 rounded-full bg-neutral-900 text-white shadow
-				 transition-all duration-300 ease-out
-				 group-hover:w-0 group-hover:h-0"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              class="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-0"
-              fill="none"
-              stroke="white"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7"></path>
-            </svg>
-          </span>
-
-          <!-- Pill button text -->
-          <span
-            class="relative rounded-full bg-[#FABC4B] text-neutral-900 text-md md:text-sm
-				 px-4 md:px-6 py-2.5 font-semibold tracking-wide
-				 transition-transform duration-300 ease-out
-				 group-hover:-translate-x-2 -mr-2"
-          >
-            START YOUR PROJECT
-          </span>
-
-          <!-- Right icon (grows in on hover) -->
-          <span
-            class="grid place-items-center flex-none w-0 h-0
-				 rounded-full bg-neutral-900 text-white
-				 transition-all duration-300 ease-out
-				 group-hover:w-9 group-hover:h-9"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              class="w-4 h-4 scale-0 transition-transform duration-300 ease-out group-hover:scale-100"
-              fill="none"
-              stroke="white"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7"></path>
-            </svg>
-          </span>
-        </button>
-      </div>
-    </footer>
+    <Footer />
   </body>
   <!-- Put this near the end of index.astro (before </body>) -->
   <script type="module">

@@ -255,3 +255,15 @@ html.lenis {
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
 }
+
+/* Lock background scrolling when the sheet is open */
+.sheet-open,
+.sheet-open body {
+  overflow: hidden !important;
+  height: 100dvh; /* prevents mobile overscroll */
+}
+
+/* Optional: block pointer events on page content while sheet open */
+.sheet-opened {
+  pointer-events: none;
+}

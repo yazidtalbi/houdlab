@@ -1,0 +1,60 @@
+---
+import type { ProjectMeta } from "@/data/projects";
+import { projects } from "@/data/projects";
+
+// Get slug from current URL
+const pathname = Astro.url.pathname; // e.g. "/projects/relocate-now"
+const currentSlug = pathname.split("/").filter(Boolean).pop() ?? "";
+
+// Find index in projects array
+const idx = projects.findIndex((p) => p.slug === currentSlug);
+const next = projects[(idx + 1 + projects.length) % projects.length];
+
+const y1 = next.yearStart ?? 2021;
+const y2 = next.yearEnd ?? 2025;
+---
+
+<section class="relative z-20 bg-white border-t border-neutral-200">
+  <div class="max-w-7xl mx-auto px-6 pt-24">
+    <h3
+      class="text-[18px] leading-6 font-medium pb-10 text-gray-500 text-center"
+    >
+      Next project
+    </h3>
+
+    <!-- Flex wrapper -->
+    <div class="flex items-center justify-between gap-6">
+      <!-- English (left) -->
+      <h3 class="text-2xl md:text-3xl font-semibold italic text-left flex-1">
+        {next.titleEn}
+      </h3>
+
+      <!-- Image -->
+      <div class="relative w-full max-w-xs flex-shrink-0">
+        <span
+          class="absolute left-0 top-1/2 -translate-y-1/2 text-sm font-medium"
+        >
+          {y1}
+        </span>
+        <a href={`/projects/${next.slug}`} class="block overflow-hidden">
+          <img
+            src={next.cover}
+            alt={`Next Project: ${next.titleEn}`}
+            class="w-full h-[400px] object-cover hover:scale-105 transition-transform duration-500 rounded-2xl"
+            loading="lazy"
+          />
+        </a>
+        <span
+          class="absolute right-0 top-1/2 -translate-y-1/2 text-sm font-medium"
+        >
+          {y2}
+        </span>
+      </div>
+
+      <!-- Arabic (right) -->
+      <p class="text-2xl md:text-3xl font-semibold text-right flex-1" dir="rtl">
+        {next.titleAr}
+      </p>
+    </div>
+  </div>
+</section>
