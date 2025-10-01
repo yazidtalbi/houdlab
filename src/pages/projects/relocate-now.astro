@@ -1,270 +1,84 @@
 ---
-import SmoothScroll from "@/components/SmoothScroll";
-import "../../styles/global.css";
-import { ChevronRight } from "@lucide/astro";
-import ChatPanel from "@/components/ChatPanel";
-import ChatSheet from "@/components/ChatSheet";
+import ProjectLayout from "@/layouts/ProjectLayout.astro";
+import CaseSummary from "@/components/CaseSummary.astro";
 
-import Footer from "../../components/Footer.astro";
-import NextProject from "../../components/NextProject.astro";
-
-const title = "Relocate Now Case Study";
+const pageTitle = "RELOCATE NOW";
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
-  </head>
+<ProjectLayout
+  title={pageTitle}
+  parentLabel="PROJECTS"
+  parentHref="/projects"
+  heroSrc="https://placehold.co/1600x900"
+  heroAlt="Woman with hat overlooking cityscape"
+>
+  <!-- INTRO -->
+  <Fragment slot="intro">
+    <h1
+      class="text-5xl md:text-6xl lg:text-6xl font-semibold leading-[1.15] max-w-3xl"
+    >
+      Relocate Now — a memorable brand story inspired by home
+    </h1>
+  </Fragment>
 
-  <body
-    class="bg-[#FFFFFF] text-neutral-900 antialiased font-display"
-    id="page-root"
-  >
-    <SmoothScroll client:load />
-
-    <!-- Mount the React island -->
-    <ChatSheet client:load title="Chat with Yazid">
-      <ChatPanel client:load />
-    </ChatSheet>
-
-    <!-- Put this right after <body> -->
-    <a href="/" class="fixed top-14 left-12 z-50 block">
-      <img src="/hyhy.png" alt="Houd Lab" class="h-12 w-auto" />
-    </a>
-
-    <!-- GOLD BANNER: fixed, low z-index (behind anything with z-20+) -->
-    <img
-      src="/houdbanner.svg"
-      alt=""
-      class="fixed top-0 right-40 h-[360px] w-auto object-contain pointer-events-none select-none z-10"
+  <!-- SUMMARY (structure fixed, content via props) -->
+  <Fragment slot="summary">
+    <CaseSummary
+      blurb="Fireside is the first membership community for pediatric dentists with access to exclusive resources, expert support, and vendor discounts to grow practice with ease."
+      websiteHref="#"
+      websiteLabel="visit website"
+      services={["Web Design", "Development", "Motion Design"]}
+      industries={["Business Consulting and Services", "Pediatric Dentistry"]}
+      challenge="Create an engaging and light-feeling design for Fireside’s website, showcasing the product and ensuring ease-of-connection with users."
+      whatWeDid={[
+        "Created the website’s structure from scratch",
+        "Found a positive design direction the team was happy with",
+        "Crafted the design to pair with the existing logo and media",
+      ]}
     />
 
-    <!-- HEADER: sits above the banner, keep it transparent so the gold is visible -->
-    <header class="fixed top-0 left-0 right-0 z-40 py-8">
-      <nav
-        class="max-w-7xl mx-auto px-3 py-6 flex items-center justify-between"
-      >
-        <div
-          class="flex items-center gap-2 bg-white/70 rounded-full px-4 py-2 backdrop-blur-md"
-        >
-          <a href="/" class="text-sm font-medium text-gray-400 cursor-pointer"
-            >PROJECTS</a
-          >
-          <span class="text-sm font-semibold text-gray-400"
-            ><ChevronRight height={20} /></span
-          >
-          <span
-            class="text-sm font-semibold hover:text-gray-600 transition-colors"
-            >RELOCATE NOW</span
-          >
-        </div>
-      </nav>
-    </header>
+    <!-- Optional image after the summary -->
+    <div class="w-full overflow-hidden pt-32">
+      <img
+        src="https://placehold.co/900x600"
+        alt="Case study visual"
+        class="w-full h-full object-cover rounded-2xl"
+      />
+    </div>
+  </Fragment>
 
-    <!-- INTRO TEXT area: NO z-index, NO white panel, so the banner is visible here -->
-    <section class="pt-32">
-      <div class="max-w-7xl mx-auto px-6">
-        <h1
-          class="text-5xl md:text-6xl lg:text-6xl font-semibold leading-[1.15] max-w-3xl pt-48"
-        >
-          Relocate Now — a memorable brand story inspired by home
-        </h1>
-      </div>
-    </section>
+  <!-- DEFAULT SLOT ... keep your other sections -->
 
-    <!-- HERO IMAGE + ALL SECTIONS AFTER: white panels ABOVE the banner -->
-    <section class="relative z-20 bg-white mt-24">
-      <div class="w-full h-[400px] md:h-[500px] lg:h-[800px] overflow-hidden">
-        <img
-          src="https://placehold.co/1600x900"
-          alt="Woman with hat overlooking cityscape"
-          class="w-full h-full object-cover"
-        />
-      </div>
-    </section>
+  <!-- DEFAULT SLOT -->
+  <section class="max-w-3xl pt-16">
+    <h2
+      class="max-w-xl text-[34px] sm:text-[42px] md:text-[52px] lg:text-4xl leading-[1.08] tracking-[-0.015em] font-semibold"
+    >
+      All-In-One Solution For Stress-Free Global Moves Where No Detail Is Ever
+      Overlooked
+    </h2>
 
-    <!-- SUMMARY GRID -->
-    <section class="relative z-20 bg-white">
-      <div
-        class="mx-auto w-full max-w-8xl px-5 md:px-8 lg:px-14 md:py-24 pt-24"
-      >
-        <div
-          class="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20 items-start"
-        >
-          <!-- Left -->
-          <div>
-            <p
-              class="text-[26px] sm:text-[28px] lg:text-[32px] leading-[1.35] tracking-[-0.012em] font-semibold pr-24"
-            >
-              Fireside is the first membership community for pediatric dentists
-              with access to exclusive resources, expert support, and vendor
-              discounts to grow practice with ease.
-            </p>
-            <a
-              href="#"
-              class="mt-8 inline-flex items-center gap-2 text-[22px] sm:text-[24px] font-semibold text-indigo-500 hover:opacity-85 transition"
-            >
-              visit website <span aria-hidden="true">↗</span>
-            </a>
-          </div>
+    <div
+      class="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20"
+    >
+      <p class="text-[18px] leading-8 font-medium max-w-prose">
+        Relocate Now, a spin-off of the Portuguese advisory firm Westonbridge,
+        simplifies moving to a new country— from paperwork to housing.
+      </p>
+      <p class="text-[18px] leading-8 font-medium max-w-prose">
+        A multi-disciplinary team handles documents, pet transport, and all the
+        small details for a worry-free relocation.
+      </p>
+    </div>
+  </section>
 
-          <!-- Right -->
-          <div class="w-full">
-            <div class="grid grid-cols-5 gap-6 pb-6">
-              <h3 class="col-span-2 text-[18px] leading-6 font-semibold">
-                Services
-              </h3>
-              <div class="col-span-3">
-                <ul class="text-[18px] leading-7 font-medium">
-                  <li>Web Design</li><li>Development</li><li>Motion Design</li>
-                </ul>
-              </div>
-            </div>
-            <div class="border-t border-neutral-200"></div>
-
-            <div class="grid grid-cols-5 gap-6 py-6">
-              <h3 class="col-span-2 text-[18px] leading-6 font-semibold">
-                Industries
-              </h3>
-              <div class="col-span-3">
-                <ul class="text-[18px] leading-7 font-medium">
-                  <li>Business Consulting and Services</li><li>
-                    Pediatric Dentistry
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div class="border-t border-neutral-200"></div>
-
-            <div class="grid grid-cols-5 gap-6 py-6">
-              <h3 class="col-span-2 text-[18px] leading-6 font-semibold">
-                Challenge
-              </h3>
-              <p class="col-span-3 text-[18px] leading-7 font-medium">
-                Create an engaging and light-feeling design for Fireside’s
-                website, showcasing the company’s product, attitude to work,
-                ensuring ease-of-connection with users.
-              </p>
-            </div>
-            <div class="border-t border-neutral-200"></div>
-
-            <div class="grid grid-cols-5 gap-6 pt-6">
-              <h3 class="col-span-2 text-[18px] leading-6 font-semibold">
-                What we did
-              </h3>
-              <div class="col-span-3">
-                <ul
-                  class="list-disc pl-5 text-[18px] leading-7 space-y-1 font-medium"
-                >
-                  <li>Created the website’s structure from scratch</li>
-                  <li>
-                    Found a positive design direction that the Fireside team was
-                    happy with
-                  </li>
-                  <li>
-                    Crafted the design for the website, making sure it
-                    accompanies the existing logo properly, utilizing created
-                    high-quality photography and videos, to imbue the user
-                    experience with comfortable
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Image withing the case study -->
-        <div>
-          <div class="w-full overflow-hidden pt-32">
-            <img
-              src="https://placehold.co/900x600"
-              alt="Woman with hat overlooking cityscape"
-              class="w-full h-full object-cover rounded-2xl"
-            />
-          </div>
-        </div>
-
-        <!-- All-In-One Solution section -->
-        <section class="relative z-20 bg-white">
-          <div class="max-w-3xl pt-16 md:pt-32">
-            <!-- Heading -->
-            <h2
-              class="max-w-xl text-[34px] sm:text-[42px] md:text-[52px] lg:text-4xl
-             leading-[1.08] tracking-[-0.015em] font-semibold text-neutral-900"
-            >
-              All-In-One Solution For Stress-Free Global Moves Where No Detail
-              Is Ever Overlooked
-            </h2>
-
-            <!-- Two-column copy -->
-            <div
-              class="mt-10 md:mt-14 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20"
-            >
-              <p class="text-[18px] leading-8 font-medium max-w-prose">
-                Relocate Now, a spin-off of the Portuguese advisory firm
-                Westonbridge, is designed to simplify moving to a new country.
-                With years of experience, the service takes care of everything —
-                from paperwork to finding a place to live.
-              </p>
-
-              <p class="text-[18px] leading-8 font-medium max-w-prose">
-                The team consists of experts in law, tax, accounting, and
-                management. They work together to prepare the necessary
-                documents, help with pet transporting, and other details to make
-                the relocation effortless and worry-free.
-              </p>
-            </div>
-          </div>
-        </section>
-      </div>
-    </section>
-
-    <!-- …keep the rest of your sections; just give each: class="relative z-20 bg-white" -->
-
-    <!-- NEXT PROJECT SECTION 
-    <section class="relative z-20 bg-white border-t border-neutral-200">
-      <div
-        class="max-w-7xl mx-auto px-6 pt-24 flex flex-col items-center text-center"
-      >
-        <h3
-          class="col-span-2 text-[18px] leading-6 font-medium pb-10 text-gray-500"
-        >
-          Next project
-        </h3>
-    
-        <div class="flex flex-col items-center mb-4">
-          <p class="text-2xl md:text-3xl font-semibold">زيميوم</p>
-        </div>
-
-   
-        <div class="relative w-full max-w-xs">
-     
-          <span
-            class="absolute left-0 top-1/2 -translate-y-1/2 text-sm font-medium"
-            >2021</span
-          >
-          <a href="/projects/zemium" class="block overflow-hidden">
-            <img
-              src="https://media.istockphoto.com/id/185100762/photo/the-white-house.jpg?s=612x612&w=0&k=20&c=26cn1EMuBRUPKL1FGxMyjtVKNeEKjZhUpaCC8vGMvKE="
-              alt="Next Project Preview"
-              class="w-full h-[400px] object-cover hover:scale-105 transition-transform duration-500 rounded-lg"
-            />
-          </a>
-          <span
-            class="absolute right-0 top-1/2 -translate-y-1/2 text-sm font-medium"
-            >2025</span
-          >
-        </div>
-
-   
-        <div class="flex flex-col items-center mt-4">
-          <h3 class="text-2xl md:text-3xl font-semibold">Zemium</h3>
-        </div>
-      </div>
-    </section>-->
-    <!--  <NextProject />-->
-    <Footer />
-  </body>
-</html>
+  <section class="relative z-20 bg-white mt-24">
+    <div class="w-full h-[480px] md:h-[640px] overflow-hidden">
+      <img
+        src="https://placehold.co/1600x900"
+        alt="Full-bleed visual"
+        class="w-full h-full object-cover"
+      />
+    </div>
+  </section>
+</ProjectLayout>

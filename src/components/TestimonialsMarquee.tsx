@@ -98,7 +98,7 @@ export default function TestimonialsMarquee() {
           <article
             key={i}
             className="
-              w-[85vw] sm:w-[60vw] md:w-[44vw] lg:w-[32vw] xl:w-[25vw]
+              w-[85vw] sm:w-[60vw] md:w-[44vw] lg:w-[32vw] xl:w-[400px]
               shrink-0 rounded-3xl border border-gray-300 bg-white/70
               p-6 md:p-8 flex flex-col
             "

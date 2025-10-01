@@ -594,6 +594,7 @@ export default function ChatPanel() {
         <div className="relative flex items-center">
           <input
             id="chat-input"
+            data-chat-input
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -603,7 +604,7 @@ export default function ChatPanel() {
           <button
             type="submit"
             disabled={!input.trim()}
-            className="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full bg-neutral-900 text-white shadow-sm disabled:opacity-40 mr-1 cursor-pointer"
+            className="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full bg-neutral-900 text-white   disabled:bg-neutral-300 mr-1 cursor-pointer"
             aria-label="Send message"
             title="Send"
           >

@@ -1,37 +1,73 @@
 // src/data/projects.ts
-export type ProjectMeta = {
-  slug: string; // URL after /projects/
-  titleEn: string; // English title
-  titleAr: string; // Arabic title
-  cover: string; // Preview image URL
-  yearStart?: number; // optional
-  yearEnd?: number; // optional
+export type Project = {
+  slug: string;
+  title: string;
+  subtitle: string;
+  cover: string;
+  tags: string[]; // e.g., ["Web Design", "Branding"]
+  year?: number;
 };
 
-export const projects: ProjectMeta[] = [
+export const ALL_TAGS = [
+  "Illustrations",
+  "3D",
+  "Product Design",
+  "Rebranding",
+  "Support",
+  "Development",
+  "Graphic Design",
+  "Motion Design",
+  "Branding",
+  "Web Design",
+];
+
+export const projects: Project[] = [
+  {
+    slug: "abuk",
+    title: "Abuk",
+    subtitle: "Ukrainian audiobooks platform",
+    cover: "https://placehold.co/1200x800?text=Abuk",
+    tags: ["Product Design", "Development", "Web Design"],
+    year: 2024,
+  },
   {
     slug: "relocate-now",
-    titleEn: "Relocate Now",
-    titleAr: "ريلوكايت ناو",
-    cover: "https://placehold.co/1000x600",
-    yearStart: 2021,
-    yearEnd: 2025,
+    title: "Relocate Now",
+    subtitle: "Healthcare education and innovation company",
+    cover: "https://placehold.co/1200x800?text=Relocate Now",
+    tags: ["Branding", "Web Design"],
+    year: 2024,
   },
   {
     slug: "zemium",
-    titleEn: "Zemium",
-    titleAr: "زيميوم",
-    cover:
-      "https://media.istockphoto.com/id/185100762/photo/the-white-house.jpg?s=612x612&w=0&k=20&c=26cn1EMuBRUPKL1FGxMyjtVKNeEKjZhUpaCC8vGMvKE=",
-    yearStart: 2021,
-    yearEnd: 2025,
+    title: "Zemium",
+    subtitle: "Empowering communities through education",
+    cover: "https://placehold.co/1200x800?text=Zemium",
+    tags: ["Illustrations", "Branding"],
+    year: 2023,
   },
   {
-    slug: "apoxer",
-    titleEn: "Apoxer",
-    titleAr: "أبوكسر",
-    cover: "https://placehold.co/1000x600",
-    yearStart: 2021,
-    yearEnd: 2025,
+    slug: "manatee-energy",
+    title: "Manatee Energy",
+    subtitle: "Heat pump installation company",
+    cover: "https://placehold.co/1200x800?text=Manatee+Energy",
+    tags: ["Product Design", "Web Design", "Development"],
+    year: 2025,
+  },
+  {
+    slug: "fireside",
+    title: "Fireside",
+    subtitle: "Dentistry community",
+    cover: "https://placehold.co/1200x800?text=Fireside",
+    tags: ["Branding", "Motion Design", "Web Design"],
+    year: 2022,
+  },
+  {
+    slug: "flashlights",
+    title: "Flashlights",
+    subtitle: "Interactive history section for an advocacy project",
+    cover: "https://placehold.co/1200x800?text=Flashlights",
+    tags: ["Graphic Design", "Development"],
+    year: 2023,
   },
 ];

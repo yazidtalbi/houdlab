@@ -8,6 +8,11 @@ import GlobeBackground from "../components/GlobeBackground";
 import SmoothScroll from "../components/SmoothScroll";
 import VideoPreview from "@/components/VideoPreview";
 
+import ProcessOverview from "@/components/ProcessOverview";
+
+import TestimonialsCarousel from "../components/TestimonialsCarousel";
+import testimonials from "@/data/testimonials"; // [{ quote, name, role, company, avatar }, ...]
+
 import Footer from "../components/Footer.astro";
 ---
 
@@ -57,9 +62,60 @@ import Footer from "../components/Footer.astro";
     <SmoothScroll client:load />
 
     <!-- Put this right after <body> -->
-    <a href="/" class="fixed top-14 left-12 z-50 block">
-      <img src="/hyhy.png" alt="Houd Lab" class="h-12 w-auto" />
-    </a>
+
+    <!-- Navbar -->
+    <!-- Navbar -->
+    <header class="fixed top-12 left-0 w-full z-50">
+      <div class="flex items-center gap-6 pl-10">
+        <!-- Logo -->
+        <a href="/" aria-label="Houd Lab">
+          <img src="/hyhy.png" alt="Houd Lab Logo" class="h-12 w-auto" />
+        </a>
+
+        <!-- Location -->
+        <div class="border-l border-gray-200 pl-6">
+          <p
+            class="text-neutral-800 font-display font-semibold lg:text-base text-xl leading-tight md:leading-snug"
+          >
+            HOUD LAB
+          </p>
+          <p class="text-gray-400 text-sm">Working globally</p>
+        </div>
+      </div>
+
+      <!-- Floating mini input (centered) -->
+      <div
+        id="floating-chat-trigger"
+        class="fixed top-12 left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-2 rounded-full border border-neutral-300 bg-white pl-4 pr-12 py-2 text-sm text-neutral-700 shadow-md transition-all duration-300 opacity-0 pointer-events-none cursor-text w-lg"
+        role="button"
+        tabindex="0"
+        aria-label="Start your project"
+      >
+        <span aria-hidden="true" class="text-gray-900 text-lg">💬</span>
+        <span class="text-gray-900/40 text-[15px] truncate"
+          >Start your project…</span
+        >
+
+        <!-- Send button -->
+        <button
+          type="button"
+          class="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full bg-neutral-300 text-white hover:bg-neutral-800 transition"
+          aria-label="Send message"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="h-5 w-5"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              d="M20.33 3.67c-.19-.19-.43-.32-.69-.38-.26-.06-.53-.05-.78.07L4.23 8.2c-.27.09-.51.27-.67.5-.16.22-.26.49-.28.77-.02.28.04.55.17.8.13.25.33.46.55.58l6.07 3 3 6.09c.12.25.31.46.55.6.24.14.52.22.8.22h.1c.29-.02.57-.13.8-.31.23-.18.39-.43.47-.71l4.95-14.6c.09-.26.09-.54.01-.8-.08-.26-.24-.49-.45-.67ZM4.85 9.58l12.77-4.26-7.09 7.09-5.68-2.83Zm9.58 9.57-2.84-5.68 7.09-7.09-4.25 12.77Z"
+            ></path>
+          </svg>
+        </button>
+      </div>
+    </header>
 
     <!-- soft page bg -->
     <div
@@ -161,76 +217,11 @@ import Footer from "../components/Footer.astro";
 
         <!-- 3) Video + description column (3) -->
         <aside
-          class="col-span-12 lg:col-span-3 xl:col-span-3 flex flex-col gap-4 z-10 reveal-up-secondary"
+          class="col-span-12 lg:col-span-3 xl:col-span-3 flex flex-col gap-8 z-10 reveal-up-secondary"
         >
           <!-- Description -->
-          <div class="order-2 lg:order-1 mt-5 md:mt-5 lg:mt-6 mb-5">
-            <p
-              class="text-neutral-800 max-w-prose font-display leading-tight md:leading-snug font-semibold lg:text-base text-xl"
-            >
-              We’re a Tech & Design agency, <br class="hidden lg:block" />based
-              in Casablanca, Morocco. <br class="hidden lg:block" />
-              We focus on delivering Design and <br class="hidden lg:block" /> Frontend
-              Development Services.
-            </p>
-            <a
-              href="/"
-              aria-label="DISCOVER MORE"
-              class="group inline-flex items-center select-none mt-6"
-            >
-              <!-- Left icon -->
-              <span
-                class="grid place-items-center flex-none w-9 h-9
-			  rounded-full bg-neutral-900 text-white
-			  transition-all duration-300 ease-out
-			  group-hover:w-0 group-hover:h-0"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  class="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-0"
-                  fill="none"
-                  stroke="white"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7"></path>
-                </svg>
-              </span>
 
-              <!-- Pill button text -->
-              <span
-                class="relative rounded-full bg-[#FABC4B] text-neutral-900 text-sm
-			  px-4 md:px-6 py-2.5 font-semibold tracking-wide
-			  transition-transform duration-300 ease-out
-			  group-hover:-translate-x-2 -mr-2"
-              >
-                DISCOVER MORE
-              </span>
-
-              <!-- Right icon -->
-              <span
-                class="grid place-items-center flex-none w-0 h-0
-			  rounded-full bg-neutral-900 text-white
-			  transition-all duration-300 ease-out
-			  group-hover:w-9 group-hover:h-9"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  class="w-4 h-4 scale-0 transition-transform duration-300 ease-out group-hover:scale-100"
-                  fill="none"
-                  stroke="white"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7"></path>
-                </svg>
-              </span>
-            </a>
-          </div>
-
-          <!-- Video (fills remaining height) -->
+          <!-- Video -->
           <div
             class="order-1 lg:order-2 flex-1 min-h-0 rounded-2xl overflow-hidden bg-neutral-200/50 relative group h-full"
           >
@@ -238,6 +229,15 @@ import Footer from "../components/Footer.astro";
               client:load
               src="https://d3vlq52qrgdnc2.cloudfront.net/UIUX-Showreel-preview-big.mp4"
               className="col-span-12 lg:col-span-8 order-1 lg:order-2 flex-1 min-h-0 h-full rounded-2xl overflow-hidden bg-neutral-200/50 relative group"
+            />
+          </div>
+
+          <div class="order-3 lg:order-3">
+            <TestimonialsCarousel
+              client:load
+              testimonials={testimonials}
+              intervalMs={6000}
+              autoplay
             />
           </div>
         </aside>
@@ -266,6 +266,7 @@ import Footer from "../components/Footer.astro";
       </div>
     </section>
 
+    <ProcessOverview client:load />
     <!-- (optional) extra sections below -->
     <main class="max-w-4xl mx-auto p-4 md:p-4"></main>
     <!-- Testimonials header -->
@@ -362,5 +363,95 @@ import Footer from "../components/Footer.astro";
     lenis.on("scroll", (e) => {
       // console.log(e)
     });
+  </script>
+
+  <script type="module">
+    // Grab elements
+    const trigger = document.getElementById("floating-chat-trigger");
+    const chatSection = document.getElementById("chat-section");
+    const getChatInput = () => document.getElementById("chat-input");
+
+    // How tall is your fixed header? (logo row). Adjust as needed.
+    const HEADER_OFFSET = 96; // px
+
+    // Visibility check: is the chat section within the viewport area?
+    function chatIsVisible() {
+      if (!chatSection) return false;
+      const r = chatSection.getBoundingClientRect();
+      // Visible if any part is between header bottom and viewport bottom
+      const topVisible = r.top < window.innerHeight;
+      const bottomVisible = r.bottom > HEADER_OFFSET;
+      return topVisible && bottomVisible;
+    }
+
+    function showTrigger() {
+      if (!trigger) return;
+      trigger.classList.remove("opacity-0", "pointer-events-none");
+    }
+    function hideTrigger() {
+      if (!trigger) return;
+      trigger.classList.add("opacity-0", "pointer-events-none");
+    }
+
+    // Update on scroll/resize
+    function update() {
+      if (!trigger || !chatSection) return;
+      chatIsVisible() ? hideTrigger() : showTrigger();
+    }
+
+    // Click → smooth scroll via Lenis if available, else native
+    function scrollToChat() {
+      const input = getChatInput();
+      const lenis = window.__lenis || window.lenis;
+
+      if (lenis && typeof lenis.scrollTo === "function") {
+        // Scroll all the way to the top of the page
+        lenis.scrollTo(0, { duration: 1.0 });
+        // Focus after scroll animation ends
+        setTimeout(() => input?.focus({ preventScroll: true }), 850);
+      } else {
+        // Fallback: native smooth scroll
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        setTimeout(() => input?.focus({ preventScroll: true }), 600);
+      }
+    }
+
+    trigger?.addEventListener("click", (e) => {
+      e.preventDefault();
+      scrollToChat();
+    });
+
+    // ——— Hook into Lenis if your SmoothScroll exposes it on window ———
+    // If your SmoothScroll component sets: window.__lenis = lenis
+    // then this will work. Otherwise, we also attach a rAF loop fallback.
+    function attachLenis() {
+      const ln = window.__lenis || window.lenis;
+      if (ln && typeof ln.on === "function") {
+        ln.on("scroll", update);
+        update(); // initial
+        return true;
+      }
+      return false;
+    }
+
+    // Try to attach to Lenis now; if not yet available, poll a few times.
+    if (!attachLenis()) {
+      let tries = 0;
+      const t = setInterval(() => {
+        if (attachLenis() || ++tries > 20) {
+          clearInterval(t);
+          // rAF fallback so it still works even if we never got a Lenis ref
+          if (tries > 20) {
+            const loop = () => {
+              update();
+              requestAnimationFrame(loop);
+            };
+            loop();
+          }
+        }
+      }, 100);
+    }
+
+    window.addEventListener("resize", update);
   </script>
 </html>
