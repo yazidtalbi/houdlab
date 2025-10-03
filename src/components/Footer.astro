@@ -14,39 +14,38 @@ const isActive = (href: string) => {
 
 const linkClass = (href: string, extra = "") =>
   `px-4 py-2 rounded-full transition flex items-center gap-2 ${
-    isActive(href) ? "bg-black text-white" : "hover:text-neutral-600"
+    isActive(href) ? "bg-neutral-900 text-white" : "hover:text-neutral-600"
   } ${extra}`;
 
-// Optional: invert the “Soon” badge when active (nice touch)
+// Optional: invert the “Soon” badge when active
 const soon = (href: string) =>
   isActive(href)
     ? "text-amber-100 bg-amber-500"
     : "text-amber-500 bg-amber-100";
 ---
 
-<footer class="mt-16 md:mt-16 border-0 border-neutral-200 bg-white">
+<footer class="mt-16 border-t border-neutral-200 bg-white">
   <div
-    class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-2 md:gap-6 py-8 items-start md:items-center px-8 md:px-0"
+    class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-6 py-8 items-start md:items-center px-8"
   >
+    <!-- Navigation -->
     <nav
       class="flex flex-col md:flex-row gap-4 md:gap-6 font-medium text-xl md:text-base items-start md:items-center"
     >
       <a href="/" class={linkClass("/")}>Home</a>
-
       <a href="/about" class={linkClass("/about")}>About Us</a>
-
-      <a href="/projects" class={linkClass("/projects")}> Projects </a>
-
+      <a href="/projects" class={linkClass("/projects")}>Projects</a>
       <a href="/blog" class={linkClass("/blog")}>
         Blog
         <span
           class={`text-xs font-semibold px-2 rounded-full uppercase ${soon("/blog")}`}
-          >Soon</span
         >
+          Soon
+        </span>
       </a>
     </nav>
 
-    <!-- CTA (unchanged) -->
+    <!-- CTA -->
     <button
       type="button"
       data-scroll-to-chat
@@ -63,8 +62,10 @@ const soon = (href: string) =>
           stroke="white"
           stroke-width="2"
           stroke-linecap="round"
-          stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"></path></svg
+          stroke-linejoin="round"
         >
+          <path d="M5 12h14M12 5l7 7-7 7"></path>
+        </svg>
       </span>
       <span
         class="relative rounded-full bg-[#FABC4B] text-neutral-900 text-md md:text-sm px-4 md:px-6 py-2.5 font-semibold tracking-wide transition-transform duration-300 ease-out group-hover:-translate-x-2 -mr-2"
@@ -81,8 +82,10 @@ const soon = (href: string) =>
           stroke="white"
           stroke-width="2"
           stroke-linecap="round"
-          stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"></path></svg
+          stroke-linejoin="round"
         >
+          <path d="M5 12h14M12 5l7 7-7 7"></path>
+        </svg>
       </span>
     </button>
   </div>

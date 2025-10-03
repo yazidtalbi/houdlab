@@ -1,0 +1,95 @@
+---
+/**
+ * ProjectShowcase.astro
+ *
+ * Props:
+ * - titleAr: Arabic title string (optional)
+ * - subtitle: English subtitle (optional)
+ * - rows: Array of rows. Each row is either:
+ *    { variant: "regular", image: { src, alt?, class? } }
+ *    { variant: "two", left: { src, alt?, class? }, right: { src, alt?, class? } }
+ */
+
+type Img = { src: string; alt?: string; class?: string };
+type Row =
+  | { variant: "regular"; image: Img }
+  | { variant: "two"; left: Img; right: Img };
+
+const {
+  titleAr,
+  subtitle,
+  rows = [],
+  className = "",
+} = Astro.props as {
+  titleAr?: string;
+  subtitle?: string;
+  rows: Row[];
+  className?: string;
+};
+
+const baseImg =
+  "rounded-2xl border border-gray-200 bg-white/70 w-full h-auto object-cover";
+---
+
+<section class={`max-w-6xl mx-auto pt-20 ${className}`}>
+  {
+    (titleAr || subtitle) && (
+      <section class="pt-32 pb-20 text-center">
+        {titleAr && (
+          <h2
+            dir="rtl"
+            lang="ar"
+            class="font-[Amiri] text-3xl md:text-4xl font-medium leading-snug text-neutral-900 pb-14"
+          >
+            {titleAr}
+          </h2>
+        )}
+        {subtitle && (
+          <h2 class="text-2xl md:text-2xl font-normal max-w-xs mx-auto text-neutral-900 leading-snug">
+            {subtitle}
+          </h2>
+        )}
+      </section>
+    )
+  }
+
+  <div class="flex flex-col gap-y-4">
+    {
+      rows.map((row, i) => {
+        if (row.variant === "two") {
+          return (
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" key={i}>
+              <div>
+                <img
+                  src={row.left.src}
+                  alt={row.left.alt ?? ""}
+                  loading="lazy"
+                  class={`${baseImg} ${row.left.class ?? ""}`}
+                />
+              </div>
+              <div>
+                <img
+                  src={row.right.src}
+                  alt={row.right.alt ?? ""}
+                  loading="lazy"
+                  class={`${baseImg} ${row.right.class ?? ""}`}
+                />
+              </div>
+            </div>
+          );
+        }
+        // regular
+        return (
+          <div key={i}>
+            <img
+              src={row.image.src}
+              alt={row.image.alt ?? ""}
+              loading="lazy"
+              class={`${baseImg} ${row.image.class ?? ""}`}
+            />
+          </div>
+        );
+      })
+    }
+  </div>
+</section>

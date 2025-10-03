@@ -98,7 +98,7 @@ export default function TestimonialsCarousel({
         <CarouselContent className="-ml-2">
           {data.map((t, i) => (
             <CarouselItem key={i} className="pl-2 md:basis-full lg:basis-full">
-              <article className="w-full mx-auto shrink-0 rounded-2xl border border-gray-300 bg-white/70 p-4 md:p-6 flex flex-col  min-h-[-webkit-fill-available]">
+              <article className="w-full mx-auto shrink-0 rounded-2xl border border-gray-200 bg-white/70 p-4 md:p-6 flex flex-col  min-h-[-webkit-fill-available]">
                 <div className="flex-1">
                   <div className="flex items-center justify-between text-xl">
                     <Stars n={t.rating} />

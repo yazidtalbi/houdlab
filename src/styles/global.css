@@ -267,3 +267,8 @@ html.lenis {
 .sheet-opened {
   pointer-events: none;
 }
+
+.reveal-type .rt-word {
+  display: inline-block;
+  white-space: nowrap;
+}

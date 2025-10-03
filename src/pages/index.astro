@@ -14,6 +14,111 @@ import TestimonialsCarousel from "../components/TestimonialsCarousel";
 import testimonials from "@/data/testimonials"; // [{ quote, name, role, company, avatar }, ...]
 
 import Footer from "../components/Footer.astro";
+
+import ProjectsCarousel from "@/components/ProjectsCarousel";
+import IntroSection from "@/components/IntroSection";
+
+import BottomCommandBar from "@/components/BottomCommandBar.tsx";
+
+// IntroTrustedSection is a React island
+import IntroTrustedSection from "@/components/IntroTrustedSection";
+
+const groups = [
+  [{ src: "/logos/k.png" }, { src: "/logos/p.png" }],
+  [{ src: "/logos/p.png" }, { src: "/logos/k.png" }],
+  [{ src: "/brands/gem.svg" }, { src: "/brands/gem-2.svg" }],
+  [{ src: "/brands/mono.svg" }, { src: "/brands/mono-2.svg" }],
+  [{ src: "/brands/tile.svg" }, { src: "/brands/tile-2.svg" }],
+];
+
+const items = [
+  {
+    id: 1,
+    title: "Relocate Now",
+    tag: "UI/UX Design",
+    year: "2025",
+    image:
+      "https://cdn.prod.website-files.com/63f38a8c92397a024fcb9ae8/681200a7712ca3755b94a098_results-ASI.avif",
+    href: "/projects/relocate-now",
+  },
+  {
+    id: 2,
+    title: "Crafting Digital Experiences",
+    tag: "UI/UX Design",
+    year: "2025",
+    image:
+      "https://cdn.prod.website-files.com/63f38a8c92397a024fcb9ae8/6812015839e18a614d927c94_results-Relocate2.avif",
+    href: "/projects/crafting-dx",
+  },
+  {
+    id: 3,
+    title: "Epic Strategy App",
+    tag: "UI/UX Design",
+    year: "2025",
+    image: "https://placehold.co/600x400/EEE/31343C",
+    href: "/projects/epic-strategy",
+  },
+  {
+    id: 4,
+    title: "Modern Commerce Flow",
+    tag: "UI/UX Design",
+    year: "2024",
+    image: "https://placehold.co/600x400/EEE/31343C",
+    href: "/projects/modern-commerce",
+  },
+];
+
+import ProjectShowcase from "@/components/ProjectShowcase.astro";
+
+const rows = [
+  {
+    variant: "regular",
+    image: {
+      src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
+      alt: "Hero visual",
+    },
+  },
+  {
+    variant: "regular",
+    image: {
+      src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
+      alt: "Detail visual",
+    },
+  },
+  {
+    variant: "two",
+    left: {
+      src: "https://framerusercontent.com/images/OteL2pkKyNSvjiM24cafgb0etU.webp",
+      alt: "Left card",
+    },
+    right: {
+      src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
+      alt: "Right card",
+    },
+  },
+];
+
+const kage = [
+  {
+    variant: "regular",
+    image: {
+      src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/c7n6QSaBzzwzU4RtTemkCAZEy8.webp",
+      alt: "Hero visual",
+    },
+  },
+
+  {
+    variant: "two",
+    left: {
+      src: "https://framerusercontent.com/images/OteL2pkKyNSvjiM24cafgb0etU.webp",
+      alt: "Left card",
+    },
+    right: {
+      src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
+      alt: "Right card",
+    },
+  },
+];
 ---
 
 <html lang="en">
@@ -41,6 +146,14 @@ import Footer from "../components/Footer.astro";
       href="https://fonts.googleapis.com/css2?family=Inter+Display:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       .globe-wrapper {
         opacity: 0;
@@ -58,7 +171,7 @@ import Footer from "../components/Footer.astro";
     </style></head
   >
 
-  <body class="bg-[#FFFFFF] text-neutral-900 font-display">
+  <body class="bg-[#FFFFFF] text-neutral-900 font-display pb-28">
     <SmoothScroll client:load />
 
     <!-- Put this right after <body> -->
@@ -84,36 +197,45 @@ import Footer from "../components/Footer.astro";
       </div>
 
       <!-- Floating mini input (centered) -->
-      <div
-        id="floating-chat-trigger"
-        class="fixed top-12 left-1/2 -translate-x-1/2 hidden lg:flex items-center gap-2 rounded-full border border-neutral-300 bg-white pl-4 pr-12 py-2 text-sm text-neutral-700 shadow-md transition-all duration-300 opacity-0 pointer-events-none cursor-text w-lg"
-        role="button"
-        tabindex="0"
-        aria-label="Start your project"
-      >
-        <span aria-hidden="true" class="text-gray-900 text-lg">💬</span>
-        <span class="text-gray-900/40 text-[15px] truncate"
-          >Start your project…</span
-        >
+      <!-- Floating Chat Trigger -->
+      <div class="fixed bottom-0 left-1/2 -translate-x-1/2 z-50
+group p-6 pb-4">
+        <!-- The p-6 creates a bigger hover zone around the button -->
 
-        <!-- Send button -->
-        <button
-          type="button"
-          class="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full bg-neutral-300 text-white hover:bg-neutral-800 transition"
-          aria-label="Send message"
+        <div
+          id="floating-chat-trigger"
+          role="button"
+          tabindex="0"
+          aria-label="Start your project"
+          class="min-w-[480px] flex items-center gap-2 rounded-full border border-neutral-300
+bg-white pl-4 pr-12 py-3 text-sm text-neutral-700 shadow-lg cursor-text
+transition-transform duration-500 ease-out
+translate-y-[90%] group-hover:translate-y-0 focus-within:translate-y-0"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            class="h-5 w-5"
-            fill="currentColor"
-            aria-hidden="true"
+          <span class="text-gray-900/40 text-[16px] truncate pl-2">
+            Start your project…
+          </span>
+
+          <!-- Send button -->
+          <button
+            type="button"
+            aria-label="Send message"
+            class="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center
+ rounded-full bg-neutral-300 text-white hover:bg-neutral-800 transition"
           >
-            <path
-              d="M20.33 3.67c-.19-.19-.43-.32-.69-.38-.26-.06-.53-.05-.78.07L4.23 8.2c-.27.09-.51.27-.67.5-.16.22-.26.49-.28.77-.02.28.04.55.17.8.13.25.33.46.55.58l6.07 3 3 6.09c.12.25.31.46.55.6.24.14.52.22.8.22h.1c.29-.02.57-.13.8-.31.23-.18.39-.43.47-.71l4.95-14.6c.09-.26.09-.54.01-.8-.08-.26-.24-.49-.45-.67ZM4.85 9.58l12.77-4.26-7.09 7.09-5.68-2.83Zm9.58 9.57-2.84-5.68 7.09-7.09-4.25 12.77Z"
-            ></path>
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              class="h-5 w-5"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M20.33 3.67c-.19-.19-.43-.32-.69-.38-.26-.06-.53-.05-.78.07L4.23 8.2c-.27.09-.51.27-.67.5-.16.22-.26.49-.28.77-.02.28.04.55.17.8.13.25.33.46.55.58l6.07 3 3 6.09c.12.25.31.46.55.6.24.14.52.22.8.22h.1c.29-.02.57-.13.8-.31.23-.18.39-.43.47-.71l4.95-14.6c.09-.26.09-.54.01-.8-.08-.26-.24-.49-.45-.67ZM4.85 9.58l12.77-4.26-7.09 7.09-5.68-2.83Zm9.58 9.57-2.84-5.68 7.09-7.09-4.25 12.77Z"
+              ></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -158,7 +280,7 @@ import Footer from "../components/Footer.astro";
           <!-- Arabic SVG anchored behind the chat panel -->
           <div
             aria-hidden="true"
-            class="pointer-events-none absolute -z-10 left-[-20px] top-[650px] -translate-y-1/2 w-[512px] h-[512px] -rotate-5 opacity-75"
+            class="pointer-events-none absolute -z-10 left-[-20px] top-[650px] -translate-y-1/2 w-[512px] h-[512px] -rotate-5 opacity-50"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -227,8 +349,7 @@ import Footer from "../components/Footer.astro";
           >
             <VideoPreview
               client:load
-              src="https://d3vlq52qrgdnc2.cloudfront.net/UIUX-Showreel-preview-big.mp4"
-              className="col-span-12 lg:col-span-8 order-1 lg:order-2 flex-1 min-h-0 h-full rounded-2xl overflow-hidden bg-neutral-200/50 relative group"
+              src="https://openpurpose.com/homepage/profile.mp4"
             />
           </div>
 
@@ -243,9 +364,24 @@ import Footer from "../components/Footer.astro";
         </aside>
       </section>
     </main>
-    <section class="py-16">
+
+    <IntroTrustedSection client:load groups={groups} />
+
+    <ProjectShowcase
+      titleAr="زيــميوم"
+      subtitle="We partnered with Things founder to design the branding for his next venture."
+      rows={rows}
+    />
+
+    <ProjectShowcase
+      titleAr="زيــميوم"
+      subtitle="We partnered with Things founder to design the branding for his next venture."
+      rows={kage}
+    />
+
+    <!--   <section class="">
       <div class="mx-auto px-4 text-center max-w-4xl py-6">
-        <!-- Divider with text -->
+   
         <div class="flex items-center justify-center mb-12">
           <div class="flex-grow border-t border-gray-300"></div>
           <span class="px-4 text-gray-600 text-sm md:text-base">
@@ -254,204 +390,206 @@ import Footer from "../components/Footer.astro";
           <div class="flex-grow border-t border-gray-300"></div>
         </div>
 
-        <!-- Logos -->
+      Logos
         <div
-          class="flex flex-wrap justify-center items-center gap-14 filter grayscale opacity-40 transition"
+          class="flex flex-wrap justify-center items-center gap-14 filter grayscale transition"
         >
           <img src="/logos/logo1.svg" alt="Logo 1" class="h-10 md:h-8" />
           <img src="/logos/logo2.svg" alt="Logo 2" class="h-10 md:h-8" />
           <img src="/logos/logo3.svg" alt="Logo 3" class="h-10 md:h-8" />
           <img src="/logos/logo4.svg" alt="Logo 4" class="h-10 md:h-8" />
-        </div>
-      </div>
-    </section>
+        </div> -->
+  </body>
+</html>
 
-    <ProcessOverview client:load />
-    <!-- (optional) extra sections below -->
-    <main class="max-w-4xl mx-auto p-4 md:p-4"></main>
-    <!-- Testimonials header -->
+<!--<main class="pre-header">
+      <ProjectsCarousel client:load items={items} />
+    </main>-->
 
-    <div class="">
-      <section class="flex items-center justify-center gap-6 mb-12 md:mb-16">
-        <!-- Left laurel -->
+<!-- (optional) extra sections below -->
 
-        <img
-          src="/king.svg"
-          alt=""
-          class="w-20 h-20 md:w-26 md:h-26 transform scale-x-[-1]"
-        />
-        <!-- Center text -->
-        <div class="text-center">
-          <h2 class="text-2xl md:text-3xl font-semibold mb-2">
-            Trusted by Startups<br />& Growing Businesses
-          </h2>
-          <p class="text-neutral-600">
-            We help our clients scale, refine, and succeed
-          </p>
-        </div>
+<!-- Testimonials 
 
-        <!-- Right laurel (flipped horizontally) -->
-        <img src="/king.svg" alt="" class="w-20 h-20 md:w-26 md:h-26" />
-      </section>
-      <TestimonialsMarquee client:load />
+<div class="">
+  <section class="flex items-center justify-center gap-6 mb-12 md:mb-16">
+ 
+
+    <img
+      src="/king.svg"
+      alt=""
+      class="w-20 h-20 md:w-26 md:h-26 transform scale-x-[-1]"
+    />
+ 
+    <div class="text-center">
+      <h2 class="text-2xl md:text-3xl font-semibold mb-2">
+        Trusted by Startups<br />& Growing Businesses
+      </h2>
+      <p class="text-neutral-600">
+        We help our clients scale, refine, and succeed
+      </p>
     </div>
 
-    <!-- Footer Navigation -->
-    <Footer />
-  </body>
-  <!-- Put this near the end of index.astro (before </body>) -->
-  <script type="module">
-    const btns = document.querySelectorAll("[data-scroll-to-chat]");
-    const chatSection = document.getElementById("chat");
-    const chatInput = document.getElementById("chat-input");
+   
+    <img src="/king.svg" alt="" class="w-20 h-20 md:w-26 md:h-26" />
+  </section>
+  <TestimonialsMarquee client:load />  -->
 
-    function focusInputAfterScroll() {
-      // Give the browser a tick to finish smooth scroll & layout
-      setTimeout(() => {
-        chatInput?.focus({ preventScroll: true });
-      }, 450);
-    }
+<!-- Footer Navigation 
 
-    btns.forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        // If it's an anchor with #chat, default smooth behavior will run thanks to CSS.
-        // We only ensure focus after.
-        if (chatSection) {
-          focusInputAfterScroll();
-        }
-      });
+<Footer />-->
+
+<!-- Put this near the end of index.astro (before </body>) -->
+<script type="module">
+  const btns = document.querySelectorAll("[data-scroll-to-chat]");
+  const chatSection = document.getElementById("chat");
+  const chatInput = document.getElementById("chat-input");
+
+  function focusInputAfterScroll() {
+    // Give the browser a tick to finish smooth scroll & layout
+    setTimeout(() => {
+      chatInput?.focus({ preventScroll: true });
+    }, 450);
+  }
+
+  btns.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      // If it's an anchor with #chat, default smooth behavior will run thanks to CSS.
+      // We only ensure focus after.
+      if (chatSection) {
+        focusInputAfterScroll();
+      }
     });
+  });
 
-    // Also handle direct #chat visits / hash changes
+  // Also handle direct #chat visits / hash changes
+  if (location.hash === "#chat-section") focusInputAfterScroll();
+  window.addEventListener("hashchange", () => {
     if (location.hash === "#chat-section") focusInputAfterScroll();
-    window.addEventListener("hashchange", () => {
-      if (location.hash === "#chat-section") focusInputAfterScroll();
-    });
-  </script>
+  });
+</script>
 
-  <script type="module">
-    const btn = document.querySelector("[data-scroll-to-chat]");
-    const chatSection = document.getElementById("chat-section");
-    const chatInput = document.getElementById("chat-input");
+<script type="module">
+  const btn = document.querySelector("[data-scroll-to-chat]");
+  const chatSection = document.getElementById("chat-section");
+  const chatInput = document.getElementById("chat-input");
 
-    btn?.addEventListener("click", () => {
-      if (!chatSection) return;
+  btn?.addEventListener("click", () => {
+    if (!chatSection) return;
 
-      // Smooth scroll
-      chatSection.scrollIntoView({ behavior: "smooth", block: "center" });
+    // Smooth scroll
+    chatSection.scrollIntoView({ behavior: "smooth", block: "center" });
 
-      // Focus input after scroll
-      setTimeout(() => {
-        chatInput?.focus({ preventScroll: true });
-      }, 500); // adjust timing if needed
-    });
-  </script>
+    // Focus input after scroll
+    setTimeout(() => {
+      chatInput?.focus({ preventScroll: true });
+    }, 500); // adjust timing if needed
+  });
+</script>
 
-  <script type="module">
-    import Lenis from "@studio-freight/lenis";
+<script type="module">
+  import Lenis from "@studio-freight/lenis";
 
-    // Init with autoRaf
-    const lenis = new Lenis({
-      autoRaf: true,
-      duration: 1.1, // smooth speed
-      easing: (t) => 1 - Math.pow(1 - t, 2), // quad ease-out
-      smoothWheel: true,
-      smoothTouch: false, // set true if you want on touch
-    });
+  // Init with autoRaf
+  const lenis = new Lenis({
+    autoRaf: true,
+    duration: 1.1, // smooth speed
+    easing: (t) => 1 - Math.pow(1 - t, 2), // quad ease-out
+    smoothWheel: true,
+    smoothTouch: false, // set true if you want on touch
+  });
 
-    // Optional: listen to scroll events
-    lenis.on("scroll", (e) => {
-      // console.log(e)
-    });
-  </script>
+  // Optional: listen to scroll events
+  lenis.on("scroll", (e) => {
+    // console.log(e)
+  });
+</script>
 
-  <script type="module">
-    // Grab elements
-    const trigger = document.getElementById("floating-chat-trigger");
-    const chatSection = document.getElementById("chat-section");
-    const getChatInput = () => document.getElementById("chat-input");
+<script type="module">
+  // Grab elements
+  const trigger = document.getElementById("floating-chat-trigger");
+  const chatSection = document.getElementById("chat-section");
+  const getChatInput = () => document.getElementById("chat-input");
 
-    // How tall is your fixed header? (logo row). Adjust as needed.
-    const HEADER_OFFSET = 96; // px
+  // How tall is your fixed header? (logo row). Adjust as needed.
+  const HEADER_OFFSET = 96; // px
 
-    // Visibility check: is the chat section within the viewport area?
-    function chatIsVisible() {
-      if (!chatSection) return false;
-      const r = chatSection.getBoundingClientRect();
-      // Visible if any part is between header bottom and viewport bottom
-      const topVisible = r.top < window.innerHeight;
-      const bottomVisible = r.bottom > HEADER_OFFSET;
-      return topVisible && bottomVisible;
+  // Visibility check: is the chat section within the viewport area?
+  function chatIsVisible() {
+    if (!chatSection) return false;
+    const r = chatSection.getBoundingClientRect();
+    // Visible if any part is between header bottom and viewport bottom
+    const topVisible = r.top < window.innerHeight;
+    const bottomVisible = r.bottom > HEADER_OFFSET;
+    return topVisible && bottomVisible;
+  }
+
+  function showTrigger() {
+    if (!trigger) return;
+    trigger.classList.remove("opacity-0", "pointer-events-none");
+  }
+  function hideTrigger() {
+    if (!trigger) return;
+    trigger.classList.add("opacity-0", "pointer-events-none");
+  }
+
+  // Update on scroll/resize
+  function update() {
+    if (!trigger || !chatSection) return;
+    chatIsVisible() ? hideTrigger() : showTrigger();
+  }
+
+  // Click → smooth scroll via Lenis if available, else native
+  function scrollToChat() {
+    const input = getChatInput();
+    const lenis = window.__lenis || window.lenis;
+
+    if (lenis && typeof lenis.scrollTo === "function") {
+      // Scroll all the way to the top of the page
+      lenis.scrollTo(0, { duration: 1.0 });
+      // Focus after scroll animation ends
+      setTimeout(() => input?.focus({ preventScroll: true }), 850);
+    } else {
+      // Fallback: native smooth scroll
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(() => input?.focus({ preventScroll: true }), 600);
     }
+  }
 
-    function showTrigger() {
-      if (!trigger) return;
-      trigger.classList.remove("opacity-0", "pointer-events-none");
+  trigger?.addEventListener("click", (e) => {
+    e.preventDefault();
+    scrollToChat();
+  });
+
+  // ——— Hook into Lenis if your SmoothScroll exposes it on window ———
+  // If your SmoothScroll component sets: window.__lenis = lenis
+  // then this will work. Otherwise, we also attach a rAF loop fallback.
+  function attachLenis() {
+    const ln = window.__lenis || window.lenis;
+    if (ln && typeof ln.on === "function") {
+      ln.on("scroll", update);
+      update(); // initial
+      return true;
     }
-    function hideTrigger() {
-      if (!trigger) return;
-      trigger.classList.add("opacity-0", "pointer-events-none");
-    }
+    return false;
+  }
 
-    // Update on scroll/resize
-    function update() {
-      if (!trigger || !chatSection) return;
-      chatIsVisible() ? hideTrigger() : showTrigger();
-    }
-
-    // Click → smooth scroll via Lenis if available, else native
-    function scrollToChat() {
-      const input = getChatInput();
-      const lenis = window.__lenis || window.lenis;
-
-      if (lenis && typeof lenis.scrollTo === "function") {
-        // Scroll all the way to the top of the page
-        lenis.scrollTo(0, { duration: 1.0 });
-        // Focus after scroll animation ends
-        setTimeout(() => input?.focus({ preventScroll: true }), 850);
-      } else {
-        // Fallback: native smooth scroll
-        window.scrollTo({ top: 0, behavior: "smooth" });
-        setTimeout(() => input?.focus({ preventScroll: true }), 600);
-      }
-    }
-
-    trigger?.addEventListener("click", (e) => {
-      e.preventDefault();
-      scrollToChat();
-    });
-
-    // ——— Hook into Lenis if your SmoothScroll exposes it on window ———
-    // If your SmoothScroll component sets: window.__lenis = lenis
-    // then this will work. Otherwise, we also attach a rAF loop fallback.
-    function attachLenis() {
-      const ln = window.__lenis || window.lenis;
-      if (ln && typeof ln.on === "function") {
-        ln.on("scroll", update);
-        update(); // initial
-        return true;
-      }
-      return false;
-    }
-
-    // Try to attach to Lenis now; if not yet available, poll a few times.
-    if (!attachLenis()) {
-      let tries = 0;
-      const t = setInterval(() => {
-        if (attachLenis() || ++tries > 20) {
-          clearInterval(t);
-          // rAF fallback so it still works even if we never got a Lenis ref
-          if (tries > 20) {
-            const loop = () => {
-              update();
-              requestAnimationFrame(loop);
-            };
-            loop();
-          }
+  // Try to attach to Lenis now; if not yet available, poll a few times.
+  if (!attachLenis()) {
+    let tries = 0;
+    const t = setInterval(() => {
+      if (attachLenis() || ++tries > 20) {
+        clearInterval(t);
+        // rAF fallback so it still works even if we never got a Lenis ref
+        if (tries > 20) {
+          const loop = () => {
+            update();
+            requestAnimationFrame(loop);
+          };
+          loop();
         }
-      }, 100);
-    }
+      }
+    }, 100);
+  }
 
-    window.addEventListener("resize", update);
-  </script>
-</html>
+  window.addEventListener("resize", update);
+</script>

@@ -439,13 +439,13 @@ export default function ChatPanel() {
   }, [messages]);
 
   return (
-    <div className="rounded-3xl bg-[#F0F0F1] p-2 md:p-3">
+    <div className="rounded-3xl bg-gray-100 p-2 md:p-3">
       {/* Top banner */}
       <div className="rounded-2xl bg-white md:p-5 p-4">
-        <h1 className="font-display text-4xl md:text-6xl font-semibold leading-[1.1] tracking-[-0.02em]">
-          ESTABLISHING <br />
-          <span className="text-[#FABC4B]">BRANDS</span> &{" "}
-          <span className="text-[#FABC4B]">PRODUCTS</span>
+        <h1 className="font-display text-4xl md:text-6xl font-medium leading-[1.1] tracking-[-0.02em]">
+          Establishing <br />
+          <span className="text-[#FABC4B]">Brands</span> &{" "}
+          <span className="text-[#FABC4B]">Products</span>
         </h1>
         <hr className="md:mt-5 mt-2 border-neutral-200" />
 
@@ -468,7 +468,7 @@ export default function ChatPanel() {
             />
           </div>
 
-          <p className="text-xs md:text-sm text-neutral-600">
+          <p className="text-xs md:text-sm text-neutral-700 font-medium">
             Chat with an expert right now,
             <br className="block" /> and get your project scope in minutes.
           </p>
@@ -572,7 +572,7 @@ export default function ChatPanel() {
                 key={q}
                 type="button"
                 onClick={() => handleQuickPrompt(q)}
-                className="group rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-800 hover:bg-neutral-50 active:scale-[0.99] transition hover:cursor-pointer"
+                className="group rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-50 active:scale-[0.99] transition hover:cursor-pointer"
               >
                 <span className="inline-flex items-center gap-2">
                   <span
