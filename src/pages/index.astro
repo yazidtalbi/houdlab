@@ -69,55 +69,63 @@ const items = [
 ];
 
 import ProjectShowcase from "@/components/ProjectShowcase.astro";
+import ShowcaseDialog from "@/components/ShowcaseDialog";
 
 const rows = [
   {
     variant: "regular",
     image: {
-      src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
-      alt: "Hero visual",
+      src: "projects/zemium/1.jpg",
+      alt: "Zemium",
     },
   },
   {
     variant: "regular",
     image: {
-      src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
+      src: "projects/zemium/2.jpg",
       alt: "Detail visual",
     },
   },
   {
-    variant: "two",
-    left: {
-      src: "https://framerusercontent.com/images/OteL2pkKyNSvjiM24cafgb0etU.webp",
-      alt: "Left card",
-    },
-    right: {
-      src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
-      alt: "Right card",
+    variant: "regular",
+    image: {
+      src: "projects/zemium/3.jpg",
+      alt: "Detail visual",
     },
   },
+  // {
+  //   variant: "two",
+  //   left: {
+  //     src: "https://framerusercontent.com/images/OteL2pkKyNSvjiM24cafgb0etU.webp",
+  //     alt: "Left card",
+  //   },
+  //   right: {
+  //     src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
+  //     alt: "Right card",
+  //   },
+  // },
 ];
 
 const kage = [
   {
     variant: "regular",
     image: {
-      src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/c7n6QSaBzzwzU4RtTemkCAZEy8.webp",
+      src: "projects/allied/AH.jpg",
       alt: "Hero visual",
     },
   },
 
-  {
-    variant: "two",
-    left: {
-      src: "https://framerusercontent.com/images/OteL2pkKyNSvjiM24cafgb0etU.webp",
-      alt: "Left card",
-    },
-    right: {
-      src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
-      alt: "Right card",
-    },
-  },
+  // {
+  //   variant: "two",
+  //   left: {
+  //     src: "https://framerusercontent.com/images/OteL2pkKyNSvjiM24cafgb0etU.webp",
+  //     alt: "Left card",
+  //   },
+  //   right: {
+  //     src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
+  //     alt: "Right card",
+  //   },
+  // },
 ];
 ---
 
@@ -186,13 +194,13 @@ const kage = [
         </a>
 
         <!-- Location -->
-        <div class="border-l border-gray-200 pl-6">
+        <div class="border-l border-gray-200 pl-5 -ml-1 pb-1">
           <p
             class="text-neutral-800 font-display font-semibold lg:text-base text-xl leading-tight md:leading-snug"
           >
-            HOUD LAB
+            HOUD <br />LAB
           </p>
-          <p class="text-gray-400 text-sm">Working globally</p>
+          <!-- <p class="text-gray-400 text-sm">Working globally</p> -->
         </div>
       </div>
 
@@ -339,21 +347,29 @@ translate-y-[90%] group-hover:translate-y-0 focus-within:translate-y-0"
 
         <!-- 3) Video + description column (3) -->
         <aside
-          class="col-span-12 lg:col-span-3 xl:col-span-3 flex flex-col gap-8 z-10 reveal-up-secondary"
+          class="col-span-12 lg:col-span-3 xl:col-span-3 grid grid-rows-[auto_1fr] gap-8 z-10"
         >
-          <!-- Description -->
+          {/* VIDEO — fixed visual height */}
 
-          <!-- Video -->
-          <div
-            class="order-1 lg:order-2 flex-1 min-h-0 rounded-2xl overflow-hidden bg-neutral-200/50 relative group h-full"
-          >
-            <VideoPreview
-              client:load
-              src="https://openpurpose.com/homepage/profile.mp4"
-            />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Zemium -->
+            <ShowcaseDialog client:load title="زيــميوم — Case Study">
+              <ProjectShowcase
+                titleAr="زيــميوم"
+                subtitle="We partnered with Things founder to design the branding for his next venture."
+                rows={rows}
+              />
+            </ShowcaseDialog>
           </div>
 
-          <div class="order-3 lg:order-3">
+          <VideoPreview
+            client:load
+            src="https://openpurpose.com/homepage/profile.mp4"
+            className="w-full h-[220px] sm:h-[240px] md:h-[260px] lg:h-[400px] rounded-2xl overflow-hidden bg-neutral-200/50 relative"
+          />
+
+          {/* TESTIMONIALS — fills remaining space */}
+          <div class="min-h-[240px]">
             <TestimonialsCarousel
               client:load
               testimonials={testimonials}
@@ -365,6 +381,8 @@ translate-y-[90%] group-hover:translate-y-0 focus-within:translate-y-0"
       </section>
     </main>
 
+    <Footer />
+
     <IntroTrustedSection client:load groups={groups} />
 
     <ProjectShowcase
@@ -374,7 +392,7 @@ translate-y-[90%] group-hover:translate-y-0 focus-within:translate-y-0"
     />
 
     <ProjectShowcase
-      titleAr="زيــميوم"
+      titleAr="ألايد"
       subtitle="We partnered with Things founder to design the branding for his next venture."
       rows={kage}
     />
