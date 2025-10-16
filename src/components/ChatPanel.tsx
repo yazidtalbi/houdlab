@@ -4,31 +4,34 @@ import { motion, AnimatePresence } from "framer-motion";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string; at: string };
 
-const QUICK_PROMPTS = [
-  "I want a redesign for my website",
-  "I need a branding for my project",
-  "I need a mobile app UI",
-  "I want a logo for my business",
-  "I need social media visuals",
-];
-
-const COLOR_CLASSES = [
-  "bg-rose-500",
-  "bg-amber-500",
-  "bg-emerald-500",
-  "bg-sky-500",
-  "bg-violet-500",
+const QUICK_PROMPTS: { label: string; value: string }[] = [
+  {
+    label: "Personal Website",
+    value:
+      "Hey. I’d like a full website redesign. Goals: improve conversions, faster loading, and modern visuals. ",
+  },
+  {
+    label: "Landing Page",
+    value:
+      "I need a brand starter kit: logo (primary + mark), color palette (primary/secondary + neutrals), typography pairing (display + text), tone of voice, and a 1-page brand guide. Brand personality: friendly, credible, contemporary. Deliver SVG/PNG assets and a quick logo usage guide (clear space, min size, colors). Please suggest 2–3 directions and explain rationale.",
+  },
+  {
+    label: "Web Application",
+    value:
+      "I’m looking for mobile app UI (iOS + Android): onboarding (3 screens), sign in/up, home feed, item details, search, notifications, and settings. Use a modular design system (buttons, inputs, cards, modals). Provide a flow chart and 2 visual style options (light/dark). Prioritize clarity, tap targets, and empty states.",
+  },
+  {
+    label: "Branding",
+    value:
+      "I need a versatile logo (wordmark + icon) that works on light/dark and small sizes (favicon, app icon). Please provide 3 directions, mock on a website header, social avatar, and stationery. Deliver SVG + PNG and a simple usage guide (clear space, min size, colors).",
+  },
 ];
 
 const STORE_KEY = "houdlab_chat_messages_v1";
 const CONV_KEY = "houdlab_conversation_id_v1";
-// old
-// const ASSISTANT_NAME = "Yazid from HoudLab";
-
 const LAST_READ_KEY = "houdlab_chat_last_read_at_v1";
 const LAST_ASSISTANT_KEY = "houdlab_chat_last_assistant_at_v1";
 
-// new
 const ASSISTANT_TITLE = "Yazid";
 const ASSISTANT_LABELS = ["Community Manager"];
 
@@ -37,44 +40,15 @@ function fmtTime(iso?: string) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      // Stagger everything inside for a cascade feel
-      staggerChildren: 0.06,
-      delayChildren: 0.05,
-      ease: [0.16, 1, 0.3, 1],
-      duration: 0.5,
-    },
-  },
-};
-
-const itemUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
-  },
-};
-
-const itemFade = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.4, ease: "easeOut" } },
-};
-
 function AssistantHeader() {
   return (
     <div className="mb-1.5 flex items-center gap-2 text-xs pb-1">
       <span className="font-medium text-neutral-800 ">{ASSISTANT_TITLE}</span>
-
       <div className="flex items-center gap-1.5">
         {ASSISTANT_LABELS.map((label) => (
           <span
             key={label}
-            className="rounded-full font-medium text-gray-700 bg-gray-100 px-2 py-0.5 text-[10px] ring-1 ring-gray-300  "
+            className="rounded-full font-medium text-gray-700 bg-gray-100 px-2 py-0.5 text-[10px] ring-1 ring-gray-300"
           >
             {label}
           </span>
@@ -84,7 +58,7 @@ function AssistantHeader() {
   );
 }
 
-export default function ChatPanel() {
+export default function ChatPanel({ className = "" }: { className?: string }) {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -95,13 +69,11 @@ export default function ChatPanel() {
   const inputRef = useRef<HTMLInputElement>(null);
   const creatingConv = useRef<Promise<string> | null>(null);
 
-  // de-dupe helpers
   const seenIds = useRef<Set<string>>(new Set());
-  const tempToDb = useRef<Map<string, string>>(new Map()); // tempId -> dbId
+  const tempToDb = useRef<Map<string, string>>(new Map());
   const lastSeenIso = useRef<string | null>(null);
   const stopPollingRef = useRef(false);
 
-  // per-conversation client (adds x-conversation-id header for RLS)
   const sb = useMemo(
     () => (conversationId ? supabaseForConversation(conversationId) : null),
     [conversationId]
@@ -127,19 +99,16 @@ export default function ChatPanel() {
       setMessages((prev) => [...prev, ...add]);
       lastSeenIso.current = list[list.length - 1].created_at;
       if (list[list.length - 1].role === "assistant") setTyping(false);
-      // mark "unread" for the button
       const last = list[list.length - 1];
       if (last.role === "assistant") {
         try {
           localStorage.setItem(LAST_ASSISTANT_KEY, String(last.created_at));
         } catch {}
-        // Let listeners (ChatSheet) update immediately
         window.dispatchEvent(new Event("houd:chat:assistant"));
       }
     }
   }
 
-  // Load persisted state
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORE_KEY);
@@ -149,7 +118,7 @@ export default function ChatPanel() {
           setMessages(parsed);
           setShowPrompts(false);
           parsed.forEach((m) => seenIds.current.add(String(m.id)));
-          lastSeenIso.current = null; // history effect will reset properly
+          lastSeenIso.current = null;
         }
       }
     } catch {}
@@ -157,14 +126,12 @@ export default function ChatPanel() {
     if (conv) setConversationId(conv);
   }, []);
 
-  // Persist messages
   useEffect(() => {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(messages));
     } catch {}
   }, [messages]);
 
-  // Auto-scroll
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
@@ -174,7 +141,6 @@ export default function ChatPanel() {
     if (window.location.hash === "#chat-section") inputRef.current?.focus();
   }, []);
 
-  // Load full history (MERGE — do NOT overwrite optimistic UI)
   useEffect(() => {
     if (!sb || !conversationId) return;
     (async () => {
@@ -199,16 +165,13 @@ export default function ChatPanel() {
           created_at: String(r.created_at),
         })) ?? [];
 
-      appendUnique(mapped); // ✅ merge into existing state (keeps 1st optimistic msg)
-
+      appendUnique(mapped);
       if (mapped.length > 0) setShowPrompts(false);
     })();
   }, [sb, conversationId]);
 
-  // Realtime (best-effort)
   useEffect(() => {
     if (!sb || !conversationId) return;
-
     const ch = sb
       .channel(`client:${conversationId}`)
       .on(
@@ -222,13 +185,10 @@ export default function ChatPanel() {
         (payload) => {
           const row: any = payload.new;
           const dbId = String(row.id);
-
-          // de-dup (ignore if already reconciled or fetched)
           if (seenIds.current.has(dbId)) return;
           for (const [, v] of tempToDb.current.entries()) {
             if (v === dbId) return;
           }
-
           const role: "user" | "assistant" =
             row.role === "agent" ? "assistant" : "user";
           seenIds.current.add(dbId);
@@ -258,41 +218,9 @@ export default function ChatPanel() {
     };
   }, [sb, conversationId]);
 
-  // Typing broadcast (from admin → { from: "agent", active })
-  useEffect(() => {
-    if (!sb || !conversationId) return;
-
-    const typingCh = sb
-      .channel(`typing:${conversationId}`, {
-        config: { broadcast: { self: false } },
-      })
-      .on("broadcast", { event: "typing" }, (payload) => {
-        const p: any = payload?.payload || {};
-        if (p.from !== "agent") return;
-        if (p.active) {
-          setTyping(true);
-          // hide after 4s of silence
-          clearTimeout((typingCh as any)._hideTimer);
-          (typingCh as any)._hideTimer = setTimeout(
-            () => setTyping(false),
-            4000
-          );
-        } else {
-          setTyping(false);
-        }
-      })
-      .subscribe();
-
-    return () => {
-      sb.removeChannel(typingCh);
-    };
-  }, [sb, conversationId]);
-
-  // Polling fallback (fills gaps if realtime / replication lags)
   useEffect(() => {
     if (!sb || !conversationId) return;
     stopPollingRef.current = false;
-
     const tick = async () => {
       if (stopPollingRef.current) return;
       try {
@@ -301,11 +229,7 @@ export default function ChatPanel() {
           .select("id, role, text, created_at")
           .eq("conversation_id", conversationId)
           .order("created_at", { ascending: true });
-
-        if (lastSeenIso.current) {
-          q = q.gt("created_at", lastSeenIso.current);
-        }
-
+        if (lastSeenIso.current) q = q.gt("created_at", lastSeenIso.current);
         const { data, error } = await q;
         if (!error && data && data.length) {
           const list = data.map((r: any) => ({
@@ -319,24 +243,16 @@ export default function ChatPanel() {
           appendUnique(list);
         }
       } catch {
-        // ignore
       } finally {
         setTimeout(tick, 1800);
       }
     };
-
     tick();
     return () => {
       stopPollingRef.current = true;
     };
   }, [sb, conversationId]);
 
-  function handleQuickPrompt(t: string) {
-    setInput(t);
-    requestAnimationFrame(() => inputRef.current?.focus());
-  }
-
-  // Create conversation lazily (single-flight)
   async function ensureConversation(): Promise<string> {
     if (conversationId) return conversationId;
     if (!creatingConv.current) {
@@ -362,10 +278,8 @@ export default function ChatPanel() {
   async function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed) return;
-
     if (showPrompts) setShowPrompts(false);
 
-    // Ensure conversation exists
     let convId = conversationId;
     try {
       if (!convId) convId = await ensureConversation();
@@ -374,7 +288,6 @@ export default function ChatPanel() {
       return;
     }
 
-    // Optimistic user message
     const tempId = crypto.randomUUID();
     const optimistic: Msg = {
       id: tempId,
@@ -384,7 +297,7 @@ export default function ChatPanel() {
     };
     setMessages((m) => [...m, optimistic]);
     seenIds.current.add(tempId);
-    lastSeenIso.current = new Date().toISOString(); // polling only fetches newer
+    lastSeenIso.current = new Date().toISOString();
     setInput("");
 
     try {
@@ -422,7 +335,6 @@ export default function ChatPanel() {
     send(input);
   }
 
-  // under your other hooks
   const groups = useMemo(() => {
     type G = { role: "user" | "assistant"; items: Msg[] };
     const out: G[] = [];
@@ -439,8 +351,11 @@ export default function ChatPanel() {
   }, [messages]);
 
   return (
-    <div className="rounded-3xl bg-gray-100 p-2 md:p-3">
-      {/* Top banner */}
+    /** Root fills its parent (the grid cell). Parent should set height: calc(100vh - var(--footer-h)). */
+    <div
+      className={`h-full min-h-0 flex flex-col rounded-3xl bg-gray-100 p-2 md:p-3 ${className}`}
+    >
+      {/* Top banner (auto height) */}
       <div className="rounded-2xl bg-white md:p-5 p-4">
         <h1 className="font-display text-4xl md:text-6xl font-medium leading-[1.1] tracking-[-0.02em]">
           Establishing <br />
@@ -448,7 +363,6 @@ export default function ChatPanel() {
           <span className="text-[#FABC4B]">Products</span>
         </h1>
         <hr className="md:mt-5 mt-2 border-neutral-200" />
-
         <div className="md:mt-5 mt-3 flex items-center gap-3">
           <div className="flex -space-x-3">
             <img
@@ -467,7 +381,6 @@ export default function ChatPanel() {
               className="h-10 w-10 rounded-full border-2 border-white"
             />
           </div>
-
           <p className="text-xs md:text-sm text-neutral-700 font-medium">
             Chat with an expert right now,
             <br className="block" /> and get your project scope in minutes.
@@ -475,33 +388,22 @@ export default function ChatPanel() {
         </div>
       </div>
 
-      {/* Messages area */}
+      {/* Messages area: the ONLY scroller */}
       <div
         ref={scrollRef}
-        className={`mt-4 overflow-y-auto rounded-2xl p-4
-    ${
-      showPrompts
-        ? "min-h-[50vh] md:min-h-[33vh] md:max-h-[33vh]"
-        : "min-h-[62vh] md:min-h-[45vh] md:max-h-[45vh]"
-    }
-  `}
+        className="mt-4 flex-1 min-h-0 overflow-y-auto rounded-2xl p-4"
       >
         {groups.map((g, gi) => (
           <div key={gi} className="mb-4">
             {g.role === "assistant" ? (
               <div className="flex items-start gap-3">
-                {/* avatar only once per group */}
                 <img
                   src="/avatars/yazid.jpg"
                   alt=""
                   className="h-8 w-8 rounded-full object-cover ring-2 ring-white"
                 />
                 <div>
-                  {/* header only once per group */}
                   <AssistantHeader />
-
-                  {/* stacked assistant bubbles */}
-
                   <div className="space-y-1.5">
                     {g.items.map((m) => (
                       <div key={m.id}>
@@ -521,7 +423,7 @@ export default function ChatPanel() {
                 <div className="space-y-1.5 text-right">
                   {g.items.map((m) => (
                     <div key={m.id}>
-                      <div className="inline-block max-w-[68ch] rounded-2xl rounded-tr-md bg-neutral-900 text-white px-4 py-2 shadow-sm">
+                      <div className="inline-block max-w-[68ch] rounded-2xl rounded-tr-md bg-black text-white px-4 py-2 shadow-sm ml-24 text-left">
                         {m.text}
                       </div>
                       <div className="mt-1 text-right text-xs text-neutral-500">
@@ -535,7 +437,6 @@ export default function ChatPanel() {
           </div>
         ))}
 
-        {/* Typing indicator (from admin broadcast) */}
         {typing && (
           <div className="mb-4 flex items-start gap-3">
             <img
@@ -545,7 +446,7 @@ export default function ChatPanel() {
             />
             <div>
               <div className="inline-block rounded-2xl rounded-tl-md bg-white px-4 py-2 shadow-sm ring-1 ring-neutral-200">
-                <span className="inline-flex gap-1 align-middle ">
+                <span className="inline-flex gap-1 align-middle">
                   <span className="animate-pulse text-xs">●</span>
                   <span className="animate-pulse [animation-delay:150ms] text-xs">
                     ●
@@ -558,39 +459,12 @@ export default function ChatPanel() {
             </div>
           </div>
         )}
+        {/* padding so the composer never sits flush with the fixed footer */}
+        <div className="h-3" />
       </div>
 
-      {/* Quick prompts */}
-      {showPrompts && (
-        <div className="mt-3 px-5 pb-2 slide-up">
-          <div className="text-xs text-neutral-500 mb-2">
-            Quick chat prompts
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {QUICK_PROMPTS.map((q, i) => (
-              <button
-                key={q}
-                type="button"
-                onClick={() => handleQuickPrompt(q)}
-                className="group rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-50 active:scale-[0.99] transition hover:cursor-pointer"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <span
-                    className={`h-2.5 w-2.5 rounded-full ${
-                      COLOR_CLASSES[i % COLOR_CLASSES.length]
-                    }`}
-                    aria-hidden="true"
-                  />
-                  <span className="font-medium">{q}</span>
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Composer */}
-      <form onSubmit={onSubmit} className="mt-4">
+      {/* Composer (fixed height) */}
+      <form onSubmit={onSubmit} className="mt-4 flex-shrink-0">
         <div className="relative flex items-center">
           <input
             id="chat-input"
@@ -604,10 +478,11 @@ export default function ChatPanel() {
           <button
             type="submit"
             disabled={!input.trim()}
-            className="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full bg-neutral-900 text-white   disabled:bg-neutral-300 mr-1 cursor-pointer"
+            className="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full bg-neutral-900 text-white disabled:bg-neutral-300 mr-1 cursor-pointer"
             aria-label="Send message"
             title="Send"
           >
+            {/* icon */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -620,6 +495,40 @@ export default function ChatPanel() {
           </button>
         </div>
       </form>
+
+      {/* Quick prompts sit above the footer space; shrink if needed */}
+      {showPrompts && (
+        <div className="mt-3 px-5 max-h-40 overflow-y-auto flex-shrink-0">
+          <div className="flex flex-wrap gap-2">
+            {QUICK_PROMPTS.map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => {
+                  setInput(p.value);
+                  requestAnimationFrame(() => inputRef.current?.focus());
+                }}
+                className="group rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs text-neutral-500 hover:bg-neutral-50 active:scale-[0.99] transition"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <span className="text-[#FABC4B]">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="13"
+                      height="12"
+                      viewBox="0 0 13 12"
+                      fill="currentColor"
+                    >
+                      <path d="M8.02539 2.34766L9.25 1.875L9.70117 0.671875C9.72266 0.564453 9.83008 0.5 9.9375 0.5C10.0234 0.5 10.1309 0.564453 10.1523 0.671875L10.625 1.875L11.8281 2.34766C11.9355 2.36914 12 2.47656 12 2.5625C12 2.66992 11.9355 2.77734 11.8281 2.79883L10.625 3.25L10.1523 4.47461C10.1309 4.56055 10.0234 4.625 9.9375 4.625C9.83008 4.625 9.72266 4.56055 9.70117 4.47461L9.25 3.25L8.02539 2.79883C7.91797 2.77734 7.875 2.66992 7.875 2.5625C7.875 2.47656 7.91797 2.36914 8.02539 2.34766ZM6.52148 4.53906L8.9707 5.65625C9.09961 5.7207 9.18555 5.84961 9.18555 5.97852C9.18555 6.10742 9.09961 6.23633 8.9707 6.30078L6.52148 7.41797L5.4043 9.86719C5.33984 9.99609 5.21094 10.082 5.08203 10.082C4.95312 10.082 4.82422 9.99609 4.78125 9.86719L3.64258 7.41797L1.19336 6.30078C1.06445 6.23633 1 6.10742 1 5.97852C1 5.84961 1.06445 5.7207 1.19336 5.65625L3.64258 4.53906L4.78125 2.08984C4.82422 1.96094 4.95312 1.875 5.08203 1.875C5.21094 1.875 5.33984 1.96094 5.4043 2.08984L6.52148 4.53906ZM9.70117 7.54688C9.72266 7.43945 9.83008 7.375 9.9375 7.375C10.0234 7.375 10.1309 7.43945 10.1523 7.54688L10.625 8.75L11.8281 9.22266C11.9355 9.24414 12 9.35156 12 9.4375C12 9.54492 11.9355 9.65234 11.8281 9.67383L10.625 10.125L10.1523 11.3496C10.1309 11.4355 10.0234 11.5 9.9375 11.5C9.83008 11.5 9.72266 11.4355 9.70117 11.3496L9.25 10.125L8.02539 9.67383C7.91797 9.65234 7.875 9.54492 7.875 9.4375C7.875 9.35156 7.91797 9.24414 8.02539 9.22266L9.25 8.75L9.70117 7.54688Z" />
+                    </svg>
+                  </span>
+                  <span className="font-semibold">{p.label}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

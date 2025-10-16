@@ -1,92 +1,26 @@
 ---
+// Footer.astro
 const { pathname } = Astro.url;
 
-// Normalize paths: remove trailing "/" except for root
 const normalize = (p: string) => p.replace(/\/+$/, "") || "/";
 const current = normalize(pathname);
 
-// True if href matches exactly or is a parent of current path
 const isActive = (href: string) => {
   const h = normalize(href);
   if (h === "/") return current === "/";
   return current === h || current.startsWith(h + "/");
 };
 
-const linkClass = (href: string, extra = "") =>
-  `px-4 py-2 rounded-full transition flex items-center gap-2 ${
-    isActive(href) ? "bg-neutral-900 text-white" : "hover:text-neutral-600"
-  } ${extra}`;
-
-// Optional: invert the “Soon” badge when active
-const soon = (href: string) =>
-  isActive(href)
-    ? "text-amber-100 bg-amber-500"
-    : "text-amber-500 bg-amber-100";
+const linkClass = (href: string) =>
+  `text-md font-medium px-6 py-2 rounded-full border transition-all duration-200 ${
+    isActive(href)
+      ? "border-neutral-400 text-neutral-900 bg-neutral-100"
+      : "border-neutral-500 text-neutral-500 hover:text-neutral-600 hover:border-neutral-500 hover:bg-neutral-50"
+  }`;
 ---
 
-<footer class="-mt-0 border-t border-neutral-200 bg-white">
-  <div
-    class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-6 py-8 items-start md:items-center px-8"
-  >
-    <!-- Navigation -->
-    <nav
-      class="flex flex-col md:flex-row gap-4 md:gap-6 font-medium text-xl md:text-base items-start md:items-center"
-    >
-      <a href="/" class={linkClass("/")}>Home</a>
-      <a href="/about" class={linkClass("/about")}>About Us</a>
-      <a href="/projects" class={linkClass("/projects")}>Projects</a>
-      <a href="/blog" class={linkClass("/blog")}>
-        Blog
-        <span
-          class={`text-xs font-semibold px-2 rounded-full uppercase ${soon("/blog")}`}
-        >
-          Soon
-        </span>
-      </a>
-    </nav>
-
-    <!-- CTA -->
-    <button
-      type="button"
-      data-scroll-to-chat
-      aria-label="Start your project"
-      class="group inline-flex items-center select-none cursor-pointer mt-10 md:mt-0"
-    >
-      <span
-        class="grid place-items-center flex-none w-11 h-11 md:w-9 md:h-9 rounded-full bg-neutral-900 text-white shadow transition-all duration-300 ease-out group-hover:w-0 group-hover:h-0"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          class="w-4 h-4 transition-transform duration-300 ease-out group-hover:scale-0"
-          fill="none"
-          stroke="white"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M5 12h14M12 5l7 7-7 7"></path>
-        </svg>
-      </span>
-      <span
-        class="relative rounded-full bg-[#FABC4B] text-neutral-900 text-md md:text-sm px-4 md:px-6 py-2.5 font-semibold tracking-wide transition-transform duration-300 ease-out group-hover:-translate-x-2 -mr-2"
-      >
-        START YOUR PROJECT
-      </span>
-      <span
-        class="grid place-items-center flex-none w-0 h-0 rounded-full bg-neutral-900 text-white transition-all duration-300 ease-out group-hover:w-9 group-hover:h-9"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          class="w-4 h-4 scale-0 transition-transform duration-300 ease-out group-hover:scale-100"
-          fill="none"
-          stroke="white"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M5 12h14M12 5l7 7-7 7"></path>
-        </svg>
-      </span>
-    </button>
+<footer class="bg-white">
+  <div class="max-w-6xl mx-auto flex flex-wrap justify-center gap-4">
+    <a href="/about" class={linkClass("/about")}>About</a>
   </div>
 </footer>

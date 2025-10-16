@@ -1,0 +1,650 @@
+---
+import "../styles/global.css";
+import "lenis/dist/lenis.css";
+import VideoReel from "../components/VideoReel";
+import TestimonialsMarquee from "../components/TestimonialsMarquee";
+import ChatPanel from "../components/ChatPanel";
+import GlobeBackground from "../components/GlobeBackground";
+import SmoothScroll from "../components/SmoothScroll";
+import VideoPreview from "@/components/VideoPreview";
+
+import ProcessOverview from "@/components/ProcessOverview";
+
+import TestimonialsCarousel from "../components/TestimonialsCarousel";
+import testimonials from "@/data/testimonials"; // [{ quote, name, role, company, avatar }, ...]
+
+import Footer from "../components/Footer.astro";
+
+import ProjectsCarousel from "@/components/ProjectsCarousel";
+import IntroSection from "@/components/IntroSection";
+
+import BottomCommandBar from "@/components/BottomCommandBar.tsx";
+
+// IntroTrustedSection is a React island
+import IntroTrustedSection from "@/components/IntroTrustedSection";
+
+const groups = [
+  [{ src: "/logos/k.png" }, { src: "/logos/p.png" }],
+  [{ src: "/logos/p.png" }, { src: "/logos/k.png" }],
+  [{ src: "/brands/gem.svg" }, { src: "/brands/gem-2.svg" }],
+  [{ src: "/brands/mono.svg" }, { src: "/brands/mono-2.svg" }],
+  [{ src: "/brands/tile.svg" }, { src: "/brands/tile-2.svg" }],
+];
+
+import { ProjectsStories } from "@/components/ProjectsStories";
+
+const demo: Story[] = [
+  {
+    id: 1,
+    type: "image",
+    src: "https://images.pexels.com/photos/34100151/pexels-photo-34100151.jpeg",
+    caption: "Zemium — Cloud hosting rebrand + case study cards",
+    durationMs: 4500,
+    ctaLabel: "View case study",
+    ctaHref: "/projects/relocate-now",
+  },
+  // {
+  //   id: 3,
+  //   type: "video",
+  //   src: "/projects/greenwind/reel.mp4",
+  //   poster: "/projects/greenwind/poster.jpg",
+  //   caption: "Green Wind Energy — hero motion",
+  //   // durationMs optional; will use video duration if available
+  // },
+  {
+    id: 2,
+    type: "image",
+    src: "https://images.pexels.com/photos/34203371/pexels-photo-34203371.jpeg",
+    caption: "Allied — map UI tiles",
+    ctaLabel: "View case study",
+    ctaHref: "/projects/zemium",
+  },
+];
+
+const items = [
+  {
+    id: 1,
+    title: "Relocate Now",
+    tag: "UI/UX Design",
+    year: "2025",
+    image:
+      "https://cdn.prod.website-files.com/63f38a8c92397a024fcb9ae8/681200a7712ca3755b94a098_results-ASI.avif",
+    href: "/projects/relocate-now",
+  },
+  {
+    id: 2,
+    title: "Crafting Digital Experiences",
+    tag: "UI/UX Design",
+    year: "2025",
+    image:
+      "https://cdn.prod.website-files.com/63f38a8c92397a024fcb9ae8/6812015839e18a614d927c94_results-Relocate2.avif",
+    href: "/projects/crafting-dx",
+  },
+  {
+    id: 3,
+    title: "Epic Strategy App",
+    tag: "UI/UX Design",
+    year: "2025",
+    image: "https://placehold.co/600x400/EEE/31343C",
+    href: "/projects/epic-strategy",
+  },
+  {
+    id: 4,
+    title: "Modern Commerce Flow",
+    tag: "UI/UX Design",
+    year: "2024",
+    image: "https://placehold.co/600x400/EEE/31343C",
+    href: "/projects/modern-commerce",
+  },
+];
+
+import ProjectShowcase from "@/components/ProjectShowcase.astro";
+import ShowcaseDialog from "@/components/ShowcaseDialog";
+
+const rows = [
+  {
+    variant: "regular",
+    image: {
+      src: "projects/zemium/1.jpg",
+      alt: "Zemium",
+    },
+  },
+  {
+    variant: "regular",
+    image: {
+      src: "projects/zemium/2.jpg",
+      alt: "Detail visual",
+    },
+  },
+  {
+    variant: "regular",
+    image: {
+      src: "projects/zemium/3.jpg",
+      alt: "Detail visual",
+    },
+  },
+  // {
+  //   variant: "two",
+  //   left: {
+  //     src: "https://framerusercontent.com/images/OteL2pkKyNSvjiM24cafgb0etU.webp",
+  //     alt: "Left card",
+  //   },
+  //   right: {
+  //     src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
+  //     alt: "Right card",
+  //   },
+  // },
+];
+
+const kage = [
+  {
+    variant: "regular",
+    image: {
+      src: "projects/allied/AH.jpg",
+      alt: "Hero visual",
+    },
+  },
+
+  // {
+  //   variant: "two",
+  //   left: {
+  //     src: "https://framerusercontent.com/images/OteL2pkKyNSvjiM24cafgb0etU.webp",
+  //     alt: "Left card",
+  //   },
+  //   right: {
+  //     src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/rZ79SuRHcy3tDA4th7RBJuKm7U.webp",
+  //     alt: "Right card",
+  //   },
+  // },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Houd Lab — Establishing Brands & Products</title>
+    <meta
+      name="description"
+      content="Chat with a design expert and get your project scope in minutes."
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- OG / Twitter -->
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Houd Lab — Establishing Brands & Products"
+    />
+    <meta
+      property="og:description"
+      content="Chat with a design expert and get your project scope in minutes."
+    />
+    <meta property="og:image" content="/og.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      .globe-wrapper {
+        opacity: 0;
+        transform: translateX(80px); /* start off to the right */
+        animation: slideIn 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        animation-duration: 7s;
+      }
+
+      @keyframes slideIn {
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+    </style></head
+  >
+
+  <body
+    class="min-h-dvh flex flex-col bg-[#FFFFFF] text-neutral-900 font-display"
+  >
+    <!-- <SmoothScroll client:load /> -->
+
+    <!-- Put this right after <body> -->
+
+    <!-- Navbar -->
+    <!-- Navbar -->
+    <header class="fixed top-10 left-0 w-full z-50">
+      <div class="flex items-center gap-6 pl-8">
+        <!-- Logo -->
+        <a href="/" aria-label="Houd Lab">
+          <img src="/hyhy.png" alt="Houd Lab Logo" class="h-12 w-auto" />
+        </a>
+
+        <!-- Location -->
+        <div class="border-l border-gray-200 pl-5 -ml-1 pb-1">
+          <p
+            class="text-neutral-800 font-display font-semibold lg:text-base text-xl leading-tight md:leading-snug"
+          >
+            HOUD <br />LAB
+          </p>
+          <!-- <p class="text-gray-400 text-sm">Working globally</p> -->
+        </div>
+      </div>
+
+      <!-- Floating mini input (centered) -->
+      <!-- Floating Chat Trigger -->
+      <!-- <div class="fixed bottom-0 left-1/2 -translate-x-1/2 z-50
+group p-6 pb-4">
+       
+
+        <div
+          id="floating-chat-trigger"
+          role="button"
+          tabindex="0"
+          aria-label="Start your project"
+          class="min-w-[480px] flex items-center gap-2 rounded-full border border-neutral-300
+bg-white pl-4 pr-12 py-3 text-sm text-neutral-700 shadow-lg cursor-text
+transition-transform duration-500 ease-out
+translate-y-[90%] group-hover:translate-y-0 focus-within:translate-y-0"
+        >
+          <span class="text-gray-900/40 text-[16px] truncate pl-2">
+            Start your project…
+          </span>
+
+          <!-- Send button -->
+      <!-- <button
+        type="button"
+        aria-label="Send message"
+        class="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center
+ rounded-full bg-neutral-300 text-white hover:bg-neutral-800 transition"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          class="h-5 w-5"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            d="M20.33 3.67c-.19-.19-.43-.32-.69-.38-.26-.06-.53-.05-.78.07L4.23 8.2c-.27.09-.51.27-.67.5-.16.22-.26.49-.28.77-.02.28.04.55.17.8.13.25.33.46.55.58l6.07 3 3 6.09c.12.25.31.46.55.6.24.14.52.22.8.22h.1c.29-.02.57-.13.8-.31.23-.18.39-.43.47-.71l4.95-14.6c.09-.26.09-.54.01-.8-.08-.26-.24-.49-.45-.67ZM4.85 9.58l12.77-4.26-7.09 7.09-5.68-2.83Zm9.58 9.57-2.84-5.68 7.09-7.09-4.25 12.77Z"
+          ></path>
+        </svg>
+      </button> -->
+    </header>
+
+    <!-- soft page bg -->
+    <div
+      class="absolute inset-0 -z-10 bg-[radial-gradient(1200px_600px_at_10%_-10%,rgba(255,224,130,0.06),transparent_60%)]"
+    >
+    </div>
+
+    <main class="flex-1 mx-auto px-4 xl:px-10 pt-6 max-w-[1600px]">
+      <!-- Make the section relative so the globe can be absolutely positioned inside it -->
+      <section
+        class="relative grid grid-cols-12 gap-4 lg:gap-8 items-stretch mb-auto"
+      >
+        <!-- Soft radial fade + optional blue highlight arc over the globe -->
+        <div
+          class="pointer-events-none absolute -z-5 left-[2vw] top-[35vh] w-[95vmin] h-[95vmin]"
+        >
+          <!-- 1) Soft white radial fade (makes the globe blend into the background) -->
+          <div
+            class="absolute inset-0 rounded-full opacity-70 blur-2xl
+			 bg-[#FFFFFF]"
+          >
+          </div>
+
+          <!-- 2) Optional colored arc (subtle blue sweep) -->
+          <div
+            class="absolute inset-0 rounded-full blur-xl opacity-50
+			 bg-[#FFFFFF]"
+          >
+          </div>
+        </div>
+
+        <GlobeBackground client:load />
+
+        <!-- <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      
+          <ShowcaseDialog client:load title="زيــميوم — Case Study">
+            <ProjectShowcase
+              titleAr="زيــميوم"
+              subtitle="We partnered with Things founder to design the branding for his next venture."
+              rows={rows}
+            />
+          </ShowcaseDialog>
+        </div> -->
+
+        <!-- 1) Empty column (2) — shows background -->
+        <div class="col-span-3 hidden xl:block xl:col-span-3 lg:col-span-2">
+        </div>
+
+        <!-- 2) Chat column (7) -->
+        <div
+          class="col-span-12 lg:col-span-6 xl:col-span-6 z-10"
+          id="chat-section"
+        >
+          <!-- Arabic SVG anchored behind the chat panel -->
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute -z-10 left-[-20px] top-[650px] -translate-y-1/2 w-[512px] h-[512px] -rotate-5 opacity-50"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              id="vmn"
+              data-name="vmn"
+              viewBox="0 0 390.31 218.68"
+            >
+              <defs>
+                <style>
+                  .mask-stroke {
+                    stroke-dasharray: 2000;
+                    stroke-dashoffset: 2000;
+                    animation: reveal 5s ease;
+                    animation-fill-mode: forwards;
+                  }
+
+                  @keyframes reveal {
+                    to {
+                      stroke-dashoffset: 0;
+                    }
+                  }
+
+                  .cls-1 {
+                    fill: #fabc4b;
+                  }
+                </style>
+
+                <mask id="revealMask">
+                  <path
+                    class="mask-stroke"
+                    d="M347.85,71.27s1.98,16.47,13.27,21.74,13.36,9.6,14.49,14.49,4.52,10.54-3.39,15.06-13.18,5.27-21.46,3.01-18.82-3.39-20.71-8.28,3.39-20.33,9.79-25.98c8.49-7.49,15.81,3.01,15.81,7.15s-5.27,35.76-39.53,41.41-28.99-6.02-21.46-15.81,9.41-21.08,12.42-12.42,6.02,42.16-3.39,52.33-20.71,18.82-28.61,22.21-22.14,.79-14.68,4.52c12.8,6.4,62.12-125.74,62.12-125.74l-55.72,25.98s-6.02,11.29-.75,23.72,1.88,23.72-10.54,32-18.07,11.67-20.33,11.67,34.26-46.31,39.53-95.62-31.25-49.69-31.25-49.69l-6.4,1.51s-6.4,56.85-9.41,79.44-6.56,50.6-28.61,53.46c-5.08,.66,34.26-111.81,34.26-111.81l-24.66,7.44s1.88,112.75-21.46,125.93c-23.34,13.18-8.85-21.55-8.85-21.55,0,0,27.52-21.88,16.61-42.96s-21.59,3.53-21.59,3.53c0,0-5.93,10.73-13.14,19.11-7.8,9.07-20.4,21.65-51.15,25.98-58.9,8.29-79.81,8.66-70.02-38.4s-25.98,11.67-25.98,11.67l1.51,76.42,133.65-27.86"
+                    fill="none"
+                    stroke="white"
+                    stroke-width="26"
+                    stroke-miterlimit="10"></path>
+                </mask>
+              </defs>
+
+              <path
+                class="cls-1"
+                d="M182.03,114.57c0,2.23-1.45,5.77-4.35,10.62-4.46,7.47-8.97,13.13-13.54,16.97-4.57,3.85-10.98,7.39-19.23,10.62-9.36,3.68-21.4,6.74-36.12,9.2-13.93,2.34-26.22,3.51-36.87,3.51-22.29,0-34.95-3.96-37.96-11.87-.89-2.34-1.34-6.19-1.34-11.54,0-3.18,.53-7.47,1.59-12.88,1.34-6.69,2.84-10.03,4.51-10.03,1.11,0,1.67,.5,1.67,1.5,0,.72-.14,1.78-.42,3.18-.22,1.39-.33,2.45-.33,3.18,0,11.98,11.54,17.97,34.61,17.97,24.97,0,47.29-2.56,66.97-7.69,16.94-4.35,28.17-10.2,33.69-17.56l5.43-7.19c1.11,.78,1.67,1.45,1.67,2.01Zm-61.53,70.73c0,1.95-4.9,6.35-14.71,13.21-3.29-3.79-5.38-6.13-6.27-7.02-3.34-3.4-5.74-5.1-7.19-5.1v-1.09l15.22-14.46c8.64,6.07,12.96,10.9,12.96,14.46ZM237.08,32.22c-.73,9.87-1.48,24.91-2.26,45.15-.28,27.14-4.6,47.57-12.96,61.28-5.8,9.47-14.43,14.21-25.92,14.21-2.68,0-5.69-.61-9.03-1.84-3.29-1.23-4.93-2.31-4.93-3.26,0-.61,1.06-1.23,3.18-1.84,1.67-.39,3.35-.81,5.02-1.25,3.29-12.32,4.93-23.77,4.93-34.36,0-1.28-.06-3.23-.17-5.85-.06-2.68-.08-4.65-.08-5.94,0-16.61,3.93-32.33,11.79-47.15,.73,0,1.39,.5,2.01,1.5-2.23,9.14-3.34,24.24-3.34,45.31,0,9.14-1,17.67-3.01,25.58-1.84,6.3-3.68,12.62-5.52,18.98,4.29-1.45,7.25-2.62,8.86-3.51,3.07-1.67,5.96-4.12,8.69-7.36,4.51-5.41,7.44-13.85,8.78-25.33,.61-5.74,.92-16.27,.92-31.6,0-6.8,1.09-14.44,3.26-22.91,2.28-9.08,5.16-16.16,8.61-21.24l1.17,1.42Zm40.43,80.51c0,1.28-1,4.71-3.01,10.28-5.24,14.55-10.56,24.08-15.97,28.59-1.56,1.28-6.58,3.18-15.05,5.68-8.69,2.56-13.68,3.85-14.96,3.85-2.17,0-3.51-.72-4.01-2.17,7.86-4.18,15.69-8.36,23.49-12.54,10.31-6.52,15.47-12.71,15.47-18.56,0-3.68-1.37-7.69-4.1-12.04-.17-.33-2.73-3.85-7.69-10.53,7.13-13.93,11.45-20.9,12.96-20.9,.56,0,1.92,1.39,4.1,4.18,5.85,7.41,8.78,15.47,8.78,24.16Zm41.51,33.53h-2.17c-2.51,0-4.54,2.29-6.1,6.86-4.18,12.26-9.03,20.79-14.55,25.58-3.34,2.9-9.03,5.96-17.06,9.2-7.19,2.84-11.87,4.26-14.04,4.26-.84,0-1.45-.31-1.84-.92,.28-.56,3.23-2.87,8.86-6.94,7.25-5.24,12.82-9.5,16.72-12.79,11.15-9.36,16.72-16.5,16.72-21.4,0-.95-.59-1.42-1.76-1.42-3.68,0-7.72-.89-12.12-2.68-4.57-1.89-6.86-3.76-6.86-5.6,0-2.62,2.15-8.22,6.44-16.8,4.4-8.92,7.55-13.38,9.45-13.38,3.29,0,6.3,1.98,9.03,5.94,2.23,3.34,3.85,7.27,4.85,11.79h4.43v18.31Zm62.83-36.37c0,1.56-1.31,5.88-3.93,12.96-1.39,3.85-3.2,6.44-5.43,7.78-2.45,1.45-6.52,2.17-12.21,2.17-3.74,0-8.95-.64-15.63-1.92-7.25,6.13-12.37,9.98-15.38,11.54-4.96,2.56-11.2,3.85-18.73,3.85v-18.31h4.93c7.41,0,11.79-1.98,13.12-5.94-1.78-2.23-2.68-5.85-2.68-10.87,0-5.46,1.23-10.14,3.68-14.05,2.95-4.79,4.57-7.78,4.85-8.95,.28-2.06,.53-4.1,.75-6.1,.56-3.34,1.37-5.02,2.42-5.02,5.46,3.85,9.59,6.6,12.37,8.28,5.02,3.01,9.48,5.16,13.38,6.44,6.24,2.01,10.53,3.93,12.88,5.77,3.73,2.9,5.6,7.02,5.6,12.37Zm-7.52,5.1c0-2.23-1.64-4.6-4.93-7.11-3.29-2.51-6.38-3.76-9.28-3.76-.95,5.29-3.01,10.12-6.19,14.46l9.45,1.92c2.23,0,4.46-.42,6.69-1.25,2.84-1,4.26-2.42,4.26-4.26Zm-23.24-11.87c0-1.62-.84-2.93-2.51-3.93-1.62-1-3.48-1.5-5.6-1.5-2.45,0-4.77,1.34-6.94,4.01-2.17,2.68-3.26,5.21-3.26,7.61,0,1.78,.92,3.73,2.76,5.85,1.89,2.06,3.73,3.09,5.52,3.09,2.95,0,5.43-1.84,7.44-5.52,1.73-3.18,2.59-6.38,2.59-9.61Z"
+                mask="url(#revealMask)"></path>
+            </svg>
+          </div>
+
+          <!-- Wherever your chat message list lives -->
+          <div
+            data-lenis-prevent
+            data-lenis-prevent-wheel
+            data-lenis-prevent-touch
+            class="h-full overflow-y-auto overscroll-contain touch-pan-y reveal-up"
+          >
+            <ChatPanel client:load />
+          </div>
+        </div>
+
+        <!-- 3) Video + description column (3) -->
+        <section
+          class="relative grid grid-cols-12 gap-4 lg:gap-8 items-stretch lg:min-h-[720px]"
+        >
+          <!-- Right column -->
+          <aside
+            class="col-span-12 lg:col-span-12 xl:col-span-12 z-10 flex flex-col gap-8"
+          >
+            <ProjectsStories
+              items={demo}
+              fullHeight
+              client:load
+              className="h-[320px] md:h-[320px] lg:h-[600px] xl:h-full max-h-[550px]"
+            >
+              <!-- TESTIMONIALS: fill the remaining height -->
+            </ProjectsStories>
+
+            <TestimonialsCarousel
+              client:load
+              testimonials={testimonials}
+              intervalMs={6000}
+              autoplay
+            />
+            <!-- STORIES: fixed responsive height so the whole aside can equalize with chat -->
+          </aside>
+        </section>
+      </section>
+    </main>
+
+    <!-- <IntroTrustedSection client:load groups={groups} />
+
+    <ProjectShowcase
+      titleAr="زيــميوم"
+      subtitle="We partnered with Things founder to design the branding for his next venture."
+      rows={rows}
+    />
+
+    <ProjectShowcase
+      titleAr="ألايد"
+      subtitle="We partnered with Things founder to design the branding for his next venture."
+      rows={kage}
+    /> -->
+
+    <!--   <section class="">
+      <div class="mx-auto px-4 text-center max-w-4xl py-6">
+   
+        <div class="flex items-center justify-center mb-12">
+          <div class="flex-grow border-t border-gray-300"></div>
+          <span class="px-4 text-gray-600 text-sm md:text-base">
+            Join the 1000+ companies benefiting from HoudLab’s design expertise
+          </span>
+          <div class="flex-grow border-t border-gray-300"></div>
+        </div>
+
+      Logos
+        <div
+          class="flex flex-wrap justify-center items-center gap-14 filter grayscale transition"
+        >
+          <img src="/logos/logo1.svg" alt="Logo 1" class="h-10 md:h-8" />
+          <img src="/logos/logo2.svg" alt="Logo 2" class="h-10 md:h-8" />
+          <img src="/logos/logo3.svg" alt="Logo 3" class="h-10 md:h-8" />
+          <img src="/logos/logo4.svg" alt="Logo 4" class="h-10 md:h-8" />
+        </div> -->
+
+    <!--<main class="pre-header">
+      <ProjectsCarousel client:load items={items} />
+    </main>-->
+
+    <!-- (optional) extra sections below -->
+
+    <!-- Testimonials 
+
+<div class="">
+  <section class="flex items-center justify-center gap-6 mb-12 md:mb-16">
+ 
+
+    <img
+      src="/king.svg"
+      alt=""
+      class="w-20 h-20 md:w-26 md:h-26 transform scale-x-[-1]"
+    />
+ 
+    <div class="text-center">
+      <h2 class="text-2xl md:text-3xl font-semibold mb-2">
+        Trusted by Startups<br />& Growing Businesses
+      </h2>
+      <p class="text-neutral-600">
+        We help our clients scale, refine, and succeed
+      </p>
+    </div>
+
+   
+    <img src="/king.svg" alt="" class="w-20 h-20 md:w-26 md:h-26" />
+  </section>
+  <TestimonialsMarquee client:load />  -->
+
+    <!-- Footer Navigation -->
+
+    <section class="pt-8 md:pt-12 absolute bottom-0 w-screen">
+      <Footer />
+    </section>
+
+    <!-- Put this near the end of index.astro (before </body>) -->
+    <script type="module">
+      const btns = document.querySelectorAll("[data-scroll-to-chat]");
+      const chatSection = document.getElementById("chat");
+      const chatInput = document.getElementById("chat-input");
+
+      function focusInputAfterScroll() {
+        // Give the browser a tick to finish smooth scroll & layout
+        setTimeout(() => {
+          chatInput?.focus({ preventScroll: true });
+        }, 450);
+      }
+
+      btns.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          // If it's an anchor with #chat, default smooth behavior will run thanks to CSS.
+          // We only ensure focus after.
+          if (chatSection) {
+            focusInputAfterScroll();
+          }
+        });
+      });
+
+      // Also handle direct #chat visits / hash changes
+      if (location.hash === "#chat-section") focusInputAfterScroll();
+      window.addEventListener("hashchange", () => {
+        if (location.hash === "#chat-section") focusInputAfterScroll();
+      });
+    </script>
+
+    <script type="module">
+      const btn = document.querySelector("[data-scroll-to-chat]");
+      const chatSection = document.getElementById("chat-section");
+      const chatInput = document.getElementById("chat-input");
+
+      btn?.addEventListener("click", () => {
+        if (!chatSection) return;
+
+        // Smooth scroll
+        chatSection.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        // Focus input after scroll
+        setTimeout(() => {
+          chatInput?.focus({ preventScroll: true });
+        }, 500); // adjust timing if needed
+      });
+    </script>
+
+    <script type="module">
+      import Lenis from "@studio-freight/lenis";
+
+      // Init with autoRaf
+      const lenis = new Lenis({
+        autoRaf: true,
+        duration: 1.1, // smooth speed
+        easing: (t) => 1 - Math.pow(1 - t, 2), // quad ease-out
+        smoothWheel: true,
+        smoothTouch: false, // set true if you want on touch
+      });
+
+      // Optional: listen to scroll events
+      lenis.on("scroll", (e) => {
+        // console.log(e)
+      });
+    </script>
+
+    <script type="module">
+      // Grab elements
+      const trigger = document.getElementById("floating-chat-trigger");
+      const chatSection = document.getElementById("chat-section");
+      const getChatInput = () => document.getElementById("chat-input");
+
+      // How tall is your fixed header? (logo row). Adjust as needed.
+      const HEADER_OFFSET = 96; // px
+
+      // Visibility check: is the chat section within the viewport area?
+      function chatIsVisible() {
+        if (!chatSection) return false;
+        const r = chatSection.getBoundingClientRect();
+        // Visible if any part is between header bottom and viewport bottom
+        const topVisible = r.top < window.innerHeight;
+        const bottomVisible = r.bottom > HEADER_OFFSET;
+        return topVisible && bottomVisible;
+      }
+
+      function showTrigger() {
+        if (!trigger) return;
+        trigger.classList.remove("opacity-0", "pointer-events-none");
+      }
+      function hideTrigger() {
+        if (!trigger) return;
+        trigger.classList.add("opacity-0", "pointer-events-none");
+      }
+
+      // Update on scroll/resize
+      function update() {
+        if (!trigger || !chatSection) return;
+        chatIsVisible() ? hideTrigger() : showTrigger();
+      }
+
+      // Click → smooth scroll via Lenis if available, else native
+      function scrollToChat() {
+        const input = getChatInput();
+        const lenis = window.__lenis || window.lenis;
+
+        if (lenis && typeof lenis.scrollTo === "function") {
+          // Scroll all the way to the top of the page
+          lenis.scrollTo(0, { duration: 1.0 });
+          // Focus after scroll animation ends
+          setTimeout(() => input?.focus({ preventScroll: true }), 850);
+        } else {
+          // Fallback: native smooth scroll
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          setTimeout(() => input?.focus({ preventScroll: true }), 600);
+        }
+      }
+
+      trigger?.addEventListener("click", (e) => {
+        e.preventDefault();
+        scrollToChat();
+      });
+
+      // ——— Hook into Lenis if your SmoothScroll exposes it on window ———
+      // If your SmoothScroll component sets: window.__lenis = lenis
+      // then this will work. Otherwise, we also attach a rAF loop fallback.
+      function attachLenis() {
+        const ln = window.__lenis || window.lenis;
+        if (ln && typeof ln.on === "function") {
+          ln.on("scroll", update);
+          update(); // initial
+          return true;
+        }
+        return false;
+      }
+
+      // Try to attach to Lenis now; if not yet available, poll a few times.
+      if (!attachLenis()) {
+        let tries = 0;
+        const t = setInterval(() => {
+          if (attachLenis() || ++tries > 20) {
+            clearInterval(t);
+            // rAF fallback so it still works even if we never got a Lenis ref
+            if (tries > 20) {
+              const loop = () => {
+                update();
+                requestAnimationFrame(loop);
+              };
+              loop();
+            }
+          }
+        }, 100);
+      }
+
+      window.addEventListener("resize", update);
+    </script>
+  </body>
+</html>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Dialog,
   DialogPortal,
@@ -8,6 +9,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { X } from "lucide-react";
 
 export default function ShowcaseDialog({
   triggerLabel = "View Case Study",
@@ -39,41 +41,50 @@ export default function ShowcaseDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* ✅ Trigger lives INSIDE <Dialog> and only renders when closed */}
-      {!open && (
-        <DialogTrigger asChild>
-          <button type="button" className={triggerClassName}>
-            {triggerLabel}
-          </button>
-        </DialogTrigger>
-      )}
+      <DialogTrigger asChild>
+        <button type="button" className={triggerClassName}>
+          {triggerLabel}
+        </button>
+      </DialogTrigger>
 
       <DialogPortal>
-        <DialogOverlay className="fixed inset-0 z-[998] bg-white/40 backdrop-blur-[1px]" />
+        {/* subtle light overlay; tweak as you like */}
+        <DialogOverlay className="fixed inset-0 z-[998] bg-white/50  " />
+
+        {/* viewport scrollport – whole modal scrolls */}
         <DialogContent
           data-lenis-prevent
           data-lenis-prevent-wheel
           data-lenis-prevent-touch
           className="
-            fixed inset-0 z-[999]
-            !left-0 !top-0 !translate-x-0 !translate-y-0 !max-w-none
-            overflow-y-auto overscroll-contain
-            bg-transparent shadow-none outline-none
-            flex items-start justify-center
-            p-4 sm:p-6 md:p-10
-          "
+    no-default-close
+    fixed inset-0 z-[999]
+    !left-0 !top-0 !translate-x-0 !translate-y-0 !max-w-none
+    overflow-y-auto overscroll-contain
+    bg-transparent shadow-none outline-none
+    flex items-start justify-center
+    p-4 sm:p-6 md:p-10
+  "
         >
-          <div className="relative w-full max-w-[1100px] rounded-2xl bg-white shadow-2xl my-10">
-            {/* ← Go back (closes modal). No other buttons/headers inside. */}
-            <div className="absolute right-6 top-6 sm:right-8 sm:top-8 z-10 ">
-              <button
-                onClick={() => setOpen(false)}
-                className="text-sm font-medium text-neutral-500 hover:text-neutral-800 transition"
-              >
-                ← Go back
-              </button>
-            </div>
+          {/* white card */}
+          <div className="relative w-full max-w-[1100px] rounded-2xl bg-white shadow-2xl my-10 mt-20">
+            {/* ⓧ floating close above the card (centered) */}
+            <button
+              aria-label="Close"
+              onClick={() => setOpen(false)}
+              className="
+                absolute -top-20 left-1/2 -translate-x-1/2
+                inline-flex h-10 w-10 items-center justify-center
+                rounded-full border border-white/60
+                bg-white/20 backdrop-blur-md
+                text-white shadow-md
+                hover:bg-white/30 focus:outline-none
+              "
+            >
+              <X className="h-4 w-4" />
+            </button>
 
+            {/* card content */}
             <div className="px-6 sm:px-8 py-12">{children}</div>
           </div>
         </DialogContent>
