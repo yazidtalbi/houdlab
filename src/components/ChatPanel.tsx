@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabaseForConversation } from "../lib/supabaseBrowser";
-import { motion, AnimatePresence } from "framer-motion";
 import AgentAvailabilityPill from "./AgentAvailabilityPill";
-
 import { useAvailability } from "@/hooks/useAvailability";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string; at: string };
@@ -62,7 +60,6 @@ function AssistantHeader() {
 }
 
 export default function ChatPanel({ className = "" }: { className?: string }) {
-  // inside ChatPanel()
   const { status } = useAvailability("houdlab");
 
   const [input, setInput] = useState("");
@@ -80,10 +77,40 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
   const lastSeenIso = useRef<string | null>(null);
   const stopPollingRef = useRef(false);
 
+  // Typing helpers / timers / broadcast
+  const TYPING_GRACE_MS = 20000; // optimistic window while awaiting first reply
+  const typingTimerRef = useRef<number | null>(null);
+  const typingExpireTimer = useRef<number | null>(null);
+  const lastTypingSentAt = useRef<number>(0);
+  const typingChanRef = useRef<any>(null);
+
   const sb = useMemo(
     () => (conversationId ? supabaseForConversation(conversationId) : null),
     [conversationId]
   );
+
+  function stopTypingSoon(ms = 800) {
+    if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = window.setTimeout(() => setTyping(false), ms);
+  }
+
+  function showTyping() {
+    setTyping(true);
+    if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = window.setTimeout(() => setTyping(false), 800);
+  }
+
+  function emitUserTyping(active: boolean) {
+    if (!typingChanRef.current) return;
+    const now = Date.now();
+    if (active && now - lastTypingSentAt.current < 800) return; // throttle
+    lastTypingSentAt.current = now;
+    typingChanRef.current.send({
+      type: "broadcast",
+      event: "typing",
+      payload: { from: "user", active },
+    });
+  }
 
   function appendUnique(
     list: Array<{
@@ -104,8 +131,10 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     if (add.length) {
       setMessages((prev) => [...prev, ...add]);
       lastSeenIso.current = list[list.length - 1].created_at;
-      if (list[list.length - 1].role === "assistant") setTyping(false);
+
       const last = list[list.length - 1];
+      if (last.role === "assistant") stopTypingSoon(1200);
+
       if (last.role === "assistant") {
         try {
           localStorage.setItem(LAST_ASSISTANT_KEY, String(last.created_at));
@@ -115,6 +144,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     }
   }
 
+  // Load local cache + conv id
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORE_KEY);
@@ -132,21 +162,34 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     if (conv) setConversationId(conv);
   }, []);
 
+  // Persist cache
   useEffect(() => {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify(messages));
     } catch {}
   }, [messages]);
 
+  // Autoscroll
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages, typing]);
 
+  // Focus input if #chat-section
   useEffect(() => {
     if (window.location.hash === "#chat-section") inputRef.current?.focus();
   }, []);
 
+  // Cleanup timers
+  useEffect(() => {
+    return () => {
+      if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
+      if (typingExpireTimer.current)
+        window.clearTimeout(typingExpireTimer.current);
+    };
+  }, []);
+
+  // Initial history load
   useEffect(() => {
     if (!sb || !conversationId) return;
     (async () => {
@@ -176,6 +219,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     })();
   }, [sb, conversationId]);
 
+  // Realtime message inserts
   useEffect(() => {
     if (!sb || !conversationId) return;
     const ch = sb
@@ -208,8 +252,9 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
             },
           ]);
           lastSeenIso.current = String(row.created_at);
-          if (role === "assistant") setTyping(false);
+
           if (role === "assistant") {
+            stopTypingSoon(1200);
             try {
               localStorage.setItem(LAST_ASSISTANT_KEY, String(row.created_at));
             } catch {}
@@ -224,6 +269,46 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     };
   }, [sb, conversationId]);
 
+  // Typing broadcast: listen to AGENT typing (must match AdminChat)
+  useEffect(() => {
+    if (!sb || !conversationId) return;
+
+    const typingChan = sb.channel(`typing:${conversationId}`, {
+      config: { broadcast: { self: false } },
+    });
+
+    typingChan
+      .on("broadcast", { event: "typing" }, (payload: any) => {
+        const p = payload?.payload || {};
+        if (p.from === "agent") {
+          if (p.active) {
+            setTyping(true);
+            if (typingExpireTimer.current)
+              window.clearTimeout(typingExpireTimer.current);
+            typingExpireTimer.current = window.setTimeout(
+              () => setTyping(false),
+              2500
+            );
+          } else {
+            setTyping(false);
+          }
+        }
+      })
+      .subscribe();
+
+    typingChanRef.current = typingChan;
+
+    return () => {
+      if (typingChanRef.current) sb.removeChannel(typingChanRef.current);
+      typingChanRef.current = null;
+      if (typingExpireTimer.current) {
+        window.clearTimeout(typingExpireTimer.current);
+        typingExpireTimer.current = null;
+      }
+    };
+  }, [sb, conversationId]);
+
+  // Lightweight polling fallback
   useEffect(() => {
     if (!sb || !conversationId) return;
     stopPollingRef.current = false;
@@ -294,6 +379,10 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
       return;
     }
 
+    // optimistic typing so the dots show immediately
+    if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
+    setTyping(false);
+
     const tempId = crypto.randomUUID();
     const optimistic: Msg = {
       id: tempId,
@@ -303,7 +392,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     };
     setMessages((m) => [...m, optimistic]);
     seenIds.current.add(tempId);
-    lastSeenIso.current = new Date().toISOString();
+    // DO NOT set lastSeenIso here (avoid skipping first assistant row)
     setInput("");
 
     try {
@@ -333,6 +422,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
       }
     } catch (err) {
       console.error("[ChatPanel] send failed:", err);
+      stopTypingSoon(0);
     }
   }
 
@@ -396,18 +486,6 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
             </p>
           </div>
 
-          {/* RIGHT: ETA pill */}
-          {/* <div className="ml-auto shrink-0 md:self-center order-1 md:order-none">
-            <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white/70 px-3 py-1 text-[11px] text-neutral-600  ">
-              <span className="relative inline-block h-1.5 w-1.5 rounded-full bg-green-400">
-                <span className="absolute inset-0 rounded-full bg-green-400/60 animate-ping motion-reduce:animate-none" />
-              </span>
-              <span className="font-medium">
-                Estimated response: &lt; 2 min
-              </span>
-            </div>
-          </div> */}
-
           <AgentAvailabilityPill status={status} />
         </div>
       </div>
@@ -429,32 +507,46 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
                 <div>
                   <AssistantHeader />
                   <div className="space-y-1.5">
-                    {g.items.map((m) => (
-                      <div key={m.id}>
-                        <div className="inline-block max-w-[68ch] rounded-2xl rounded-tl-md bg-white px-4 py-2 shadow-sm ring-1 ring-neutral-200">
-                          {m.text}
+                    {g.items.map((m, idx) => {
+                      const next = g.items[idx + 1];
+                      const isLastOfMinuteRun = !next || next.at !== m.at;
+
+                      return (
+                        <div key={m.id}>
+                          <div className="inline-block max-w-[68ch] rounded-2xl rounded-tl-md bg-white px-4 py-2 shadow-sm ring-1 ring-neutral-200">
+                            {m.text}
+                          </div>
+                          {isLastOfMinuteRun && (
+                            <div className="mt-1 text-xs text-neutral-500">
+                              {m.at}
+                            </div>
+                          )}
                         </div>
-                        <div className="mt-1 text-xs text-neutral-500">
-                          {m.at}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
             ) : (
               <div className="flex flex-row-reverse items-start gap-3">
                 <div className="space-y-1.5 text-right">
-                  {g.items.map((m) => (
-                    <div key={m.id}>
-                      <div className="inline-block max-w-[68ch] rounded-2xl rounded-tr-md bg-black text-white px-4 py-2 shadow-sm ml-24 text-left">
-                        {m.text}
+                  {g.items.map((m, idx) => {
+                    const next = g.items[idx + 1];
+                    const isLastOfMinuteRun = !next || next.at !== m.at;
+
+                    return (
+                      <div key={m.id}>
+                        <div className="inline-block max-w-[68ch] rounded-2xl rounded-tr-md bg-black text-white px-4 py-2 shadow-sm ml-24 text-left">
+                          {m.text}
+                        </div>
+                        {isLastOfMinuteRun && (
+                          <div className="mt-1 text-right text-xs text-neutral-500">
+                            {m.at}
+                          </div>
+                        )}
                       </div>
-                      <div className="mt-1 text-right text-xs text-neutral-500">
-                        {m.at}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -487,7 +579,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
         <div className="h-3" />
       </div>
 
-      {/* Quick prompts sit above the footer space; shrink if needed */}
+      {/* Quick prompts */}
       {showPrompts && (
         <div className="mt-3 px-5 max-h-40 overflow-y-auto flex-shrink-0">
           <div className="flex flex-wrap gap-2">
@@ -521,7 +613,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
         </div>
       )}
 
-      {/* Composer (fixed height) */}
+      {/* Composer */}
       <form onSubmit={onSubmit} className="mt-4 flex-shrink-0">
         <div className="relative flex items-center">
           <input
@@ -529,7 +621,17 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
             data-chat-input
             ref={inputRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              setInput(v);
+              const active = !!v.trim();
+              if (active) {
+                emitUserTyping(true);
+              } else {
+                emitUserTyping(false);
+              }
+            }}
+            onBlur={() => emitUserTyping(false)}
             placeholder="Describe your project.."
             className="flex-1 rounded-full border border-neutral-300 bg-white px-4 py-3 text-neutral-900 placeholder:text-neutral-400 outline-none focus:ring-2 focus:ring-neutral-200"
           />
@@ -540,7 +642,6 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
             aria-label="Send message"
             title="Send"
           >
-            {/* icon */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"

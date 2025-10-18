@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabaseBrowser } from "../lib/supabaseBrowser";
 import DashboardAvailabilityToggle from "./DashboardAvailabilityToggle";
 import LiveClock from "./LiveClock";
+import { Loader } from "lucide-react";
 
 type Conv = {
   id: string;
@@ -408,6 +409,26 @@ export default function AdminPanel() {
     [search, initialConvFromUrl]
   );
 
+  function DoubleCheckIcon({ className = "" }: { className?: string }) {
+    // Simple WhatsApp-style double check
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        className={`h-4 w-4 ${className}`}
+      >
+        <path
+          d="M1.7 13.2l3.7 3.7 7.1-7.1M8.4 16l1.7 1.7 7.9-7.9"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  }
+
   return (
     <div className="h-dvh grid grid-cols-12 overflow-hidden font-display">
       {/* Left: conversations list */}
@@ -466,8 +487,27 @@ export default function AdminPanel() {
                   <div className="text-xs text-neutral-500">
                     {new Date(c.created_at).toLocaleString()}
                   </div>
-                  <div className="font-medium truncate">
-                    {c.last?.text || "(no messages yet)"}
+
+                  <div className="font-medium truncate flex items-center gap-1.5">
+                    {/* Show double check only when last message wasn't from the agent */}
+                    {c.last?.role !== "agent" && c.last?.text ? (
+                      <Loader
+                        size={16}
+                        strokeWidth={3}
+                        className="text-[#FABC4B] "
+                      />
+                    ) : null}
+
+                    {/* Highlight yellow if last message was from the user */}
+                    <span
+                      className={`truncate font-normal ${
+                        c.last?.role !== "agent"
+                          ? "text-black font-medium"
+                          : "text-neutral-400"
+                      }`}
+                    >
+                      {c.last?.text || "(no messages yet)"}
+                    </span>
                   </div>
                 </button>
               ))}

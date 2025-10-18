@@ -26,7 +26,7 @@ export default function AgentAvailabilityPill({
         <span className="font-medium text-xs">
           {isAvailable
             ? "Estimated response: 2 min"
-            : "Unavailable — until 7h GMT+1"}
+            : "Unavailable — until 7 AM (GMT+1"}
         </span>
       </div>
 
