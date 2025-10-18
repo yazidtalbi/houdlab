@@ -1,16 +1,16 @@
 ---
-/**
- * ProjectShowcase.astro
- *
- * Props:
- * - titleAr: Arabic title string (optional)
- * - subtitle: English subtitle (optional)
- * - rows: Array of rows. Each row is either:
- *    { variant: "regular", image: { src, alt?, class? } }
- *    { variant: "two", left: { src, alt?, class? }, right: { src, alt?, class? } }
+import { Image } from "astro:assets";
+
+/** Props
+ * - titleAr?: string
+ * - subtitle?: string
+ * - className?: string
+ * - rows: Array<Row>
+ * - imgQuality?: number         // default 90
+ * - imgFormat?: "jpeg"|"webp"|"avif"  // default "jpeg" (sharpest look)
  */
 
-type Img = { src: string; alt?: string; class?: string };
+type Img = { src: any; alt?: string; class?: string };
 type Row =
   | { variant: "regular"; image: Img }
   | { variant: "two"; left: Img; right: Img };
@@ -20,21 +20,46 @@ const {
   subtitle,
   rows = [],
   className = "",
+  imgQuality = 90,
+  imgFormat = "jpeg",
 } = Astro.props as {
   titleAr?: string;
   subtitle?: string;
   rows: Row[];
   className?: string;
+  imgQuality?: 100;
+  imgFormat?: "jpeg" | "webp" | "avif";
 };
 
-const baseImg =
-  "rounded-2xl border border-gray-200 bg-white/70 w-full h-auto object-cover";
+// ⬇️ No border by default
+const baseImg = "rounded-2xl w-full h-auto object-cover";
+// ⬇️ Border only for regular variant
+const borderedImg =
+  "rounded-2xl border border-gray-200 w-full h-auto object-cover";
+
+const isImportedAsset = (src: any) =>
+  typeof src === "object" &&
+  src &&
+  "src" in src &&
+  "width" in src &&
+  "height" in src;
+
+/** Layout notes:
+ * Container is max-w-6xl (72rem ≈ 1152px). For sharpness on DPR 2–3, provide
+ * candidates up to 2.5–3× the layout width.
+ */
+const widthsSingle = [640, 768, 1024, 1280, 1536, 1920];
+const widthsHalf = [480, 640, 768, 960, 1024, 1280, 1536, 1920];
+
+// Accurate sizes so the browser picks the right candidate:
+const sizesSingle = "(min-width:1280px) 1152px, (min-width:768px) 80vw, 100vw";
+const sizesHalf = "(min-width:1280px) 576px, (min-width:768px) 40vw, 100vw";
 ---
 
-<section class={`max-w-6xl mx-auto  ${className}  `}>
+<section class={`max-w-6xl mx-auto ${className}`}>
   {
     (titleAr || subtitle) && (
-      <section class="pt-26 pb-20 text-center">
+      <section class="pt-60 pb-20 text-center">
         {titleAr && (
           <h2
             dir="rtl"
@@ -53,40 +78,85 @@ const baseImg =
     )
   }
 
-  <div class="flex flex-col gap-y-4">
+  <div class="flex flex-col gap-y-6">
     {
       rows.map((row, i) => {
+        const eager = i === 0;
+
         if (row.variant === "two") {
           return (
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" key={i}>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" key={i}>
               <div>
-                <img
-                  src={row.left.src}
-                  alt={row.left.alt ?? ""}
-                  loading="lazy"
-                  class={`${baseImg} ${row.left.class ?? ""}`}
-                />
+                {isImportedAsset(row.left.src) ? (
+                  <Image
+                    src={row.left.src}
+                    alt={row.left.alt ?? ""}
+                    widths={widthsHalf}
+                    sizes={sizesHalf}
+                    quality={imgQuality}
+                    format={imgFormat}
+                    loading={eager ? "eager" : "lazy"}
+                    fetchpriority={eager ? "high" : undefined}
+                    class={`${baseImg} ${row.left.class ?? ""}`}
+                  />
+                ) : (
+                  <img
+                    src={row.left.src}
+                    alt={row.left.alt ?? ""}
+                    loading="lazy"
+                    class={`${baseImg} ${row.left.class ?? ""}`}
+                  />
+                )}
               </div>
+
               <div>
-                <img
-                  src={row.right.src}
-                  alt={row.right.alt ?? ""}
-                  loading="lazy"
-                  class={`${baseImg} ${row.right.class ?? ""}`}
-                />
+                {isImportedAsset(row.right.src) ? (
+                  <Image
+                    src={row.right.src}
+                    alt={row.right.alt ?? ""}
+                    widths={widthsHalf}
+                    sizes={sizesHalf}
+                    quality={imgQuality}
+                    format={imgFormat}
+                    loading="lazy"
+                    class={`${baseImg} ${row.right.class ?? ""}`}
+                  />
+                ) : (
+                  <img
+                    src={row.right.src}
+                    alt={row.right.alt ?? ""}
+                    loading="lazy"
+                    class={`${baseImg} ${row.right.class ?? ""}`}
+                  />
+                )}
               </div>
             </div>
           );
         }
-        // regular
+
+        // Regular
         return (
           <div key={i}>
-            <img
-              src={row.image.src}
-              alt={row.image.alt ?? ""}
-              loading="lazy"
-              class={`${baseImg} ${row.image.class ?? ""}`}
-            />
+            {isImportedAsset(row.image.src) ? (
+              <Image
+                src={row.image.src}
+                alt={row.image.alt ?? ""}
+                widths={widthsSingle}
+                sizes={sizesSingle}
+                quality={imgQuality}
+                format={imgFormat}
+                loading={eager ? "eager" : "lazy"}
+                fetchpriority={eager ? "high" : undefined}
+                class={`${borderedImg} ${row.image.class ?? ""}`}
+              />
+            ) : (
+              <img
+                src={row.image.src}
+                alt={row.image.alt ?? ""}
+                loading="lazy"
+                class={`${borderedImg} ${row.image.class ?? ""}`}
+              />
+            )}
           </div>
         );
       })

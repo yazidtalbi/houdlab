@@ -12,14 +12,16 @@ const isActive = (href: string) => {
 };
 
 const linkClass = (href: string) =>
-  `text-md font-medium px-6 py-2 rounded-full border transition-all duration-200 ${
+  `text-md font-medium px-6 py-2 rounded-full  transition-all duration-200 ${
     isActive(href)
       ? "border-neutral-400 text-neutral-900 bg-neutral-100"
-      : "border-neutral-500 text-neutral-500 hover:text-neutral-600 hover:border-neutral-500 hover:bg-neutral-50"
+      : "border-black text-black hover:text-neutral-600 hover:border-neutral-500 hover:bg-neutral-50"
   }`;
 ---
 
-<footer class="bg-white">
+<footer
+  class="bg-white items-end pb-1 bottom-5 border border-black text-black hover:text-neutral-600 hover:border-neutral-500 hover:bg-neutral-50 fixed rounded-full"
+>
   <div class="max-w-6xl mx-auto flex flex-wrap justify-center gap-4">
     <a href="/about" class={linkClass("/about")}>About</a>
   </div>

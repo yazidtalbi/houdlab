@@ -12,16 +12,16 @@ type IconSlide = { src: string; alt?: string };
 type IconSet = IconSlide[]; // slides for a single circle
 
 export default function TrustedByIconsGrid({
-  title = "OpenPurpose®",
+  title = "Houd Lab®",
   lines = [
-    "Welcome to The Creative Circle.",
-    "A curated membership club for designers,",
-    "founders and engineers.",
+    "We are a design-driven lab from 🇲🇦 Morocco.",
+    "We craft interfaces, identities, & experiences ",
+    "that merge clarity, emotion, and precision.",
   ],
   groups,
   sizePx = 80, // circle size
   gapPx = 24, // space between circles
-  intervalMs = 2500, // autoplay speed
+  intervalMs = 7500, // autoplay speed
 }: {
   title?: string;
   lines?: string[];
@@ -33,7 +33,7 @@ export default function TrustedByIconsGrid({
   const sets = groups?.length ? groups : demoGroups;
 
   return (
-    <section className="mx-auto max-w-3xl px-4 py-20 text-center">
+    <section className="mx-auto max-w-3xl px-4 py-10 text-center">
       <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-neutral-900">
         {title}
       </h1>
@@ -62,6 +62,10 @@ export default function TrustedByIconsGrid({
             ariaLabel={`Brand ${idx + 1}`}
           />
         ))}
+      </div>
+
+      <div className="mt-20 text-[18px] md:text-[20px] leading-snug text-neutral-400">
+        hello@houdlab.com
       </div>
     </section>
   );

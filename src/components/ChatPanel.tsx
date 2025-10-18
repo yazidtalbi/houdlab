@@ -363,35 +363,51 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
           <span className="text-[#FABC4B]">Products</span>
         </h1>
         <hr className="md:mt-5 mt-2 border-neutral-200" />
-        <div className="md:mt-5 mt-3 flex items-center gap-3">
-          <div className="flex -space-x-3">
-            <img
-              src="/avatars/a2.png"
-              alt="Assistant 1 from Houd Lab"
-              className="h-10 w-10 rounded-full border-2 border-white"
-            />
-            <img
-              src="/avatars/a3.png"
-              alt="Assistant 2 from Houd Lab"
-              className="h-10 w-10 rounded-full border-2 border-white"
-            />
-            <img
-              src="/avatars/a1.png"
-              alt="Assistant 3 from Houd Lab"
-              className="h-10 w-10 rounded-full border-2 border-white"
-            />
+        <div className="md:mt-5 mt-3 flex flex-wrap items-center justify-between gap-3">
+          {/* LEFT: avatars + copy */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="flex -space-x-3 shrink-0">
+              <img
+                src="/avatars/a2.png"
+                alt="Assistant 1 from Houd Lab"
+                className="h-10 w-10 rounded-full border-2 border-white"
+              />
+              <img
+                src="/avatars/a3.png"
+                alt="Assistant 2 from Houd Lab"
+                className="h-10 w-10 rounded-full border-2 border-white"
+              />
+              <img
+                src="/avatars/a1.png"
+                alt="Assistant 3 from Houd Lab"
+                className="h-10 w-10 rounded-full border-2 border-white"
+              />
+            </div>
+
+            <p className="text-xs md:text-sm text-neutral-700 font-medium leading-snug">
+              Chat with an expert right now,
+              <br className="block" /> and get your project scope in minutes.
+            </p>
           </div>
-          <p className="text-xs md:text-sm text-neutral-700 font-medium">
-            Chat with an expert right now,
-            <br className="block" /> and get your project scope in minutes.
-          </p>
+
+          {/* RIGHT: ETA pill */}
+          <div className="ml-auto shrink-0 md:self-center order-1 md:order-none">
+            <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white/70 px-3 py-1 text-[11px] text-neutral-600  ">
+              <span className="relative inline-block h-1.5 w-1.5 rounded-full bg-green-400">
+                <span className="absolute inset-0 rounded-full bg-green-400/60 animate-ping motion-reduce:animate-none" />
+              </span>
+              <span className="font-medium">
+                Estimated response: &lt; 2 min
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Messages area: the ONLY scroller */}
       <div
         ref={scrollRef}
-        className="mt-4 flex-1 min-h-0 overflow-y-auto rounded-2xl p-4"
+        className=" flex-1 min-h-0 overflow-y-auto rounded-2xl p-4"
       >
         {groups.map((g, gi) => (
           <div key={gi} className="mb-4">
@@ -463,39 +479,6 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
         <div className="h-3" />
       </div>
 
-      {/* Composer (fixed height) */}
-      <form onSubmit={onSubmit} className="mt-4 flex-shrink-0">
-        <div className="relative flex items-center">
-          <input
-            id="chat-input"
-            data-chat-input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe your project.."
-            className="flex-1 rounded-full border border-neutral-300 bg-white px-4 py-3 text-neutral-900 placeholder:text-neutral-400 outline-none focus:ring-2 focus:ring-neutral-200"
-          />
-          <button
-            type="submit"
-            disabled={!input.trim()}
-            className="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full bg-neutral-900 text-white disabled:bg-neutral-300 mr-1 cursor-pointer"
-            aria-label="Send message"
-            title="Send"
-          >
-            {/* icon */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="h-6 w-6 mr-[1.25px] mt-[1.25px]"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d="M20.33 3.66996C20.1408 3.48213 19.9035 3.35008 19.6442 3.28833C19.3849 3.22659 19.1135 3.23753 18.86 3.31996L4.23 8.19996C3.95867 8.28593 3.71891 8.45039 3.54099 8.67255C3.36307 8.89471 3.25498 9.16462 3.23037 9.44818C3.20576 9.73174 3.26573 10.0162 3.40271 10.2657C3.5397 10.5152 3.74754 10.7185 4 10.85L10.07 13.85L13.07 19.94C13.1906 20.1783 13.3751 20.3785 13.6029 20.518C13.8307 20.6575 14.0929 20.7309 14.36 20.73H14.46C14.7461 20.7089 15.0192 20.6023 15.2439 20.4239C15.4686 20.2456 15.6345 20.0038 15.72 19.73L20.67 5.13996C20.7584 4.88789 20.7734 4.6159 20.7132 4.35565C20.653 4.09541 20.5201 3.85762 20.33 3.66996ZM4.85 9.57996L17.62 5.31996L10.53 12.41L4.85 9.57996ZM14.43 19.15L11.59 13.47L18.68 6.37996L14.43 19.15Z" />
-            </svg>
-          </button>
-        </div>
-      </form>
-
       {/* Quick prompts sit above the footer space; shrink if needed */}
       {showPrompts && (
         <div className="mt-3 px-5 max-h-40 overflow-y-auto flex-shrink-0">
@@ -529,6 +512,39 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
           </div>
         </div>
       )}
+
+      {/* Composer (fixed height) */}
+      <form onSubmit={onSubmit} className="mt-4 flex-shrink-0">
+        <div className="relative flex items-center">
+          <input
+            id="chat-input"
+            data-chat-input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Describe your project.."
+            className="flex-1 rounded-full border border-neutral-300 bg-white px-4 py-3 text-neutral-900 placeholder:text-neutral-400 outline-none focus:ring-2 focus:ring-neutral-200"
+          />
+          <button
+            type="submit"
+            disabled={!input.trim()}
+            className="absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full bg-neutral-900 text-white disabled:bg-neutral-300 mr-1 cursor-pointer"
+            aria-label="Send message"
+            title="Send"
+          >
+            {/* icon */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="h-6 w-6 mr-[1.25px] mt-[1.25px]"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M20.33 3.66996C20.1408 3.48213 19.9035 3.35008 19.6442 3.28833C19.3849 3.22659 19.1135 3.23753 18.86 3.31996L4.23 8.19996C3.95867 8.28593 3.71891 8.45039 3.54099 8.67255C3.36307 8.89471 3.25498 9.16462 3.23037 9.44818C3.20576 9.73174 3.26573 10.0162 3.40271 10.2657C3.5397 10.5152 3.74754 10.7185 4 10.85L10.07 13.85L13.07 19.94C13.1906 20.1783 13.3751 20.3785 13.6029 20.518C13.8307 20.6575 14.0929 20.7309 14.36 20.73H14.46C14.7461 20.7089 15.0192 20.6023 15.2439 20.4239C15.4686 20.2456 15.6345 20.0038 15.72 19.73L20.67 5.13996C20.7584 4.88789 20.7734 4.6159 20.7132 4.35565C20.653 4.09541 20.5201 3.85762 20.33 3.66996ZM4.85 9.57996L17.62 5.31996L10.53 12.41L4.85 9.57996ZM14.43 19.15L11.59 13.47L18.68 6.37996L14.43 19.15Z" />
+            </svg>
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

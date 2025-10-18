@@ -1,0 +1,477 @@
+---
+import Footer from "@/components/Footer.astro";
+import NextProject from "@/components/NextProject.astro";
+import ProjectShowcase from "@/components/ProjectShowcase.astro";
+import SmoothScroll from "@/components/SmoothScroll";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+import ChatNotifications from "@/components/ChatNotifications.tsx";
+
+// Footer.astro
+const { pathname } = Astro.url;
+
+const normalize = (p: string) => p.replace(/\/+$/, "") || "/";
+const current = normalize(pathname);
+import zemium1 from "@/works/zemium/1.jpeg";
+import zemium2 from "@/works/zemium/2.jpg";
+import zemium3 from "@/works/zemium/3.jpg";
+
+import allied1 from "@/works/allied/allied1.jpg";
+import allied2 from "@/works/allied/allied2.jpg";
+import allied3 from "@/works/allied/allied3.jpg";
+import allied3a from "@/works/allied/allied3a.jpg";
+import allied3b from "@/works/allied/allied3b.jpg";
+
+import casablanca1 from "@/works/casablanca/casablanca1.jpg";
+import casablanca2 from "@/works/casablanca/casablanca2.jpg";
+import casablanca3a from "@/works/casablanca/casablanca3a.jpg";
+import casablanca3b from "@/works/casablanca/casablanca3b.jpg";
+
+import vf1 from "@/works/vf/vf1.jpg";
+import vf2a from "@/works/vf/vf2a.jpg";
+import vf2b from "@/works/vf/vf2b.jpg";
+import vf3 from "@/works/vf/vf3.jpg";
+import vf4 from "@/works/vf/vf4.jpg";
+import vf5 from "@/works/vf/vf5.jpg";
+import vf6 from "@/works/vf/vf6.jpg";
+import vf7 from "@/works/vf/vf7.jpg";
+
+import selenitis1 from "@/works/selenitis/selenitis1.jpg";
+import selenitis2 from "@/works/selenitis/selenitis2.jpg";
+import selenitis3a from "@/works/selenitis/selenitis3a.jpg";
+import selenitis3b from "@/works/selenitis/selenitis3b.jpg";
+
+import folklore1 from "@/works/folklore/folklore1.jpg";
+import folklore2a from "@/works/folklore/folklore2a.jpg";
+import folklore2b from "@/works/folklore/folklore2b.jpg";
+
+import pve1 from "@/works/pve/pve1.jpg";
+import pve2 from "@/works/pve/pve2.jpg";
+import pve3a from "@/works/pve/pve3a.jpg";
+import pve3c from "@/works/pve/pve3c.jpg";
+
+import knockout1 from "@/works/knockout/knockout1.jpg";
+import knockout2a from "@/works/knockout/knockout2a.jpg";
+import knockout2b from "@/works/knockout/knockout2b.jpg";
+
+import masterpiece1 from "@/works/masterpiece/masterpiece1.jpg";
+import masterpiece2 from "@/works/masterpiece/masterpiece2.jpg";
+import masterpiece3a from "@/works/masterpiece/masterpiece3a.jpg";
+import masterpiece3b from "@/works/masterpiece/masterpiece3b.jpg";
+
+/* -------------------- ZEMIUM -------------------- */
+const zemium = [
+  {
+    variant: "regular",
+    image: { src: zemium1, alt: "Zemium branding and website design overview" },
+  },
+  {
+    variant: "regular",
+    image: { src: zemium2, alt: "Zemium typography and color system details" },
+  },
+  {
+    variant: "regular",
+    image: { src: zemium3, alt: "Zemium website interface on desktop view" },
+  },
+];
+
+/* -------------------- ALLIED -------------------- */
+const allied = [
+  {
+    variant: "regular",
+    image: { src: allied1, alt: "Allied website homepage redesign" },
+  },
+  {
+    variant: "regular",
+    image: { src: allied2, alt: "Allied minimal interface layout" },
+  },
+  {
+    variant: "regular",
+    image: { src: allied3, alt: "Allied clean UI components" },
+  },
+  {
+    variant: "two",
+    left: { src: allied3a, alt: "Allied dark theme card design" },
+    right: { src: allied3b, alt: "Allied light theme interface preview" },
+  },
+];
+
+/* -------------------- CASABLANCA HOTEL -------------------- */
+const casablanca = [
+  {
+    variant: "regular",
+    image: {
+      src: casablanca1,
+      alt: "Casablanca Hotel virtual dashboard interface",
+    },
+  },
+  {
+    variant: "regular",
+    image: {
+      src: casablanca2,
+      alt: "Casablanca Hotel immersive 3D interaction preview",
+    },
+  },
+  {
+    variant: "two",
+    left: {
+      src: casablanca3a,
+      alt: "Casablanca Hotel VR dashboard left screen",
+    },
+    right: {
+      src: casablanca3b,
+      alt: "Casablanca Hotel VR dashboard right screen",
+    },
+  },
+];
+
+/* -------------------- VISIT FOOTBALL -------------------- */
+const vf = [
+  {
+    variant: "regular",
+    image: { src: vf1, alt: "VisitFootball redesigned homepage" },
+  },
+  {
+    variant: "two",
+    left: { src: vf2a, alt: "VisitFootball old design" },
+    right: { src: vf2b, alt: "VisitFootball new redesign" },
+  },
+
+  {
+    variant: "regular",
+    image: { src: vf4, alt: "VisitFootball VIP page" },
+  },
+
+  {
+    variant: "regular",
+    image: { src: vf3, alt: "VisitFootball tickets flow" },
+  },
+  {
+    variant: "regular",
+    image: { src: vf5, alt: "VisitFootball tickets UI" },
+  },
+  {
+    variant: "regular",
+    image: { src: vf6, alt: "VisitFootball quote system" },
+  },
+  {
+    variant: "regular",
+    image: { src: vf7, alt: "VisitFootball dashboard" },
+  },
+];
+
+/* -------------------- SELENITIS -------------------- */
+const selenitis = [
+  {
+    variant: "regular",
+    image: { src: selenitis1, alt: "Selenitis luxury brand identity design" },
+  },
+  {
+    variant: "regular",
+    image: { src: selenitis2, alt: "Selenitis packaging and logo application" },
+  },
+  {
+    variant: "two",
+    left: { src: selenitis3a, alt: "Selenitis typography and brand palette" },
+    right: { src: selenitis3b, alt: "Selenitis identity mockup visuals" },
+  },
+];
+
+/* -------------------- FOLKLORE 24' -------------------- */
+const folklore = [
+  {
+    variant: "regular",
+    image: {
+      src: folklore1,
+      alt: "Folklore 24' brand identity and landing design",
+    },
+  },
+  {
+    variant: "two",
+    left: { src: folklore2a, alt: "Folklore 24' homepage layout concept" },
+    right: { src: folklore2b, alt: "Folklore 24' visual storytelling section" },
+  },
+];
+
+/* -------------------- PV ENERGY -------------------- */
+const pve = [
+  {
+    variant: "regular",
+    image: { src: pve1, alt: "PVEnergy brand identity and landing design" },
+  },
+  {
+    variant: "regular",
+    image: { src: pve2, alt: "PVEnergy solar product presentation" },
+  },
+  {
+    variant: "two",
+    left: { src: pve3a, alt: "PVEnergy service features section" },
+    right: { src: pve3c, alt: "PVEnergy clean UI components" },
+  },
+];
+
+/* -------------------- KNOCKOUT -------------------- */
+const knockout = [
+  {
+    variant: "regular",
+    image: { src: knockout1, alt: "Knockout social media design poster" },
+  },
+  {
+    variant: "two",
+    left: { src: knockout2a, alt: "Knockout advertising concept left visual" },
+    right: {
+      src: knockout2b,
+      alt: "Knockout bold visual identity right poster",
+    },
+  },
+];
+
+/* -------------------- THE MASTERPIECE -------------------- */
+const masterpiece = [
+  {
+    variant: "regular",
+    image: { src: masterpiece1, alt: "The Masterpiece minimal website design" },
+  },
+  {
+    variant: "regular",
+    image: {
+      src: masterpiece2,
+      alt: "The Masterpiece clean interface preview",
+    },
+  },
+  {
+    variant: "two",
+    left: { src: masterpiece3a, alt: "The Masterpiece light layout design" },
+    right: { src: masterpiece3b, alt: "The Masterpiece dark layout variation" },
+  },
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <BaseLayout
+    title="Works"
+    description="Design partner for founders. We build brands, web designs, dashboards, and web apps that blend clarity with craft."
+    ><body class="flex flex-col min-h-screen max-w-[1800px] mx-auto pb-10">
+      <ChatNotifications client:load />
+      <header class="fixed top-12 left-1/2 -translate-x-1/2 z-50">
+        <div class="flex items-center justify-center gap-6 px-8" role="banner">
+          <a
+            href="/"
+            aria-label="Houd Lab"
+            class="flex items-center gap-3 group"
+          >
+            <img
+              src="/hyhy.png"
+              alt="Houd Lab Logo"
+              class="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
+            />
+          </a>
+        </div>
+      </header>
+      <!-- <SmoothScroll client:load /> -->
+
+      <section id="zemium" data-work="zemium">
+        <ProjectShowcase
+          titleAr="زيــميوم"
+          subtitle="Designing the identity and website for a leading SAP recruitment firm."
+          rows={zemium}
+        />
+      </section>
+
+      <section id="allied" class="scroll-mt-[100px] mt-12">
+        <ProjectShowcase
+          titleAr="ألايــد"
+          subtitle="We redesigned a clean, minimal digital presence for Allied."
+          rows={allied}
+        />
+      </section>
+
+      <section id="casablanca" class="scroll-mt-[100px] mt-12">
+        <ProjectShowcase
+          titleAr="فندق كازابلانكا"
+          subtitle="Virtual reality dashboard experience for Casablanca Hotel."
+          rows={casablanca}
+        />
+      </section>
+
+      <section id="vf" class="scroll-mt-[100px] mt-12">
+        <ProjectShowcase
+          titleAr="فيزيت فوتبول"
+          subtitle="We redesigned the complete booking experience for football fans worldwide."
+          rows={vf}
+        />
+      </section>
+
+      <section id="selenitis" class="scroll-mt-[100px] mt-12">
+        <ProjectShowcase
+          titleAr="ســيلينيتيس"
+          subtitle="Crafting a timeless identity for a luxury brand."
+          rows={selenitis}
+        />
+      </section>
+
+      <section id="folklore" class="scroll-mt-[100px] mt-12">
+        <ProjectShowcase
+          titleAr="فــولكلور ٢٤"
+          subtitle="Creating the brand and landing page for a cultural moroccan storytelling project."
+          rows={folklore}
+        />
+      </section>
+
+      <section id="pve" class="scroll-mt-[100px] mt-12">
+        <ProjectShowcase
+          titleAr="بي في إنيرجي"
+          subtitle="Branding and designing the landing experience for a solar energy startup."
+          rows={pve}
+        />
+      </section>
+
+      <section id="knockout" class="scroll-mt-[100px] mt-12">
+        <ProjectShowcase
+          titleAr="نـوك آوت"
+          subtitle="Creating bold social visuals and ad campaigns for Knockout."
+          rows={knockout}
+        />
+      </section>
+
+      <section id="masterpiece" class="scroll-mt-[100px] mt-12">
+        <ProjectShowcase
+          titleAr="ماستر بيـس"
+          subtitle="Minimal digital portfolio for a product design studio."
+          rows={masterpiece}
+        />
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="h-20 flex items-center justify-center relative">
+        <footer
+          class="bg-white items-end pb-1 bottom-5 border border-black text-black hover:text-neutral-600 hover:border-neutral-500 hover:bg-neutral-50 fixed rounded-full"
+        >
+          <div class="max-w-6xl mx-auto flex flex-wrap justify-center gap-4">
+            <a
+              href="/"
+              class="text-lg font-medium px-6 py-1 rounded-full transition-all duration-200"
+            >
+              Back
+            </a>
+          </div>
+        </footer>
+      </footer>
+
+      <script is:inline>
+        // Find nearest scrollable ancestor
+        function getScrollContainer(el) {
+          let p = el?.parentElement;
+          while (p && p !== document.body) {
+            const cs = getComputedStyle(p);
+            if (
+              (cs.overflowY === "auto" || cs.overflowY === "scroll") &&
+              p.scrollHeight > p.clientHeight
+            )
+              return p;
+            p = p.parentElement;
+          }
+          return document.scrollingElement || document.documentElement; // window
+        }
+
+        function headerOffsetPx() {
+          const hdr =
+            document.querySelector("[data-sticky-header]") ||
+            document.querySelector("header.sticky, header.fixed");
+          return hdr ? hdr.getBoundingClientRect().height : 0;
+        }
+
+        function jumpToHash() {
+          const id = location.hash.slice(1);
+          if (!id) return;
+          const el = document.getElementById(id);
+          if (!el) return;
+
+          const container = getScrollContainer(el);
+          const off = headerOffsetPx();
+
+          // Compute top of el within container
+          let y = 0,
+            n = el;
+          while (n && n !== container) {
+            y += n.offsetTop || 0;
+            n = n.offsetParent;
+          }
+          y = Math.max(0, y - off);
+
+          if (container === document.documentElement) {
+            // Classic page scroll
+            window.scrollTo({ top: y, behavior: "auto" });
+          } else {
+            // Inner scrollable wrapper
+            container.scrollTop = y;
+          }
+        }
+
+        // Handle initial load + future hash changes + late content
+        function kick(tries = 40) {
+          const id = location.hash.slice(1);
+          if (!id) return;
+          const el = document.getElementById(id);
+          if (el) {
+            jumpToHash();
+            // Correct after layout shifts
+            setTimeout(jumpToHash, 120);
+            setTimeout(jumpToHash, 400);
+          } else if (tries > 0) {
+            requestAnimationFrame(() => kick(tries - 1));
+          }
+        }
+
+        // One source of truth: our handler. Disable native smooth to avoid double-jumps.
+        try {
+          document.documentElement.style.scrollBehavior = "auto";
+        } catch {}
+
+        window.addEventListener("hashchange", () => setTimeout(jumpToHash, 0));
+        document.addEventListener("DOMContentLoaded", () => kick());
+        document.addEventListener("astro:page-load", () => kick());
+        document.addEventListener("astro:after-swap", () => kick());
+      </script>
+
+      <script is:inline>
+        document.addEventListener("DOMContentLoaded", () => {
+          const sections = document.querySelectorAll("section[id]");
+          const options = {
+            root: null,
+            rootMargin: "0px 0px -60% 0px", // triggers when 40% of section visible
+            threshold: 0,
+          };
+
+          let current = "";
+
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const id = entry.target.getAttribute("id");
+                if (id && current !== id) {
+                  history.replaceState(null, "", `#${id}`);
+                  current = id;
+                }
+              }
+            });
+          }, options);
+
+          sections.forEach((section) => observer.observe(section));
+        });
+      </script>
+    </body>
+  </BaseLayout>
+
+
+</html>

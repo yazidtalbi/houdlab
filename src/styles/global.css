@@ -279,3 +279,10 @@ html.lenis {
 }
 
 /* Example scaling rules */
+
+html {
+  scroll-behavior: smooth;
+} /* optional */
+:target {
+  scroll-margin-top: 80px;
+} /* match your sticky header height */

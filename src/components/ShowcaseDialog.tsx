@@ -12,7 +12,7 @@ import {
 import { X } from "lucide-react";
 
 export default function ShowcaseDialog({
-  triggerLabel = "View Case Study",
+  triggerLabel = "In Depth",
   triggerClassName = "inline-flex items-center rounded-full bg-black text-white px-5 py-2 text-sm font-medium hover:bg-neutral-800",
   children,
 }: {
@@ -39,6 +39,23 @@ export default function ShowcaseDialog({
     };
   }, [open]);
 
+  // ShowcaseDialog.tsx (inside component)
+  const [mountHeavy, setMountHeavy] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!open) {
+      setMountHeavy(false);
+      return;
+    }
+    const id = requestAnimationFrame(() => {
+      // prefer idle if available
+      // @ts-ignore
+      (window.requestIdleCallback ?? setTimeout)(() => setMountHeavy(true), 16);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [open]);
+
+  // ShowcaseDialog.tsx (replace your return with this structure)
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -48,44 +65,29 @@ export default function ShowcaseDialog({
       </DialogTrigger>
 
       <DialogPortal>
-        {/* subtle light overlay; tweak as you like */}
-        <DialogOverlay className="fixed inset-0 z-[998] bg-white/50  " />
+        <DialogOverlay className="fixed inset-0 z-[998] bg-white/50" />
 
-        {/* viewport scrollport – whole modal scrolls */}
         <DialogContent
-          data-lenis-prevent
-          data-lenis-prevent-wheel
-          data-lenis-prevent-touch
+          onOpenAutoFocus={(e) => e.preventDefault()}
           className="
-    no-default-close
-    fixed inset-0 z-[999]
-    !left-0 !top-0 !translate-x-0 !translate-y-0 !max-w-none
-    overflow-y-auto overscroll-contain
-    bg-transparent shadow-none outline-none
-    flex items-start justify-center
-    p-4 sm:p-6 md:p-10
-  "
+          fixed inset-0 z-[999] !left-0 !top-0 !translate-x-0 !translate-y-0 !max-w-none
+          overflow-y-auto overscroll-contain bg-transparent shadow-none outline-none
+          flex items-start justify-center p-4 sm:p-6 md:p-10
+          [contain:layout_paint_style]            /* isolate heavy paints */
+          [content-visibility:auto] [contain-intrinsic-size:1px_1200px] /* skip work until visible */
+        "
         >
-          {/* white card */}
-          <div className="relative w-full max-w-[1100px] rounded-2xl bg-white shadow-2xl my-10 mt-20">
-            {/* ⓧ floating close above the card (centered) */}
+          <div className="relative w-full max-w-[1100px] rounded-2xl bg-white shadow-2xl my-10 mt-20 will-change-transform">
             <button
               aria-label="Close"
               onClick={() => setOpen(false)}
-              className="
-                absolute -top-20 left-1/2 -translate-x-1/2
-                inline-flex h-10 w-10 items-center justify-center
-                rounded-full border border-white/60
-                bg-white/20 backdrop-blur-md
-                text-white shadow-md
-                hover:bg-white/30 focus:outline-none
-              "
+              className="absolute -top-20 left-1/2 -translate-x-1/2 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/20 backdrop-blur-md text-white shadow-md hover:bg-white/30 focus:outline-none"
             >
               <X className="h-4 w-4" />
             </button>
 
-            {/* card content */}
-            <div className="px-6 sm:px-8 py-12">{children}</div>
+            {/* Mount heavy children only after open to avoid blocking the open transition */}
+            <div className="px-6 sm:px-8 py-12">{open ? children : null}</div>
           </div>
         </DialogContent>
       </DialogPortal>

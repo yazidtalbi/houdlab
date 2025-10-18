@@ -1,0 +1,83 @@
+---
+// src/layouts/BaseLayout.astro
+import { ClientRouter } from "astro:transitions";
+const { title = "Houd Lab", description = "", class: className } = Astro.props;
+import "../styles/global.css";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Houd Lab — {title}</title>
+
+    <!-- SEO -->
+    <meta name="description" content={description} />
+    <meta
+      name="keywords"
+      content="Houd Lab, UI/UX Design, Branding, Product Design, Astro, Morocco"
+    />
+    <meta name="author" content="Houd Lab" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Open Graph / Social -->
+    <meta
+      property="og:title"
+      content="Houd Lab — Establishing Brands & Products"
+    />
+    <meta
+      property="og:description"
+      content="Chat-based design lab crafting brands, interfaces, and experiences with precision and soul."
+    />
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:url" content="https://houdlab.com" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Houd Lab — Establishing Brands & Products"
+    />
+    <meta
+      name="twitter:description"
+      content="Chat-based design lab crafting brands, interfaces, and experiences with precision and soul."
+    />
+    <meta name="twitter:image" content="/og-image.jpg" />
+
+    <!-- Theme color -->
+    <meta name="theme-color" content="#FABC4B" />
+
+    <!-- Prefetch fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Optional: OG Locale -->
+    <meta property="og:locale" content="en_US" />
+
+    <ClientRouter />
+    <style>
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 112px;
+      } /* header height */
+    </style></head
+  >
+
+  <body class={className}>
+    <slot />
+  </body>
+</html>

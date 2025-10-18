@@ -32,10 +32,8 @@ export default function ChatSheet({
     try {
       const lastAssistant = localStorage.getItem(LAST_ASSISTANT_KEY);
       const lastRead = localStorage.getItem(LAST_READ_KEY);
-
       if (!lastAssistant) return false;
       if (!lastRead) return true;
-
       // compare ISO timestamps
       return new Date(lastAssistant).getTime() > new Date(lastRead).getTime();
     } catch {
@@ -126,7 +124,6 @@ export default function ChatSheet({
       body.style.right = "";
       body.style.width = "";
       (document.documentElement as any).style.scrollbarGutter = "";
-
       if ((window as any)?.lenis?.start) (window as any).lenis.start();
     };
   }, [open, markAsReadNow]);
@@ -160,7 +157,6 @@ export default function ChatSheet({
       >
         <SheetHeader className="border-b p-3 flex flex-row items-center gap-2">
           <SheetTitle className="text-sm font-medium">{title}</SheetTitle>
-
           <div className="ml-auto">
             <SheetClose asChild>
               <Button
