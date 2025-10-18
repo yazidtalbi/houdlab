@@ -44,19 +44,35 @@ const demo = [
   {
     id: 1,
     type: "image",
-    src: "https://images.pexels.com/photos/34100151/pexels-photo-34100151.jpeg",
+    src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/XKJzpOrGwH1cEVSDnrXXMSuAYk.webp",
     caption: "Zemium — Cloud hosting rebrand + case study cards",
     durationMs: 4500,
     ctaLabel: "View the Work",
-    ctaHref: "/work",
+    ctaHref: "/work#zemium",
   },
   {
     id: 2,
     type: "image",
-    src: "https://images.pexels.com/photos/34203371/pexels-photo-34203371.jpeg",
+    src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/QhwPeow1Dxc3PrLmKsVqiN8HogE.webp",
     caption: "Allied — map UI tiles",
     ctaLabel: "View the Work",
-    ctaHref: "/work",
+    ctaHref: "/work#allied",
+  },
+  {
+    id: 3,
+    type: "image",
+    src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/jtcBLRdlNnxqac6tx1mudGZm2E.webp",
+    caption: "Selenitis — map UI tiles",
+    ctaLabel: "View the Work",
+    ctaHref: "/work#selenitis",
+  },
+  {
+    id: 4,
+    type: "image",
+    src: "https://web.archive.org/web/20231121150007im_/https://framerusercontent.com/images/IsgHcdwmuiQ5yp7oSpCd6rqYeoA.webp",
+    caption: "VisitFootball — map UI tiles",
+    ctaLabel: "View the Work",
+    ctaHref: "/work#vf",
   },
 ];
 
@@ -118,8 +134,8 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
   >
     <body class="flex flex-col min-h-screen mx-auto">
       <!-- lg:h-dvh lg:overflow-hidden -->
-      <header class="fixed top-10 left-0 w-full z-50">
-        <div class="flex items-center gap-6 pl-10 pr-8" role="banner">
+      <header class="fixed top-9 left-0 w-full z-50">
+        <div class="flex items-center gap-6 pl-8 pr-8" role="banner">
           <!-- Logo link -->
           <a
             href="/"
@@ -154,16 +170,16 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
           <!-- Plain link -->
 
           <!-- Or inside React -->
-          <div class="container pt-32">
+          <!-- <div class="container pt-32">
             <a href="/work#allied" class="btn">View Allied</a>
 
             <a href="/work#zemium" class="btn">View zes</a>
-          </div>
+          </div> -->
         </div>
 
         <!-- CENTER CHAT -->
         <div
-          class="col-span-12 lg:col-span-6 min-h-0 flex flex-col overflow-visible"
+          class="col-span-12 lg:col-span-6 min-h-0 flex flex-col overflow-visible reveal-up"
         >
           <!-- <ShowcaseDialog client:load title="زيــميوم — Case Study">
           <ProjectShowcase
@@ -225,7 +241,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 
         <!-- RIGHT -->
         <aside
-          class="col-span-12 lg:col-span-3 flex flex-col gap-6 min-h-0 overflow-hidden"
+          class="col-span-12 lg:col-span-3 flex flex-col gap-6 min-h-0 overflow-hidden reveal-up-secondary"
         >
           <KageCarousel stories={demo} client:load className="flex-1 min-h-0" />
           <div class="rounded-2xl">

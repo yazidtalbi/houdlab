@@ -39,7 +39,7 @@ export default function KageCarousel({
   const [index, setIndex] = React.useState(0);
   const [paused, setPaused] = React.useState(false);
   const [muted, setMuted] = React.useState(true);
-  const [isVisible, setIsVisible] = React.useState(true); // intersection visibility
+  const [isVisible, setIsVisible] = React.useState(true);
 
   const prefersReducedMotion = React.useMemo(
     () =>
@@ -63,7 +63,6 @@ export default function KageCarousel({
     [stories.length, loop]
   );
 
-  // Pause/play based on visibility (offscreen/tab hidden)
   React.useEffect(() => {
     const node = containerRef.current;
     if (!node) return;
@@ -86,7 +85,6 @@ export default function KageCarousel({
     };
   }, []);
 
-  // Hover/focus pauses
   React.useEffect(() => {
     const node = containerRef.current;
     if (!node) return;
@@ -107,7 +105,6 @@ export default function KageCarousel({
   const current = stories[index];
   const duration = current?.durationMs ?? defaultDurationMs;
 
-  // Autoplay only when: not paused, visible, and user doesn’t prefer reduced motion
   React.useEffect(() => {
     if (paused || !isVisible || prefersReducedMotion) return;
     timerRef.current = window.setTimeout(() => go(1), duration);
@@ -116,19 +113,15 @@ export default function KageCarousel({
     };
   }, [paused, isVisible, prefersReducedMotion, duration, go, index]);
 
-  // Ensure only the active video is playing; stop/unload others
   React.useEffect(() => {
-    // pause any previous
     if (activeVideoRef.current) {
       activeVideoRef.current.pause();
-      // keep data usage low if we leave the slide
-      activeVideoRef.current.src = activeVideoRef.current.src; // resets buffer
+      activeVideoRef.current.src = activeVideoRef.current.src;
     }
     activeVideoRef.current = null;
   }, [index]);
 
   const renderSlide = (s: Story, active: boolean) => {
-    const isVideo = s.type === "video";
     return (
       <div className="absolute inset-0">
         {s.type === "image" ? (
@@ -145,12 +138,9 @@ export default function KageCarousel({
             ref={(el) => {
               if (el && active) {
                 activeVideoRef.current = el;
-                // Only start playing if allowed by visibility/paused state
                 if (!paused && isVisible && !prefersReducedMotion) {
-                  el.muted = true; // ensure autoplay works on iOS
-                  el.play().catch(() => {
-                    /* ignore */
-                  });
+                  el.muted = true;
+                  el.play().catch(() => {});
                 }
               }
             }}
@@ -159,20 +149,17 @@ export default function KageCarousel({
             className="h-full w-full object-cover"
             muted={muted}
             playsInline
-            // Crucial: don’t pre-buffer when not active
             preload={active ? "metadata" : "none"}
             controls={false}
-            // We avoid loop to prevent runaway decode when tab hidden; we “loop” by timer/go()
             onEnded={() => go(1)}
           />
         )}
-        {/* gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-black/5" />
+        {/* <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-black/5" /> */}
+        <div className="absolute inset-0 bg-gray-300/50" />
       </div>
     );
   };
 
-  // Only render current (and optionally neighbors for instant switch)
   const prevIdx = (index - 1 + stories.length) % stories.length;
   const nextIdx = (index + 1) % stories.length;
 
@@ -180,22 +167,17 @@ export default function KageCarousel({
     <div
       ref={containerRef}
       className={[
-        // ⬇️ remove h-full; give it an aspect ratio so the inner absolute fills it
         "relative rounded-2xl overflow-hidden group w-full aspect-[16/9] md:aspect-[21/9]",
         className || "",
       ].join(" ")}
       aria-roledescription="carousel"
     >
-      {/* Progress keyframes once per component */}
       <style>{`@keyframes kageProgress { from{width:0%} to{width:100%} }`}</style>
 
-      {/* Slides layer (only 1–3 nodes total) */}
       <div className="relative h-full">
-        {/* current */}
         <div key={stories[index]?.id} className="absolute inset-0">
           {renderSlide(stories[index]!, true)}
         </div>
-        {/* neighbors (optional, comment out if you want minimal DOM) */}
         {stories.length > 1 && (
           <div
             key={"prev-" + stories[prevIdx].id}
@@ -214,8 +196,8 @@ export default function KageCarousel({
         )}
       </div>
 
-      {/* top progress bars */}
-      <div className="absolute left-4 right-4 top-3 z-20 flex gap-2">
+      {/* progress bars (very top) */}
+      <div className="absolute left-4 right-4 top-3 z-30 flex gap-2">
         {stories.map((s, i) => {
           const state = i < index ? "done" : i === index ? "active" : "todo";
           return (
@@ -248,8 +230,26 @@ export default function KageCarousel({
         })}
       </div>
 
-      {/* controls */}
-      <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
+      {/* NEW: brand badge (top-left) */}
+      <div
+        className="absolute left-4 top-7 z-30 flex items-center gap-3 text-white select-none"
+        aria-label="Publisher"
+      >
+        <div className="h-9 w-9 flex items-center justify-center bg-white rounded-full">
+          <img
+            src="/hyhy.png"
+            alt="Houd Lab Logo"
+            className="h-9 w-9 rounded-full object-contain  p-1"
+          />
+        </div>
+        <div className="flex gap-2">
+          <div className="text-md font-medium text-white ">houdlab</div>
+          <div className="text-md text-white/50">1h</div>
+        </div>
+      </div>
+
+      {/* controls (top-right) */}
+      <div className="absolute right-4 top-7 z-30 flex items-center gap-2">
         <button
           onClick={() => setPaused((p) => !p)}
           className="h-9 w-9 rounded-full bg-black/45 hover:bg-black/60 text-white backdrop-blur flex items-center justify-center"
@@ -268,15 +268,15 @@ export default function KageCarousel({
         )}
       </div>
 
-      {/* bottom-left content */}
-      <div className="absolute bottom-6 left-6 z-20 space-y-3 max-w-[80%]">
+      {/* bottom-left caption/cta */}
+      <div className="absolute bottom-6 left-6 z-30 space-y-3 max-w-[80%]">
         <h2 className="text-white text-xl font-semibold drop-shadow">
           {current?.caption ?? "—"}
         </h2>
         {"ctaHref" in current! && current?.ctaHref ? (
           <a
             href={(current as any).ctaHref}
-            className="inline-block rounded-full bg-white/90 px-5 py-2 text-sm font-medium text-neutral-900 shadow-md backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/60"
+            className="inline-block rounded-full bg-white/90 px-5 py-2 text-sm font-medium text-neutral-900   backdrop-blur transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/60"
           >
             {"ctaLabel" in current! && (current as any).ctaLabel
               ? (current as any).ctaLabel
@@ -287,12 +287,12 @@ export default function KageCarousel({
 
       {/* next/prev hit areas */}
       <button
-        className="absolute inset-y-0 left-0 w-1/3 z-10"
+        className="absolute inset-y-0 left-0 w-1/3 z-20"
         onClick={() => go(-1)}
         aria-label="Previous"
       />
       <button
-        className="absolute inset-y-0 right-0 w-1/3 z-10"
+        className="absolute inset-y-0 right-0 w-1/3 z-20"
         onClick={() => go(1)}
         aria-label="Next"
       />

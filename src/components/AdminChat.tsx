@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabaseBrowser } from "../lib/supabaseBrowser";
+import DashboardAvailabilityToggle from "./DashboardAvailabilityToggle";
+import LiveClock from "./LiveClock";
 
 type Conv = {
   id: string;
@@ -372,8 +374,7 @@ export default function AdminPanel() {
   const header = useMemo(
     () => (
       <div className="flex items-center gap-3 p-3 border-b bg-white sticky top-0 z-10 h-16">
-        <div className="text-lg font-semibold">HoudLab Admin</div>
-        <div className="ml-auto flex gap-2">
+        <div className=" flex gap-2 w-full">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -381,8 +382,8 @@ export default function AdminPanel() {
               e.key === "Enter" &&
               loadConversations(search, initialConvFromUrl || undefined)
             }
-            placeholder="Search.."
-            className="px-3 py-1.5 rounded border"
+            placeholder="Search a conversation.."
+            className="px-3 py-1.5 rounded border w-full"
           />
           <button
             onClick={() =>
@@ -390,7 +391,16 @@ export default function AdminPanel() {
             }
             className="px-3 py-1.5 rounded bg-black text-white"
           >
-            Search
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-search"
+              viewBox="0 0 16 16"
+            >
+              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+            </svg>
           </button>
         </div>
       </div>
@@ -399,44 +409,75 @@ export default function AdminPanel() {
   );
 
   return (
-    <div className="h-dvh grid grid-cols-12 overflow-hidden">
+    <div className="h-dvh grid grid-cols-12 overflow-hidden font-display">
       {/* Left: conversations list */}
-      <div className="col-span-4 border-r bg-white flex flex-col min-h-0 overflow-hidden">
-        {header}
-        <div className="flex-1 overflow-y-auto">
-          {convs.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => {
-                setSelectedConv(c);
-                const sp = new URLSearchParams(window.location.search);
-                sp.set("c", c.id);
-                history.replaceState(
-                  {},
-                  "",
-                  `${location.pathname}?${sp.toString()}`
-                );
-              }}
-              className={`w-full text-left px-3 py-3 border-b hover:bg-neutral-50 ${
-                selectedConv?.id === c.id ? "bg-neutral-100" : ""
-              }`}
-            >
-              <div className="text-xs text-neutral-500">
-                {new Date(c.created_at).toLocaleString()}
-              </div>
-              <div className="font-medium truncate">
-                {c.last?.text || "(no messages yet)"}
-              </div>
-              {/* <div className="text-xs text-neutral-500 truncate">
-                {c.origin || c.ip || c.user_agent}
-              </div> */}
-            </button>
-          ))}
-          {!convs.length && (
-            <div className="p-6 text-sm text-neutral-500">
-              No conversations found.
+      {/* Left: sidebar (toggle) + conversations list */}
+      <div className="col-span-4 bg-white min-h-0 overflow-hidden">
+        <div className="grid h-full grid-cols-[110px_1fr]">
+          {/* Sidebar */}
+          <aside className="border-r bg-white p-3 flex flex-col gap-3 ">
+            <header className="self-center mt-2 ">
+              <img
+                src="../hyhy.png"
+                alt="Houd Lab Logo"
+                className="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
+              />
+            </header>
+
+            <div className="text-sm font-semibold text-center">
+              Houd Lab
+              <br />
+              <p className="text-[#FABC4B]  font-[Amiri] ">مقر رئيسي</p>
             </div>
-          )}
+
+            <div className="mt-auto pb-">
+              <div className="mt-4">
+                <DashboardAvailabilityToggle />
+              </div>
+              <hr className="mt-4 mx-4" />
+              <div className="mt-4">
+                {" "}
+                <LiveClock timeZone="Africa/Casablanca" />
+              </div>
+            </div>
+          </aside>
+
+          {/* Conversations area */}
+          <section className="flex flex-col min-h-0 overflow-hidden border-r">
+            {header}
+            <div className="flex-1 overflow-y-auto">
+              {convs.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    setSelectedConv(c);
+                    const sp = new URLSearchParams(window.location.search);
+                    sp.set("c", c.id);
+                    history.replaceState(
+                      {},
+                      "",
+                      `${location.pathname}?${sp.toString()}`
+                    );
+                  }}
+                  className={`w-full text-left px-3 py-3 border-b hover:bg-neutral-50 ${
+                    selectedConv?.id === c.id ? "bg-neutral-100" : ""
+                  }`}
+                >
+                  <div className="text-xs text-neutral-500">
+                    {new Date(c.created_at).toLocaleString()}
+                  </div>
+                  <div className="font-medium truncate">
+                    {c.last?.text || "(no messages yet)"}
+                  </div>
+                </button>
+              ))}
+              {!convs.length && (
+                <div className="p-6 text-sm text-neutral-500">
+                  No conversations found.
+                </div>
+              )}
+            </div>
+          </section>
         </div>
       </div>
 

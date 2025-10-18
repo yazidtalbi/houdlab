@@ -3,6 +3,8 @@ import { supabaseForConversation } from "../lib/supabaseBrowser";
 import { motion, AnimatePresence } from "framer-motion";
 import AgentAvailabilityPill from "./AgentAvailabilityPill";
 
+import { useAvailability } from "@/hooks/useAvailability";
+
 type Msg = { id: string; role: "user" | "assistant"; text: string; at: string };
 
 const QUICK_PROMPTS: { label: string; value: string }[] = [
@@ -60,6 +62,9 @@ function AssistantHeader() {
 }
 
 export default function ChatPanel({ className = "" }: { className?: string }) {
+  // inside ChatPanel()
+  const { status } = useAvailability("houdlab");
+
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -403,7 +408,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
             </div>
           </div> */}
 
-          <AgentAvailabilityPill />
+          <AgentAvailabilityPill status={status} />
         </div>
       </div>
 
