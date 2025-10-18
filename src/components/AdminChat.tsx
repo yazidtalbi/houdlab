@@ -371,7 +371,7 @@ export default function AdminPanel() {
 
   const header = useMemo(
     () => (
-      <div className="flex items-center gap-3 p-3 border-b bg-white sticky top-0 z-10">
+      <div className="flex items-center gap-3 p-3 border-b bg-white sticky top-0 z-10 h-16">
         <div className="text-lg font-semibold">HoudLab Admin</div>
         <div className="ml-auto flex gap-2">
           <input
@@ -381,7 +381,7 @@ export default function AdminPanel() {
               e.key === "Enter" &&
               loadConversations(search, initialConvFromUrl || undefined)
             }
-            placeholder="Search text / id / origin / ip..."
+            placeholder="Search.."
             className="px-3 py-1.5 rounded border"
           />
           <button
@@ -399,11 +399,11 @@ export default function AdminPanel() {
   );
 
   return (
-    <div className="h-screen grid grid-cols-12">
+    <div className="h-dvh grid grid-cols-12 overflow-hidden">
       {/* Left: conversations list */}
-      <div className="col-span-4 border-r bg-white flex flex-col">
+      <div className="col-span-4 border-r bg-white flex flex-col min-h-0 overflow-hidden">
         {header}
-        <div className="overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
           {convs.map((c) => (
             <button
               key={c.id}
@@ -427,9 +427,9 @@ export default function AdminPanel() {
               <div className="font-medium truncate">
                 {c.last?.text || "(no messages yet)"}
               </div>
-              <div className="text-xs text-neutral-500 truncate">
+              {/* <div className="text-xs text-neutral-500 truncate">
                 {c.origin || c.ip || c.user_agent}
-              </div>
+              </div> */}
             </button>
           ))}
           {!convs.length && (
@@ -441,8 +441,8 @@ export default function AdminPanel() {
       </div>
 
       {/* Right: messages + composer */}
-      <div className="col-span-8 flex flex-col">
-        <div className="p-3 border-b bg-white flex items-center gap-3">
+      <div className="col-span-8 flex flex-col min-h-0 overflow-hidden">
+        <div className="p-3 border-b bg-white flex items-center gap-3 shrink-0 h-16">
           <div className="text-sm text-neutral-500">Conversation</div>
           <div className="font-medium truncate">{selectedConv?.id || "—"}</div>
           <div className="ml-auto flex items-center gap-2">
@@ -517,7 +517,7 @@ export default function AdminPanel() {
           )}
         </div>
 
-        <div className="p-3 border-t bg-white">
+        <div className="p-3 border-t bg-white shrink-0">
           <form
             onSubmit={(e) => {
               e.preventDefault();

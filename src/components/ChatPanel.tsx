@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabaseForConversation } from "../lib/supabaseBrowser";
 import { motion, AnimatePresence } from "framer-motion";
+import AgentAvailabilityPill from "./AgentAvailabilityPill";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string; at: string };
 
@@ -391,7 +392,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
           </div>
 
           {/* RIGHT: ETA pill */}
-          <div className="ml-auto shrink-0 md:self-center order-1 md:order-none">
+          {/* <div className="ml-auto shrink-0 md:self-center order-1 md:order-none">
             <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white/70 px-3 py-1 text-[11px] text-neutral-600  ">
               <span className="relative inline-block h-1.5 w-1.5 rounded-full bg-green-400">
                 <span className="absolute inset-0 rounded-full bg-green-400/60 animate-ping motion-reduce:animate-none" />
@@ -400,7 +401,9 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
                 Estimated response: &lt; 2 min
               </span>
             </div>
-          </div>
+          </div> */}
+
+          <AgentAvailabilityPill />
         </div>
       </div>
 

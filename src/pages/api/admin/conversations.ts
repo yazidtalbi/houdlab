@@ -3,17 +3,11 @@ export const prerender = false;
 import type { APIRoute } from "astro";
 import { supabase } from "../../../lib/supabaseServer";
 
-function json(status: number, data: any) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "content-type": "application/json" },
-  });
-}
-
 export const GET: APIRoute = async ({ url }) => {
   try {
     const q = url.searchParams.get("q")?.trim();
 
+    // 1️⃣ Fetch conversations (limit to 200)
     const { data: convs, error } = await supabase
       .from("conversations")
       .select("id, created_at, origin, user_agent, ip")
@@ -21,8 +15,11 @@ export const GET: APIRoute = async ({ url }) => {
       .limit(200);
 
     if (error) throw error;
-    if (!convs?.length) return json(200, { conversations: [] });
+    if (!convs?.length) {
+      return Response.json({ conversations: [] }, { status: 200 });
+    }
 
+    // 2️⃣ Fetch latest messages for each conversation
     const ids = convs.map((c: any) => c.id);
     const { data: msgs, error: mErr } = await supabase
       .from("messages")
@@ -32,6 +29,7 @@ export const GET: APIRoute = async ({ url }) => {
 
     if (mErr) throw mErr;
 
+    // 3️⃣ Keep the latest message per conversation
     const lastByConv: Record<
       string,
       { text: string; created_at: string; role: string }
@@ -46,6 +44,7 @@ export const GET: APIRoute = async ({ url }) => {
       }
     }
 
+    // 4️⃣ Build final conversation list
     let items = convs.map((c: any) => ({
       id: c.id,
       created_at: c.created_at,
@@ -55,6 +54,7 @@ export const GET: APIRoute = async ({ url }) => {
       last: lastByConv[c.id] || null,
     }));
 
+    // 5️⃣ Search filter (if ?q= is provided)
     if (q) {
       const needle = q.toLowerCase();
       items = items.filter(
@@ -67,8 +67,20 @@ export const GET: APIRoute = async ({ url }) => {
       );
     }
 
-    return json(200, { conversations: items });
+    // 6️⃣ Sort by latest message (fallback to conversation creation date)
+    items.sort((a, b) => {
+      const ta = new Date(a.last?.created_at ?? a.created_at).getTime();
+      const tb = new Date(b.last?.created_at ?? b.created_at).getTime();
+      return tb - ta; // newest first
+    });
+
+    // 7️⃣ Return result
+    return Response.json({ conversations: items }, { status: 200 });
   } catch (e: any) {
-    return json(500, { error: e?.message || "Server error" });
+    console.error("[/api/admin/conversations]", e);
+    return Response.json(
+      { error: e?.message || "Server error" },
+      { status: 500 }
+    );
   }
 };
