@@ -5,8 +5,6 @@ import ProjectShowcase from "@/components/ProjectShowcase.astro";
 import SmoothScroll from "@/components/SmoothScroll";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 
-import ChatNotifications from "@/components/ChatNotifications.tsx";
-
 // Footer.astro
 const { pathname } = Astro.url;
 
@@ -262,7 +260,6 @@ const masterpiece = [
     title="Works"
     description="Design partner for founders. We build brands, web designs, dashboards, and web apps that blend clarity with craft."
     ><body class="flex flex-col min-h-screen max-w-[1800px] mx-auto pb-10">
-      <ChatNotifications client:load />
       <SmoothScroll client:load />
       <header class="fixed top-12 left-1/2 -translate-x-1/2 z-50">
         <div class="flex items-center justify-center gap-6 px-8" role="banner">
