@@ -15,11 +15,14 @@ import { Button } from "@/components/ui/button";
 import IntroTrustedSection from "@/components/IntroTrustedSection";
 
 const groups = [
-  [{ src: "/logos/k.png" }, { src: "/logos/p.png" }],
-  [{ src: "/logos/p.png" }, { src: "/logos/k.png" }],
-  [{ src: "/brands/gem.svg" }, { src: "/brands/gem-2.svg" }],
-  [{ src: "/brands/mono.svg" }, { src: "/brands/mono-2.svg" }],
-  [{ src: "/brands/tile.svg" }, { src: "/brands/tile-2.svg" }],
+  [
+    { src: "/logos/1.png" },
+    { src: "/logos/2.png" },
+    { src: "/logos/3.png" },
+    { src: "/logos/4.png" },
+    { src: "/logos/5.png" },
+    { src: "/logos/6.png" },
+  ],
 ];
 
 type KageModalProps = {
@@ -53,17 +56,26 @@ export default function KageModal({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger ?? (
-          <Button className="bg-white   outline-hidden border border-black text-black hover:text-neutral-600 hover:border-neutral-500 hover:bg-neutral-50 fixed rounded-full text-lg font-medium px-6 py-1   transition-all duration-200">
+          <Button
+            className="
+    h-9 px-4 text-sm md:h-10 md:px-6 md:text-base
+    bg-white border border-black text-black rounded-full
+    transition-colors
+    md:static md:inset-auto 
+   hover:bg-black hover:text-white cursor-pointer
+  "
+          >
             About
           </Button>
         )}
       </DialogTrigger>
-
-      <DialogContent /* shadcn portals to <body>, avoids z-index/overflow issues */
-        className="sm:max-w-[720px]"
+      <DialogContent
+        className="sm:max-w-[720px] p-0 overflow-hidden" // removed padding here
       >
         {(title || description) && (
-          <DialogHeader>
+          <DialogHeader className="p-0">
+            {" "}
+            {/* remove header padding too */}
             {title && <DialogTitle>{title}</DialogTitle>}
             {description && (
               <DialogDescription>{description}</DialogDescription>
@@ -72,21 +84,9 @@ export default function KageModal({
         )}
 
         {/* Body */}
-        <div className="space-y-3">
+        <div className="max-h-[600px] overflow-auto p-4">
           {children ?? <IntroTrustedSection client:load groups={groups} />}
         </div>
-
-        {/* Footer */}
-        {/* <DialogFooter className="mt-4">
-          {footer ?? (
-            <>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <Button onClick={() => setOpen(false)}>Confirm</Button>
-            </>
-          )}
-        </DialogFooter> */}
       </DialogContent>
     </Dialog>
   );

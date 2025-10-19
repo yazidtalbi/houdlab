@@ -12,23 +12,26 @@ export type Testimonial = {
     company?: string;
     avatarUrl?: string;
   };
-  durationMs?: number; // optional per-slide autoplay duration
+  durationMs?: number;
 };
 
 type Props = {
   items: Testimonial[];
   className?: string;
   loop?: boolean;
-  defaultDurationMs?: number; // 4500ms default
-  heightClass?: string; // e.g. "h-[300px]"
+  defaultDurationMs?: number;
+  /** Use ONLY min-h utilities if you want a floor.
+   *  e.g. "min-h-[200px] md:min-h-[220px]" */
+  heightClass?: string;
 };
 
-export default function TestimonialsCarousel({
+export default function TestimonialsCarouselAm({
   items,
   className,
   loop = true,
   defaultDurationMs = 4500,
-  heightClass = "max-h-[240px] min-h-[200px]",
+  // ❗ default: no max height; allow growth
+  heightClass = "",
 }: Props) {
   const [viewportRef, embla] = useEmblaCarousel({ loop, align: "start" });
   const [index, setIndex] = React.useState(0);
@@ -42,7 +45,6 @@ export default function TestimonialsCarousel({
   const next = React.useCallback(() => embla?.scrollNext(), [embla]);
   const prev = React.useCallback(() => embla?.scrollPrev(), [embla]);
 
-  // sync selected index
   React.useEffect(() => {
     if (!embla) return;
     const onSelect = () => setIndex(embla.selectedScrollSnap());
@@ -51,7 +53,6 @@ export default function TestimonialsCarousel({
     return () => embla.off("select", onSelect);
   }, [embla]);
 
-  // autoplay
   const startAutoplay = React.useCallback(() => {
     if (!embla) return;
     const i = embla.selectedScrollSnap();
@@ -88,17 +89,30 @@ export default function TestimonialsCarousel({
     };
   }, [startAutoplay, stopAutoplay]);
 
+  // ✅ Re-init on resize so Embla recalculates slide heights
+  React.useEffect(() => {
+    if (!embla) return;
+    const handler = () => embla.reInit();
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, [embla]);
+
   return (
     <div ref={containerRef} className={["relative", className || ""].join(" ")}>
       <div
-        className={["overflow-hidden", heightClass].join(" ")}
         ref={viewportRef}
+        className={["overflow-hidden", heightClass].join(" ")} // no max-h here
       >
-        <div className="flex h-full">
+        {/* ❗ remove h-full so height is content-driven */}
+        <div className="flex items-stretch">
           {items.map((t, i) => (
-            <div key={i} className="min-w-0 shrink-0 grow-0 basis-full h-full">
+            <div
+              key={i}
+              className="min-w-xl lg:min-w-0 shrink-0 grow-0 basis-full px-0  mr-4"
+            >
               <TestimonialCard
-                className="h-full overflow-hidden" /* <-- important */
+                // no h-full; let the card define its natural height
+                className="overflow-hidden"
                 rating={t.rating}
                 scoreLabel={t.scoreLabel}
                 quote={t.quote}
@@ -109,10 +123,10 @@ export default function TestimonialsCarousel({
         </div>
       </div>
 
-      {/* controls/dots should not affect height */}
-      <button className="absolute left-2 top-1/2 -translate-y-1/2 ..." />
+      {/* controls/dots (positioned absolutely; don't affect height) */}
+      {/* <button className="absolute left-2 top-1/2 -translate-y-1/2 ..." />
       <button className="absolute right-2 top-1/2 -translate-y-1/2 ..." />
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2" />
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2" /> */}
     </div>
   );
 }

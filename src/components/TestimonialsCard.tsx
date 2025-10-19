@@ -25,17 +25,16 @@ export default function TestimonialCard({
   return (
     <div
       className={[
-        "h-full rounded-2xl ",
-
-        " border border-gray-200 bg-white/70",
-        " p-4 md:p-6 flex flex-col",
+        "w-full h-full rounded-2xl", // 👈 added w-full
+        "border border-gray-200 bg-white/70",
+        "p-4 md:p-6 flex flex-col",
         className || "",
       ].join(" ")}
       role="figure"
       aria-label={`Testimonial by ${author.name}`}
     >
       {/* header: score + stars */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <span className="text-xl font-semibold text-neutral-900">
           {scoreLabel}
         </span>
@@ -80,14 +79,14 @@ function Stars({ rating = 5 }: { rating?: number }) {
   const full = Math.round(rating); // simple whole-star fill for this style
   return (
     <div
-      className="flex items-center gap-1"
+      className="flex items-center gap-0.5"
       aria-label={`${full} out of 5 stars`}
     >
       {Array.from({ length: 5 }).map((_, i) => (
         <svg
           key={i}
           viewBox="0 0 20 20"
-          className={`h-5 w-5 ${i < full ? "fill-yellow-400" : "fill-white"}  `}
+          className={`h-4 w-4 ${i < full ? "fill-[#FABC4B]" : "fill-white"}  `}
           aria-hidden="true"
         >
           <path d="M10 1.5l2.61 5.29 5.85.85-4.23 4.12 1 5.82L10 14.98 4.77 17.6l1-5.82-4.23-4.12 5.85-.85L10 1.5z" />
