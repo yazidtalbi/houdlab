@@ -78,15 +78,18 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 ---
 
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <meta charset="utf-8" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter+Display:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter+Display:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
   <BaseLayout
     title="Design & Development Partner for Founders"
     class="font-display lg:h-dvh overflow-auto lg:overflow-hidden"
@@ -128,7 +131,9 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
         </header>
 
         <!-- CHAT-ONLY -->
-        <main class="max-w-6xl mx-auto px-4 sm:px-6 pt-16 min-h-[100svh]">
+        <main
+          class="max-w-6xl mx-auto px-4 sm:px-6 pt-15 lg:pt-16 min-h-[100svh]"
+        >
           <section class="relative min-h-[calc(100svh-5rem)] flex flex-col">
             <ChatPanel client:load className="flex-1 min-h-0 z-20" />
           </section>
@@ -296,6 +301,4 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
       </script>
     </body></BaseLayout
   >
-
-
 </html>

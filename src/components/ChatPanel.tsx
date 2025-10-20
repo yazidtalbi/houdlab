@@ -78,6 +78,15 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
   const lastSeenIso = useRef<string | null>(null);
   const stopPollingRef = useRef(false);
 
+  // Track optimistic messages to reconcile (avoid duplicates on first send)
+  type Pending = {
+    tempId: string;
+    role: "user" | "assistant";
+    text: string;
+    atMs: number;
+  };
+  const pending = useRef<Pending[]>([]);
+
   // ✅ Prevent re-animations/flicker
   const animatedIds = useRef<Set<string>>(new Set());
 
@@ -109,6 +118,54 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     });
   }
 
+  // --- Reconciliation helpers -------------------------------------------------
+
+  const MATCH_WINDOW_MS = 10_000; // 10s window to match optimistic -> DB row
+
+  function findPendingMatch(role: "user" | "assistant", text: string) {
+    const now = Date.now();
+    // Prefer the latest pending match
+    for (let i = pending.current.length - 1; i >= 0; i--) {
+      const p = pending.current[i];
+      if (
+        p.role === role &&
+        p.text === text &&
+        now - p.atMs <= MATCH_WINDOW_MS
+      ) {
+        return { index: i, item: p };
+      }
+    }
+    return null;
+  }
+
+  function reconcileDbRowIntoOptimistic(
+    dbId: string,
+    role: "user" | "assistant",
+    text: string,
+    created_at: string
+  ) {
+    const match = findPendingMatch(role, text);
+    if (!match) return false;
+
+    const { tempId } = match.item;
+    // Update the optimistic message in place
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === tempId ? { ...m, id: dbId, at: fmtTime(created_at) } : m
+      )
+    );
+
+    // Bookkeeping
+    pending.current.splice(match.index, 1);
+    tempToDb.current.set(tempId, dbId);
+    seenIds.current.delete(tempId);
+    seenIds.current.add(dbId);
+    animatedIds.current.add(dbId);
+    return true;
+  }
+
+  // ---------------------------------------------------------------------------
+
   function appendUnique(
     list: Array<{
       id: string;
@@ -118,23 +175,38 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     }>
   ) {
     if (!list.length) return;
-    const add: Msg[] = [];
+
+    // Try reconcile BEFORE append to avoid duplicates from polling
     for (const m of list) {
-      const id = String(m.id);
-      if (seenIds.current.has(id)) continue;
-      seenIds.current.add(id);
-      add.push({ id, role: m.role, text: m.text, at: fmtTime(m.created_at) });
-    }
-    if (add.length) {
-      setMessages((prev) => [...prev, ...add]);
-      lastSeenIso.current = list[list.length - 1].created_at;
+      const dbId = String(m.id);
+      const role = m.role;
+      const text = m.text;
+      const created = m.created_at;
 
-      const last = list[list.length - 1];
-      if (last.role === "assistant") stopTypingSoon(1200);
+      // If we already saw it, skip
+      if (seenIds.current.has(dbId)) continue;
 
-      if (last.role === "assistant") {
+      // Try reconciling to an optimistic message (most important for first-send)
+      const reconciled = reconcileDbRowIntoOptimistic(
+        dbId,
+        role,
+        text,
+        created
+      );
+      if (reconciled) continue;
+
+      // Otherwise, append as fresh
+      seenIds.current.add(dbId);
+      setMessages((prev) => [
+        ...prev,
+        { id: dbId, role, text, at: fmtTime(created) },
+      ]);
+      lastSeenIso.current = created;
+
+      if (role === "assistant") {
+        stopTypingSoon(1200);
         try {
-          localStorage.setItem(LAST_ASSISTANT_KEY, String(last.created_at));
+          localStorage.setItem(LAST_ASSISTANT_KEY, String(created));
         } catch {}
         window.dispatchEvent(new Event("houd:chat:assistant"));
       }
@@ -169,6 +241,43 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
       localStorage.setItem(STORE_KEY, JSON.stringify(messages));
     } catch {}
   }, [messages]);
+
+  // 🔧 MOBILE/TABLET keyboard-safe layout (only below lg)
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)"); // lg breakpoint
+    const vv = window.visualViewport || null;
+
+    const compute = () => {
+      if (mq.matches) {
+        document.documentElement.style.setProperty("--kb", "0px");
+        document.documentElement.style.setProperty("--chat-mobile-pad", "0px");
+        return;
+      }
+      const covered = vv
+        ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
+        : 0;
+      document.documentElement.style.setProperty("--kb", `${covered}px`);
+      document.documentElement.style.setProperty(
+        "--chat-mobile-pad",
+        `calc(110px + var(--kb, 0px))`
+      );
+    };
+
+    compute();
+    vv?.addEventListener("resize", compute);
+    vv?.addEventListener("scroll", compute);
+    mq.addEventListener("change", compute);
+    window.addEventListener("orientationchange", compute);
+
+    return () => {
+      vv?.removeEventListener("resize", compute);
+      vv?.removeEventListener("scroll", compute);
+      mq.removeEventListener("change", compute);
+      window.removeEventListener("orientationchange", compute);
+      document.documentElement.style.removeProperty("--kb");
+      document.documentElement.style.removeProperty("--chat-mobile-pad");
+    };
+  }, []);
 
   // Autoscroll BEFORE paint (prevents jump)
   useLayoutEffect(() => {
@@ -222,7 +331,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     })();
   }, [sb, conversationId]);
 
-  // Realtime inserts
+  // Realtime inserts (reconcile vs optimistic)
   useEffect(() => {
     if (!sb || !conversationId) return;
     const ch = sb
@@ -238,12 +347,21 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
         (payload) => {
           const row: any = payload.new;
           const dbId = String(row.id);
-          if (seenIds.current.has(dbId)) return;
-          for (const [, v] of tempToDb.current.entries()) {
-            if (v === dbId) return;
-          }
           const role: "user" | "assistant" =
             row.role === "agent" ? "assistant" : "user";
+
+          if (seenIds.current.has(dbId)) return;
+
+          // Try reconcile first (handles the “first message duplicate”)
+          const reconciled = reconcileDbRowIntoOptimistic(
+            dbId,
+            role,
+            String(row.text),
+            String(row.created_at)
+          );
+          if (reconciled) return;
+
+          // Otherwise append fresh
           seenIds.current.add(dbId);
           setMessages((prev) => [
             ...prev,
@@ -310,7 +428,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     };
   }, [sb, conversationId]);
 
-  // Fallback polling
+  // Fallback polling (also reconciles)
   useEffect(() => {
     if (!sb || !conversationId) return;
     stopPollingRef.current = false;
@@ -384,13 +502,18 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
     setTyping(false);
 
-    const tempId = crypto.randomUUID();
+    // Mark optimistic with a tmp_ id to distinguish from DB ids
+    const tempId = `tmp_${crypto.randomUUID()}`;
+    const nowMs = Date.now();
+
     const optimistic: Msg = {
       id: tempId,
       role: "user",
       text: trimmed,
       at: fmtTime(),
     };
+
+    pending.current.push({ tempId, role: "user", text: trimmed, atMs: nowMs });
     setMessages((m) => [...m, optimistic]);
     seenIds.current.add(tempId);
     setInput("");
@@ -409,17 +532,37 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
       const dbMsg = data?.message;
       if (res.ok && dbMsg?.id) {
         const dbId = String(dbMsg.id);
-        tempToDb.current.set(tempId, dbId);
-        seenIds.current.add(dbId);
-        seenIds.current.delete(tempId);
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === tempId
-              ? { ...m, id: dbId, at: fmtTime(String(dbMsg.created_at)) }
-              : m
-          )
+
+        // If realtime already linked this, nothing to do
+        if (seenIds.current.has(dbId)) {
+          // Remove any leftover pending entry for this tempId
+          const idx = pending.current.findIndex((p) => p.tempId === tempId);
+          if (idx >= 0) pending.current.splice(idx, 1);
+          seenIds.current.delete(tempId);
+          tempToDb.current.set(tempId, dbId);
+          return;
+        }
+
+        // Otherwise reconcile now (replace optimistic message)
+        const reconciled = reconcileDbRowIntoOptimistic(
+          dbId,
+          "user",
+          trimmed,
+          String(dbMsg.created_at)
         );
-        animatedIds.current.add(dbId);
+        if (!reconciled) {
+          // Fallback (should rarely happen): just patch the id of temp bubble
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === tempId
+                ? { ...m, id: dbId, at: fmtTime(String(dbMsg.created_at)) }
+                : m
+            )
+          );
+          seenIds.current.delete(tempId);
+          seenIds.current.add(dbId);
+          tempToDb.current.set(tempId, dbId);
+        }
       }
     } catch (err) {
       console.error("[ChatPanel] send failed:", err);
@@ -489,7 +632,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
         {/* STACK on mobile/tablet, row on desktop */}
         <div className="md:mt-5 mt-3 flex flex-col gap-3 xl:flex-row xl:items-start lg:justify-between">
           {/* Avatars + text: also stacked on mobile/tablet */}
-          <div className="flex   items-center gap-3 lg:flex-row lg:items-center lg:gap-3 flex-1 min-w-0  mt-2 lg:mt-0">
+          <div className="flex items-center gap-3 lg:flex-row lg:items-center lg:gap-3 flex-1 min-w-0 mt-2 lg:mt-0">
             <div className="flex -space-x-3 shrink-0">
               <img
                 src="/avatars/a2.png"
@@ -521,11 +664,13 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
         </div>
       </div>
 
-      {/* Messages area — pad bottom on mobile so fixed composer doesn't cover content */}
+      {/* Messages area — on mobile add dynamic bottom padding via CSS var */}
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto rounded-2xl p-4
-             pb-2 lg:pb-4"
+        className="flex-1 min-h-0 overflow-y-auto rounded-2xl p-4 pb-2 lg:pb-4"
+        style={{
+          paddingBottom: "var(--chat-mobile-pad, 0px)",
+        }}
       >
         {groups.map((g, gi) => (
           <div key={gi} className="mb-4 last:mb-2 lg:last:mb-4">
@@ -597,7 +742,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
               alt=""
               className="h-8 w-8 rounded-full object-cover ring-2 ring-white"
             />
-            <div className="inline-block rounded-2xl rounded-tl-md bg-white px-4 py-2      ring-1 ring-neutral-200">
+            <div className="inline-block rounded-2xl rounded-tl-md bg-white px-4 py-2 ring-1 ring-neutral-200">
               <span className="inline-flex gap-1 align-middle">
                 <span className="animate-pulse text-xs">●</span>
                 <span className="animate-pulse [animation-delay:150ms] text-xs">
@@ -614,17 +759,16 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
         <div className="h-3" />
       </div>
 
-      {/* Quick prompts — add bottom margin on mobile so they sit above fixed composer */}
+      {/* Quick prompts — fixed on mobile/tablet above composer; desktop inline */}
       {showPrompts && (
         <>
-          {/* mobile/tablet — fixed above the composer */}
+          {/* mobile/tablet */}
           <div
-            className="
-        fixed inset-x-4 bottom-[calc(82px+env(safe-area-inset-bottom))]
-        z-40 flex flex-wrap gap-2 
-       px-3 py-2
-  lg:hidden
-      "
+            className="fixed inset-x-4 z-40 flex flex-wrap gap-2 px-3 py-2 lg:hidden"
+            style={{
+              bottom:
+                "calc(82px + var(--kb, 0px) + env(safe-area-inset-bottom))",
+            }}
           >
             {QUICK_PROMPTS.map((p) => (
               <button
@@ -679,8 +823,10 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
       {/* Composer — fixed on mobile/tablet, normal flow on desktop */}
       <form
         onSubmit={onSubmit}
-        className="mt-4 flex-shrink-0 lg:static lg:mt-4 fixed inset-x-4
-             bottom-[calc(20px+env(safe-area-inset-bottom))] z-50 lg:bottom-auto"
+        className="mt-4 flex-shrink-0 lg:static lg:mt-4 fixed inset-x-4 z-50 lg:bottom-auto"
+        style={{
+          bottom: "calc(20px + var(--kb, 0px) + env(safe-area-inset-bottom))",
+        }}
       >
         <div className="relative flex items-center">
           <input
@@ -695,6 +841,15 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
               if (active) emitUserTyping(true);
               else emitUserTyping(false);
             }}
+            onFocus={() => {
+              setTimeout(() => {
+                if (window.matchMedia("(min-width: 1024px)").matches) return;
+                inputRef.current?.scrollIntoView({
+                  block: "end",
+                  behavior: "smooth",
+                });
+              }, 150);
+            }}
             onBlur={() => emitUserTyping(false)}
             placeholder={
               isUnavailable
@@ -702,25 +857,23 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
                 : "Describe your project..."
             }
             disabled={isUnavailable}
-            className={`w-full rounded-full border px-4 py-3 text-neutral-900 placeholder:text-neutral-400 outline-none  transition
-    ${
-      isUnavailable
-        ? "bg-neutral-100 cursor-not-allowed border-neutral-200"
-        : "bg-white border-neutral-300 focus:ring-2 focus:ring-neutral-200"
-    }
-  `}
+            className={`w-full rounded-full border px-4 py-3 text-neutral-900 placeholder:text-neutral-400 outline-none transition
+              ${
+                isUnavailable
+                  ? "bg-neutral-100 cursor-not-allowed border-neutral-200"
+                  : "bg-white border-neutral-300 focus:ring-2 focus:ring-neutral-200"
+              }`}
           />
 
           <button
             type="submit"
             disabled={!input.trim() || isUnavailable}
             className={`absolute right-1 top-1 bottom-1 my-auto grid h-9 w-9 place-items-center rounded-full text-white mr-1 cursor-pointer
-    ${
-      isUnavailable
-        ? "bg-neutral-300 cursor-not-allowed"
-        : "bg-neutral-900 hover:bg-black"
-    }
-  `}
+              ${
+                isUnavailable
+                  ? "bg-neutral-300 cursor-not-allowed"
+                  : "bg-neutral-900 hover:bg-black"
+              }`}
             aria-label="Send message"
             title="Send"
           >
