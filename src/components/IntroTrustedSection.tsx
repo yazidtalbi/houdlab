@@ -244,7 +244,7 @@ export default function TrustedByIconsGrid({
         <div className="text-[18px] md:text-[20px] leading-snug text-neutral-400 mt-2">
           <a
             href="mailto:hello@houdlab.com"
-            className="hover:text-neutral-700 transition-colors"
+            className=" text-black underline transition-colors"
           >
             hello@houdlab.com
           </a>
