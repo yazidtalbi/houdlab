@@ -6,26 +6,22 @@ import { motion } from "framer-motion";
 
 type Msg = { id: string; role: "user" | "assistant"; text: string; at: string };
 
-const QUICK_PROMPTS: { label: string; value: string }[] = [
+const QUICK_PROMPTS = [
   {
     label: "Personal Website",
-    value:
-      "Hey. I’d like a full website redesign. Goals: improve conversions, faster loading, and modern visuals. ",
+    value: "I need a full website redesign that feels modern and fast",
   },
   {
     label: "Landing Page",
-    value:
-      "I need a brand starter kit: logo (primary + mark), color palette (primary/secondary + neutrals), typography pairing (display + text), tone of voice, and a 1-page brand guide. Brand personality: friendly, credible, contemporary. Deliver SVG/PNG assets and a quick logo usage guide (clear space, min size, colors). Please suggest 2–3 directions and explain rationale.",
+    value: "I want a high-converting landing page for my product",
   },
   {
-    label: "Web Application",
-    value:
-      "I’m looking for mobile app UI (iOS + Android): onboarding (3 screens), sign in/up, home feed, item details, search, notifications, and settings. Use a modular design system (buttons, inputs, cards, modals). Provide a flow chart and 2 visual style options (light/dark). Prioritize clarity, tap targets, and empty states.",
+    label: "Web App",
+    value: "I need a clean, user-friendly interface for my web app",
   },
   {
     label: "Branding",
-    value:
-      "I need a versatile logo (wordmark + icon) that works on light/dark and small sizes (favicon, app icon). Please provide 3 directions, mock on a website header, social avatar, and stationery. Deliver SVG + PNG and a simple usage guide (clear space, min size, colors).",
+    value: "I want a simple, modern logo and visual identity",
   },
 ];
 
@@ -43,13 +39,14 @@ function fmtTime(iso?: string) {
 
 function AssistantHeader() {
   return (
-    <div className="mb-1.5 flex items-center gap-2 text-xs pb-1">
+    <div className="mb-1.5 flex items-center gap-1.5 text-xs pb-1">
       <span className="font-medium text-neutral-800 ">{ASSISTANT_TITLE}</span>
+      <span> · </span>
       <div className="flex items-center gap-1.5">
         {ASSISTANT_LABELS.map((label) => (
           <span
             key={label}
-            className="rounded-full font-medium text-gray-700 bg-gray-100 px-2 py-0.5 text-[10px] ring-1 ring-gray-300"
+            className="  font-normal text-gray-500   py-0.5 text-[12px]  "
           >
             {label}
           </span>
@@ -677,15 +674,15 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
             {g.role === "assistant" ? (
               <div className="flex items-start gap-3">
                 {/* Fixed-size avatar wrapper to prevent shrinking on mobile/tablet */}
-                <div className="relative size-8 flex-none shrink-0">
+                <div className="relative size-10 flex-none shrink-0">
                   <img
                     src="/avatars/yazid.png"
                     alt="Assistant avatar"
-                    className="size-8 rounded-full object-cover block"
+                    className="size-10 w-10 rounded-full object-cover block"
                   />
                   {/* yellow rotated square badge */}
-                  <div className="absolute -bottom-1 -left-1">
-                    <div className="h-2.5 w-2.5 bg-[#FABC4B] rotate-45 ring-3 ring-gray-100 rounded-[1px]" />
+                  <div className="absolute -bottom-1  left-1">
+                    <div className="h-2  w-2  bg-[#FABC4B] rotate-45 ring-2 ring-gray-100 rounded-[1px]" />
                   </div>
                 </div>
 

@@ -29,7 +29,7 @@ export default function TestimonialsCarouselAm({
   items,
   className,
   loop = true,
-  defaultDurationMs = 4500,
+  defaultDurationMs = 8500,
   // ❗ default: no max height; allow growth
   heightClass = "",
 }: Props) {
@@ -112,7 +112,7 @@ export default function TestimonialsCarouselAm({
             >
               <TestimonialCard
                 // no h-full; let the card define its natural height
-                className="overflow-hidden"
+                className="overflow-hidden mr-4"
                 rating={t.rating}
                 scoreLabel={t.scoreLabel}
                 quote={t.quote}

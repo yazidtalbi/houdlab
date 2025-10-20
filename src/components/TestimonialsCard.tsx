@@ -42,7 +42,7 @@ export default function TestimonialCard({
       </div>
 
       {/* hairline */}
-      <hr className="my-6 border-t border-black/10" />
+      <hr className="my-4 border-t border-black/10" />
 
       {/* quote */}
       <blockquote className="text-neutral-800/90  grow text-sm md:text-sm font-display tracking-normal leading-relaxed">

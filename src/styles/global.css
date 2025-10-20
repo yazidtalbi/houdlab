@@ -286,3 +286,40 @@ html {
 :target {
   scroll-margin-top: 80px;
 } /* match your sticky header height */
+
+@keyframes slideWords {
+  0%,
+  20% {
+    transform: translateY(0%);
+  }
+  25%,
+  45% {
+    transform: translateY(-100%);
+  }
+  50%,
+  70% {
+    transform: translateY(-200%);
+  }
+  75%,
+  100% {
+    transform: translateY(0%);
+  }
+}
+
+@keyframes slideup {
+  0%,
+  45% {
+    transform: translateY(0);
+  }
+  50%,
+  95% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-slideup {
+  animation: slideup 20s ease-in-out infinite;
+}

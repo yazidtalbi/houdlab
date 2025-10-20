@@ -32,7 +32,7 @@ const demo = [
     type: "image",
     src: "/carousel/vf/mockup2.jpg",
     caption: "VisitFootball",
-    durationMs: 6500,
+    durationMs: 7500,
     ctaLabel: "Discover",
     ctaHref: "/work#vf",
   },
@@ -111,7 +111,14 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
             <a href="/" class="flex items-center gap-3">
               <img src="/hyhy.png" alt="Houd Lab Logo" class="h-7 w-auto" />
               <div class="leading-tight">
-                <p class="text-md font-semibold">Houd Lab</p>
+                <div class="relative overflow-hidden h-7 pl-2 -ml-1 pb-1">
+                  <div
+                    class="animate-slideup flex flex-col text-neutral-800 font-display font-semibold text-xl leading-tight md:leading-snug"
+                  >
+                    <p>Houd Lab</p>
+                    <p lang="ar" class="font-[Amiri] text-xl">هـود لاب</p>
+                  </div>
+                </div>
               </div>
             </a>
             <div class="flex items-center gap-6">
@@ -164,17 +171,21 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
               <img
                 src="/hyhy.png"
                 alt="Houd Lab Logo"
-                class="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
+                class="h-10 w-auto transition-transform duration-300 group-hover:scale-105"
               />
             </a>
 
-            <!-- Divider + text -->
-            <div class="pl-2 -ml-1 pb-1">
-              <p
-                class="text-neutral-800 font-display font-semibold text-xl leading-tight md:leading-snug"
-              >
-                Houd Lab
-              </p>
+            <div class="flex flex-col items-start">
+              <!-- Divider + text -->
+              <div class="relative overflow-hidden h-7 pl-1 -ml-1 pb-1">
+                <div
+                  class="animate-slideup flex flex-col text-neutral-800 font-display font-semibold text-xl leading-tight md:leading-snug"
+                >
+                  <p>Houd Lab</p>
+                  <p lang="ar" class="font-[Amiri] text-xl">هـود لاب</p>
+                </div>
+              </div>
+
               <p class="text-gray-400 font-display font-regular text-xs">
                 Working Globally
               </p>

@@ -157,7 +157,7 @@ export default function TestimonialsCarouselAmMobile({
               className="w-full shrink-0 grow-0 basis-full mr-0"
             >
               <TestimonialCard
-                className="overflow-hidden"
+                className="overflow-hidden mr-4"
                 rating={t.rating}
                 scoreLabel={t.scoreLabel}
                 quote={t.quote}

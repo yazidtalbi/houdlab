@@ -150,24 +150,27 @@ export default function KageCarousel({
 
   const renderSlide = (s: Story, active: boolean, slideIndex: number) => {
     const shouldRun = active && !paused && isVisible && !prefersReducedMotion;
-
-    const isPan = slideIndex === 1;
-    const animationName = isPan ? "kagePan" : "kageZoom";
+    const isSecond = slideIndex === 1;
 
     return (
-      <div className="absolute inset-0">
+      <div
+        className={[
+          "absolute inset-0",
+          isSecond ? "overflow-visible" : "overflow-hidden",
+        ].join(" ")}
+      >
         {s.type === "image" ? (
           <img
             src={s.src}
             alt={s.alt ?? s.caption ?? "Slide"}
-            className="h-full w-full object-cover will-change-transform transform-gpu"
-            loading="lazy"
-            decoding="async"
-            fetchPriority={active ? ("high" as any) : ("low" as any)}
+            className={[
+              "h-full w-full object-cover",
+              isSecond ? "overflow-visible" : "overflow-hidden",
+            ].join(" ")}
             style={
               active
                 ? {
-                    animationName,
+                    animationName: isSecond ? "kagePan" : "kageZoom",
                     animationDuration: `${duration}ms`,
                     animationTimingFunction: "linear",
                     animationFillMode: "forwards",
@@ -177,30 +180,7 @@ export default function KageCarousel({
                 : undefined
             }
           />
-        ) : (
-          <video
-            ref={(el) => {
-              if (el && active) {
-                activeVideoRef.current = el;
-                if (!paused && isVisible && !prefersReducedMotion) {
-                  el.muted = true;
-                  el.play().catch(() => {});
-                } else {
-                  el.pause();
-                }
-              }
-            }}
-            src={s.src}
-            poster={s.poster}
-            className="h-full w-full object-cover"
-            muted={muted}
-            playsInline
-            preload={active ? "metadata" : "none"}
-            controls={false}
-            onEnded={() => go(1)}
-          />
-        )}
-        <div className="absolute bottom-0 left-0 right-0 h-[40%] bg-gradient-to-t from-white/100 via-white/80 to-transparent pointer-events-none" />
+        ) : null}
       </div>
     );
   };
@@ -228,8 +208,8 @@ export default function KageCarousel({
         }
 
         @keyframes kagePan {
-          from { transform: scale(1.05) translateX(3%); }
-          to   { transform: scale(1.05) translateX(-3%); }
+          from { transform: scale(1.05) translateX(35%); }
+          to   { transform: scale(1.05) translateX(-35%); }
         }
       `}</style>
 

@@ -3,15 +3,15 @@ export const testimonialsHome: Testimonial[] = [
     rating: 5,
     scoreLabel: "5.0",
     quote: [
-      "Working with this team was effortless. Every detail felt intentional and results came faster than we expected.",
+      "Working with this Houd Lab was effortless. They communicated on Slack and provided updates on the progress constantly.",
     ],
     author: {
       name: "Amira Benali",
       title: "Founder",
       company: "Muse Studio",
-      avatarUrl: "https://i.pravatar.cc/80?img=45",
+      avatarUrl: "/avatars/amira.jpg",
     },
-    durationMs: 6000,
+    durationMs: 10000,
   },
   {
     rating: 5,
@@ -19,13 +19,13 @@ export const testimonialsHome: Testimonial[] = [
     quote:
       "They transformed our brand visuals completely. The process was smooth, creative, and surprisingly personal.",
     author: {
-      name: "David Nguyen",
-      title: "Marketing Director",
-      company: "Nova Systems",
+      name: "Zinelabidine Megzari",
+      title: "Managing Partner",
+      company: "Eleveight",
 
-      avatarUrl: "https://i.pravatar.cc/80?img=52",
+      avatarUrl: "/avatars/zelmegzari.jpg",
     },
-    durationMs: 6000,
+    durationMs: 10000,
   },
   {
     rating: 5,
@@ -35,9 +35,9 @@ export const testimonialsHome: Testimonial[] = [
     author: {
       name: "Sara Lopez",
       title: "Product Manager",
-      company: "Orbit Labs",
-      avatarUrl: "https://i.pravatar.cc/80?img=28",
+      company: "Orbit ",
+      avatarUrl: "/avatars/sara.jpg",
     },
-    durationMs: 6000,
+    durationMs: 10000,
   },
 ];
