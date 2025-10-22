@@ -37,26 +37,153 @@ function fmtTime(iso?: string) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-function AssistantHeader() {
+function AssistantHeader({ showNew = false }: { showNew?: boolean }) {
   return (
-    <div className="mb-1.5 flex items-center gap-1.5 text-xs pb-1">
-      <span className="font-medium text-neutral-800 ">{ASSISTANT_TITLE}</span>
-      <span> · </span>
-      <div className="flex items-center gap-1.5">
-        {ASSISTANT_LABELS.map((label) => (
-          <span
-            key={label}
-            className="  font-normal text-gray-500   py-0.5 text-[12px]  "
-          >
-            {label}
-          </span>
-        ))}
+    <div className="mb-1.5 flex flex-col">
+      {showNew && (
+        <div className="text-[11px] font-semibold text-[#FABC4B] leading-none mb-1">
+          Oldnew message
+        </div>
+      )}
+
+      <div className="flex items-center gap-1.5 text-xs pb-1">
+        <span className="font-medium text-neutral-800 ">{ASSISTANT_TITLE}</span>
+        <span> · </span>
+        <div className="flex items-center gap-1.5">
+          {ASSISTANT_LABELS.map((label) => (
+            <span
+              key={label}
+              className="font-normal text-gray-500 py-0.5 text-[12px]"
+            >
+              {label}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
 
 export default function ChatPanel({ className = "" }: { className?: string }) {
+  // --- Title badge ---
+  const originalTitleRef = useRef<string>(""); // ✅ single declaration
+  const titleTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      originalTitleRef.current = document.title;
+    }
+  }, []);
+
+  function flashTitleBadge() {
+    if (typeof document === "undefined") return; // SSR guard
+
+    if (titleTimerRef.current) window.clearTimeout(titleTimerRef.current);
+
+    if (!document.title.startsWith("(1) ")) {
+      document.title = "(1) " + document.title;
+    }
+
+    titleTimerRef.current = window.setTimeout(() => {
+      if (typeof document !== "undefined") {
+        document.title =
+          originalTitleRef.current || document.title.replace(/^\(1\)\s*/, "");
+      }
+      titleTimerRef.current = null;
+    }, 3000);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (titleTimerRef.current) window.clearTimeout(titleTimerRef.current);
+      if (typeof document !== "undefined") {
+        document.title =
+          originalTitleRef.current || document.title.replace(/^\(1\)\s*/, "");
+      }
+    };
+  }, []);
+
+  // --- Notification sound ---
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // preload once
+  useEffect(() => {
+    audioRef.current = new Audio("/sounds/new-message.mp3"); // make sure this path exists
+    audioRef.current.preload = "auto";
+    audioRef.current.volume = 0.6;
+  }, []);
+
+  // unlock audio on first user interaction (mobile Safari needs this)
+  useEffect(() => {
+    const unlock = async () => {
+      try {
+        if (!audioRef.current) {
+          audioRef.current = new Audio("/sounds/new-message.mp3");
+          audioRef.current.preload = "auto";
+          audioRef.current.volume = 0.6;
+        }
+        // attempt a short play, then immediately pause to “prime” it
+        await audioRef.current.play();
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      } catch {
+        // ignore; some browsers still reject until next gesture
+      } finally {
+        window.removeEventListener("pointerdown", unlock);
+        window.removeEventListener("keydown", unlock);
+        window.removeEventListener("touchend", unlock);
+      }
+    };
+
+    window.addEventListener("pointerdown", unlock, { once: true });
+    window.addEventListener("keydown", unlock, { once: true });
+    window.addEventListener("touchend", unlock, { once: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", unlock);
+      window.removeEventListener("keydown", unlock);
+      window.removeEventListener("touchend", unlock);
+    };
+  }, []);
+
+  // ✅ inside the component
+  const [showNewBadge, setShowNewBadge] = useState(false);
+  const newBadgeTimer = useRef<number | null>(null);
+  const historyLoadedRef = useRef(false);
+
+  function playNotification() {
+    const a = audioRef.current;
+    if (!a) return;
+    try {
+      a.currentTime = 0; // restart from beginning
+      const p = a.play();
+      if (p && p.catch)
+        p.catch(() => {
+          /* play blocked or user muted */
+        });
+    } catch {
+      /* noop */
+    }
+  }
+
+  function pingNewBadge() {
+    setShowNewBadge(true);
+    playNotification();
+    flashTitleBadge(); // 👈 add this line
+    if (newBadgeTimer.current) window.clearTimeout(newBadgeTimer.current);
+    newBadgeTimer.current = window.setTimeout(() => {
+      setShowNewBadge(false);
+      newBadgeTimer.current = null;
+    }, 10000);
+  }
+
+  // ✅ inside the component
+  useEffect(() => {
+    return () => {
+      if (newBadgeTimer.current) window.clearTimeout(newBadgeTimer.current);
+    };
+  }, []);
+
   const { status } = useAvailability("houdlab");
   const isUnavailable = status === "unavailable";
 
@@ -97,6 +224,14 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     () => (conversationId ? supabaseForConversation(conversationId) : null),
     [conversationId]
   );
+
+  // find the latest assistant message id
+  const lastAssistantId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "assistant") return messages[i].id;
+    }
+    return null;
+  }, [messages]);
 
   function stopTypingSoon(ms = 800) {
     if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
@@ -206,6 +341,9 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
           localStorage.setItem(LAST_ASSISTANT_KEY, String(created));
         } catch {}
         window.dispatchEvent(new Event("houd:chat:assistant"));
+
+        // ✅ Show transient badge for truly new assistant messages
+        if (historyLoadedRef.current) pingNewBadge();
       }
     }
   }
@@ -299,6 +437,9 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
   // Initial history load
   useEffect(() => {
     if (!sb || !conversationId) return;
+
+    historyLoadedRef.current = false;
+
     (async () => {
       const { data, error } = await sb
         .from("messages")
@@ -323,8 +464,10 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
 
       appendUnique(mapped);
       if (mapped.length > 0) setShowPrompts(false);
-      // history should NOT animate
       mapped.forEach((m) => animatedIds.current.add(String(m.id)));
+
+      // ✅ mark history loaded
+      historyLoadedRef.current = true;
     })();
   }, [sb, conversationId]);
 
@@ -377,6 +520,9 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
               localStorage.setItem(LAST_ASSISTANT_KEY, String(row.created_at));
             } catch {}
             window.dispatchEvent(new Event("houd:chat:assistant"));
+
+            // ✅ Only badge after history is loaded (avoids flashing on initial load)
+            if (historyLoadedRef.current) pingNewBadge();
           }
         }
       )
@@ -691,6 +837,17 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
                   <div className="space-y-1.5">
                     {g.items.map((m) => (
                       <div key={m.id}>
+                        {/* show the badge only for the most recent assistant message */}
+                        {showNewBadge && lastAssistantId === m.id && (
+                          <div className="flex items-center gap-2 mb-2 text-[11px] font-semibold text-neutral-500">
+                            <div className="flex-1 h-px bg-neutral-300" />
+                            <span className="flex items-center gap-1 text-[#FABC4B]">
+                              ✦ New message
+                            </span>
+                            <div className="flex-1 h-px bg-neutral-300" />
+                          </div>
+                        )}
+
                         <Bubble
                           id={m.id}
                           className="inline-block max-w-[68ch] rounded-2xl rounded-tl-md bg-white px-4 py-2 ring-1 ring-neutral-200"
