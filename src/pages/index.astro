@@ -89,6 +89,19 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
     href="https://fonts.googleapis.com/css2?family=Inter+Display:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
+  <style>
+    html {
+      transition: font-size 0.4s ease;
+    }
+
+    /* Progressive "zoom" scaling for ultra-wide screens */
+
+    @media (min-width: 1600px) {
+      html {
+        font-size: 1.7vh;
+      }
+    }
+  </style>
 
   <BaseLayout
     title="Design & Development Partner for Founders"
@@ -211,7 +224,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
             <div
               aria-hidden="true"
               class="pointer-events-none absolute z-10 -rotate-5
-          left-[350px] translate-y-1/2 -translate-x-[calc(50%+29rem)] bottom-[8vh]
+          left-[38vh] translate-y-1/2 -translate-x-[calc(50%+29rem)] bottom-[8vh]
            w-[60vmin] h-[60vmin]"
             >
               <!-- your SVG stays exactly the same -->

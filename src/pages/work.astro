@@ -254,7 +254,16 @@ const masterpiece = [
       href="https://fonts.googleapis.com/css2?family=Inter+Display:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-  </head>
+    <style>
+      /* Progressive "zoom" scaling for ultra-wide screens */
+
+      @media (min-width: 1600px) {
+        .test {
+          font-size: px !important;
+        }
+      }
+    </style></head
+  >
 
   <BaseLayout
     title="Works"
@@ -283,6 +292,7 @@ const masterpiece = [
           titleAr="زيــميوم"
           subtitle="Designing the identity and website for a leading SAP recruitment firm."
           rows={zemium}
+          anchorId="zemium"
         />
       </section>
 
@@ -291,6 +301,7 @@ const masterpiece = [
           titleAr="ألايــد"
           subtitle="We redesigned a clean, minimal digital presence for Allied."
           rows={allied}
+          anchorId="allied"
         />
       </section>
 
@@ -299,6 +310,7 @@ const masterpiece = [
           titleAr="فندق كازابلانكا"
           subtitle="Virtual reality dashboard experience for Casablanca Hotel."
           rows={casablanca}
+          anchorId="casablanca"
         />
       </section>
 
@@ -307,6 +319,7 @@ const masterpiece = [
           titleAr="فيزيت فوتبول"
           subtitle="We redesigned the complete booking experience for football fans worldwide."
           rows={vf}
+          anchorId="vf"
         />
       </section>
 
@@ -315,6 +328,7 @@ const masterpiece = [
           titleAr="ســيلينيتيس"
           subtitle="Crafting a timeless identity for a luxury brand."
           rows={selenitis}
+          anchorId="selenitis"
         />
       </section>
 
@@ -323,6 +337,7 @@ const masterpiece = [
           titleAr="فــولكلور ٢٤"
           subtitle="Creating the brand and landing page for a cultural moroccan storytelling project."
           rows={folklore}
+          anchorId="folklore"
         />
       </section>
 
@@ -331,6 +346,7 @@ const masterpiece = [
           titleAr="بي في إنيرجي"
           subtitle="Branding and designing the landing experience for a solar energy startup."
           rows={pve}
+          anchorId="pve"
         />
       </section>
 
@@ -339,6 +355,7 @@ const masterpiece = [
           titleAr="نـوك آوت"
           subtitle="Creating bold social visuals and ad campaigns for Knockout."
           rows={knockout}
+          anchorId="knockout"
         />
       </section>
 
@@ -347,18 +364,19 @@ const masterpiece = [
           titleAr="ماستر بيـس"
           subtitle="Minimal digital portfolio for a product design studio."
           rows={masterpiece}
+          anchorId="masterpiece"
         />
       </section>
 
       <!-- FOOTER -->
       <footer class="h-20 flex items-center justify-center relative">
         <footer
-          class="bg-white items-end pb-1 bottom-5 border border-black text-black hover:text-neutral-600 hover:border-neutral-500 hover:bg-neutral-50 fixed rounded-full"
+          class="bg-white items-end pb-1 bottom-5 border border-black text-black hover:text-neutral-600 hover:border-neutral-500 hover:bg-neutral-50 fixed rounded-full transition-colors duration-200"
         >
           <div class="max-w-6xl mx-auto flex flex-wrap justify-center gap-4">
             <a
               href="/"
-              class="text-lg font-medium px-6 py-1 rounded-full transition-all duration-200"
+              class="text-lg 2xl:text-2xl font-medium px-6 py-1 2xl:py-2 2xl:px-8 rounded-full transition-all duration-200"
             >
               Back
             </a>
@@ -470,6 +488,4 @@ const masterpiece = [
       </script>
     </body>
   </BaseLayout>
-
-
 </html>
