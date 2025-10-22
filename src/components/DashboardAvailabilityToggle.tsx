@@ -1,45 +1,45 @@
-// DashboardAvailabilityToggle.tsx
+// src/components/DashboardAvailabilityToggle.tsx
 "use client";
 import { useState, useEffect } from "react";
-import { supabaseBrowser as supabase } from "@/lib/supabaseBrowser";
 import { useAvailability } from "@/hooks/useAvailability";
+
+type Status = "available" | "unavailable";
 
 export default function DashboardAvailabilityToggle({ orgSlug = "houdlab" }) {
   const { status: remoteStatus, loading } = useAvailability(orgSlug);
-  const [localStatus, setLocalStatus] = useState<"available" | "unavailable">(
-    (remoteStatus ?? "unavailable") as "available" | "unavailable"
+  const [localStatus, setLocalStatus] = useState<Status>(
+    (remoteStatus ?? "unavailable") as Status
   );
   const [busy, setBusy] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    if (remoteStatus)
-      setLocalStatus(remoteStatus as "available" | "unavailable");
+    if (remoteStatus) setLocalStatus(remoteStatus as Status);
   }, [remoteStatus]);
 
-  async function updateStatus(next: "available" | "unavailable") {
+  async function updateStatus(next: Status) {
     if (busy) return;
     setBusy(true);
     setErrorMsg("");
     const prev = localStatus;
-    setLocalStatus(next); // optimistic
+
+    // optimistic UI
+    setLocalStatus(next);
 
     try {
-      const { error } = await supabase
-        .from("availability_status")
-        .upsert(
-          {
-            org_slug: orgSlug,
-            status: next,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "org_slug" } // <-- important in prod
-        )
-        .select()
-        .single();
+      // RECOMMENDED payload (org_slug + status)
+      const res = await fetch("/api/toggle-availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ org_slug: orgSlug, status: next }),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (!res.ok || data?.error) {
+        throw new Error(data?.error || "Request failed");
+      }
     } catch (e: any) {
+      // rollback
       setLocalStatus(prev);
       setErrorMsg(e?.message || String(e));
       console.error("[availability upsert]", e);
@@ -62,6 +62,7 @@ export default function DashboardAvailabilityToggle({ orgSlug = "houdlab" }) {
         >
           كاين
         </button>
+
         <button
           onClick={() => updateStatus("unavailable")}
           disabled={busy || loading}
@@ -74,6 +75,7 @@ export default function DashboardAvailabilityToggle({ orgSlug = "houdlab" }) {
           ممسالِش
         </button>
       </div>
+
       {errorMsg && (
         <div className="mt-2 text-xs text-rose-600 break-words">{errorMsg}</div>
       )}
