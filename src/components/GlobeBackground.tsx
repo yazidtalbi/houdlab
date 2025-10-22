@@ -143,11 +143,16 @@ export default function GlobeBackground() {
       ref={mountRef}
       className="
     pointer-events-none absolute -z-10
-    top-1/2 left-1/2
+  
     w-[80vmin] h-[80vmin]
     opacity-70 globe-wrapper
-    -translate-y-1/2 -translate-x-[calc(50%+18rem)] -mt-16
+     -mt-16
     transform-gpu will-change-transform
+
+
+  left-[8vw] top-[10vh]
+
+
       "
     />
   );

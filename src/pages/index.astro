@@ -211,7 +211,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
             <div
               aria-hidden="true"
               class="pointer-events-none absolute z-10 -rotate-5
-          left-1/2 -translate-y-1/2 -translate-x-[calc(50%+29rem)] top-[680px]
+          left-[350px] translate-y-1/2 -translate-x-[calc(50%+29rem)] bottom-[8vh]
            w-[60vmin] h-[60vmin]"
             >
               <!-- your SVG stays exactly the same -->
@@ -310,6 +310,10 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
           if (mq.matches) requestAnimationFrame(toTop);
         })();
       </script>
+
+      <!-- 100% privacy-first analytics -->
+      <script async src="https://scripts.simpleanalyticscdn.com/latest.js"
+      ></script>
     </body></BaseLayout
   >
 </html>
