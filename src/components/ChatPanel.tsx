@@ -90,7 +90,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
           originalTitleRef.current || document.title.replace(/^\(1\)\s*/, "");
       }
       titleTimerRef.current = null;
-    }, 3000);
+    }, 7000);
   }
 
   useEffect(() => {
