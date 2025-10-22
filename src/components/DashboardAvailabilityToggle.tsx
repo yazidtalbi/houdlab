@@ -49,8 +49,8 @@ export default function DashboardAvailabilityToggle({ orgSlug = "houdlab" }) {
   }
 
   return (
-    <div className="items-center justify-between">
-      <div className="flex flex-col gap-2 font-[Amiri] font-bold">
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-row md:flex-col gap-2 font-[Amiri] font-bold">
         <button
           onClick={() => updateStatus("available")}
           disabled={busy || loading}

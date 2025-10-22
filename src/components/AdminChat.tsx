@@ -31,6 +31,20 @@ export default function AdminPanel() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<string>("");
 
+  // NEW: mobile drawer state
+  const [listOpen, setListOpen] = useState(false);
+
+  // Optional: lock body scroll when drawer is open
+  useEffect(() => {
+    if (listOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prev;
+      };
+    }
+  }, [listOpen]);
+
   // URL param remembered before fetch to avoid race on hard refresh
   const [initialConvFromUrl, setInitialConvFromUrl] = useState<string | null>(
     null
@@ -430,211 +444,369 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="h-dvh grid grid-cols-12 overflow-hidden font-display">
-      {/* Left: conversations list */}
-      {/* Left: sidebar (toggle) + conversations list */}
-      <div className="col-span-4 bg-white min-h-0 overflow-hidden">
-        <div className="grid h-full grid-cols-[110px_1fr]">
-          {/* Sidebar */}
-          <aside className="border-r bg-white p-3 flex flex-col gap-3 ">
-            <header className="self-center mt-2 ">
-              <img
-                src="../hyhy.png"
-                alt="Houd Lab Logo"
-                className="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
-              />
-            </header>
+    <>
+      <div className="h-dvh grid grid-cols-12 overflow-hidden font-display">
+        {/* Left: conversations list */}
+        {/* Left: sidebar (toggle) + conversations list */}
+        <div className="col-span-4 bg-white min-h-0 overflow-hidden hidden md:block">
+          <div className="grid h-full grid-cols-[110px_1fr]">
+            {/* Sidebar */}
+            <aside className="border-r bg-white p-3 flex flex-col gap-3 ">
+              <header className="self-center mt-2 ">
+                <img
+                  src="../hyhy.png"
+                  w
+                  alt="Houd Lab Logo"
+                  className="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
+                />
+              </header>
 
-            <div className="text-sm font-semibold text-center">
-              Houd Lab
-              <br />
-              <p className="text-[#FABC4B]  font-[Amiri] ">مقر رئيسي</p>
-            </div>
-
-            <div className="mt-auto pb-">
-              <div className="mt-4">
-                <DashboardAvailabilityToggle />
+              <div className="text-sm font-semibold text-center">
+                Houd Lab
+                <br />
+                <p className="text-[#FABC4B]  font-[Amiri] ">مقر رئيسي</p>
               </div>
-              <hr className="mt-4 mx-4" />
-              <div className="mt-4">
-                {" "}
-                <LiveClock timeZone="Africa/Casablanca" />
-              </div>
-            </div>
-          </aside>
 
-          {/* Conversations area */}
-          <section className="flex flex-col min-h-0 overflow-hidden border-r">
-            {header}
-            <div className="flex-1 overflow-y-auto">
-              {convs.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => {
-                    setSelectedConv(c);
-                    const sp = new URLSearchParams(window.location.search);
-                    sp.set("c", c.id);
-                    history.replaceState(
-                      {},
-                      "",
-                      `${location.pathname}?${sp.toString()}`
-                    );
-                  }}
-                  className={`w-full text-left px-3 py-3 border-b hover:bg-neutral-50 ${
-                    selectedConv?.id === c.id ? "bg-neutral-100" : ""
-                  }`}
-                >
-                  <div className="text-xs text-neutral-500">
-                    {new Date(c.created_at).toLocaleString()}
-                  </div>
-
-                  <div className="font-medium truncate flex items-center gap-1.5">
-                    {/* Show double check only when last message wasn't from the agent */}
-                    {c.last?.role !== "agent" && c.last?.text ? (
-                      <Loader
-                        size={16}
-                        strokeWidth={3}
-                        className="text-[#FABC4B] "
-                      />
-                    ) : null}
-
-                    {/* Highlight yellow if last message was from the user */}
-                    <span
-                      className={`truncate font-normal ${
-                        c.last?.role !== "agent"
-                          ? "text-black font-medium"
-                          : "text-neutral-400"
-                      }`}
-                    >
-                      {c.last?.text || "(no messages yet)"}
-                    </span>
-                  </div>
-                </button>
-              ))}
-              {!convs.length && (
-                <div className="p-6 text-sm text-neutral-500">
-                  No conversations found.
+              <div className="mt-auto pb-">
+                <div className="mt-4">
+                  <DashboardAvailabilityToggle />
                 </div>
-              )}
-            </div>
-          </section>
-        </div>
-      </div>
+                <hr className="mt-4 mx-4" />
+                <div className="mt-4">
+                  {" "}
+                  <LiveClock timeZone="Africa/Casablanca" />
+                </div>
+              </div>
+            </aside>
 
-      {/* Right: messages + composer */}
-      <div className="col-span-8 flex flex-col min-h-0 overflow-hidden">
-        <div className="p-3 border-b bg-white flex items-center gap-3 shrink-0 h-16">
-          <div className="text-sm text-neutral-500">Conversation</div>
-          <div className="font-medium truncate">{selectedConv?.id || "—"}</div>
-          <div className="ml-auto flex items-center gap-2">
-            <label className="text-sm text-neutral-600">Agent</label>
-            <select
-              value={selectedAgentId ?? ""}
-              onChange={(e) => setSelectedAgentId(e.target.value || null)}
-              className="border rounded px-2 py-1"
-            >
-              {agents.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
+            {/* Conversations area */}
+            <section className="flex flex-col min-h-0 overflow-hidden border-r">
+              {header}
+              <div className="flex-1 overflow-y-auto">
+                {convs.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      setSelectedConv(c);
+                      const sp = new URLSearchParams(window.location.search);
+                      sp.set("c", c.id);
+                      history.replaceState(
+                        {},
+                        "",
+                        `${location.pathname}?${sp.toString()}`
+                      );
+                    }}
+                    className={`w-full text-left px-3 py-3 border-b hover:bg-neutral-50 ${
+                      selectedConv?.id === c.id ? "bg-neutral-100" : ""
+                    }`}
+                  >
+                    <div className="text-xs text-neutral-500">
+                      {new Date(c.created_at).toLocaleString()}
+                    </div>
+
+                    <div className="font-medium truncate flex items-center gap-1.5">
+                      {/* Show double check only when last message wasn't from the agent */}
+                      {c.last?.role !== "agent" && c.last?.text ? (
+                        <Loader
+                          size={16}
+                          strokeWidth={3}
+                          className="text-[#FABC4B] "
+                        />
+                      ) : null}
+
+                      {/* Highlight yellow if last message was from the user */}
+                      <span
+                        className={`truncate font-normal ${
+                          c.last?.role !== "agent"
+                            ? "text-black font-medium"
+                            : "text-neutral-400"
+                        }`}
+                      >
+                        {c.last?.text || "(no messages yet)"}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+                {!convs.length && (
+                  <div className="p-6 text-sm text-neutral-500">
+                    No conversations found.
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
         </div>
 
-        <div ref={listRef} className="flex-1 overflow-y-auto p-4 bg-neutral-50">
-          {msgs.map((m) =>
-            m.role === "assistant" ? (
-              <div key={m.id} className="mb-4 flex items-start gap-3">
-                <img
-                  src="/avatars/yazid.jpg"
-                  alt=""
-                  className="h-8 w-8 rounded-full object-cover ring-1 ring-neutral-200"
-                />
-                <div>
-                  <div className="mb-1 text-xs font-medium text-neutral-500">
-                    Yazid from HoudLab
-                  </div>
-                  <div className="inline-block max-w-[68ch] rounded-2xl rounded-tl-md bg-white px-4 py-2 shadow-sm ring-1 ring-neutral-200">
-                    {m.text}
-                  </div>
-                  <div className="mt-1 text-xs text-neutral-500">{m.at}</div>
-                </div>
-              </div>
-            ) : (
-              <div
-                key={m.id}
-                className="mb-4 flex flex-row-reverse items-start gap-3"
-              >
-                <div>
-                  <div className="inline-block max-w-[68ch] rounded-2xl rounded-tr-md bg-neutral-900 text-white px-4 py-2 shadow-sm">
-                    {m.text}
-                  </div>
-                  <div className="mt-1 text-right text-xs text-neutral-500">
-                    {m.at}
-                  </div>
-                </div>
-              </div>
-            )
-          )}
-
-          {/* User typing bubble (appears after last message) */}
-          {userTyping && (
-            <div className="mb-4 flex flex-row-reverse items-start gap-3">
-              <div>
-                <div className="inline-block rounded-2xl rounded-tr-md bg-neutral-900 text-white px-4 py-2 shadow-sm">
-                  <span className="inline-flex gap-1 align-middle">
-                    <span className="animate-pulse">●</span>
-                    <span className="animate-pulse [animation-delay:150ms]">
-                      ●
-                    </span>
-                    <span className="animate-pulse [animation-delay:300ms]">
-                      ●
-                    </span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="p-3 border-t bg-white shrink-0">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              sendAgent();
-            }}
-            className="flex gap-2"
-          >
-            <input
-              value={input}
-              onChange={(e) => {
-                setInput(e.target.value);
-                // emit agent typing while there's text
-                const active = !!e.target.value.trim();
-                if (active) {
-                  const now = Date.now();
-                  if (now - (lastTypingSentAt.current || 0) > 800) {
-                    emitTyping(true);
-                  }
-                } else {
-                  emitTyping(false);
-                }
-              }}
-              onBlur={() => emitTyping(false)}
-              placeholder="Reply as selected agent…"
-              className="flex-1 border rounded-full px-4 py-2"
-            />
+        {/* Right: messages + composer */}
+        <div className="col-span-12 md:col-span-8 flex flex-col min-h-0 overflow-hidden">
+          <div className="p-3 border-b bg-white flex items-center gap-3 shrink-0 h-16">
+            {/* Mobile: open drawer button */}
             <button
-              className="px-4 py-2 rounded-full bg-black text-white"
-              disabled={!input.trim() || !selectedConv || !selectedAgentId}
+              type="button"
+              onClick={() => setListOpen(true)}
+              className="md:hidden inline-flex items-center justify-center rounded-md border px-2.5 py-1.5"
+              aria-label="Open conversations"
             >
-              Send
+              {/* simple hamburger */}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 6h16M4 12h16M4 18h16"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
             </button>
-          </form>
-          {status && <div className="mt-2 text-xs text-red-600">{status}</div>}
+
+            <div className="text-sm text-neutral-500">Conversation</div>
+            <div className="font-medium truncate">
+              {selectedConv?.id || "—"}
+            </div>
+
+            <div className="ml-auto flex items-center gap-2">
+              <label className="text-sm text-neutral-600">Agent</label>
+              <select
+                value={selectedAgentId ?? ""}
+                onChange={(e) => setSelectedAgentId(e.target.value || null)}
+                className="border rounded px-2 py-1"
+              >
+                {agents.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div
+            ref={listRef}
+            className="flex-1 overflow-y-auto p-4 bg-neutral-50"
+          >
+            {msgs.map((m) =>
+              m.role === "assistant" ? (
+                <div key={m.id} className="mb-4 flex items-start gap-3">
+                  <img
+                    src="/avatars/yazid.jpg"
+                    alt=""
+                    className="h-8 w-8 rounded-full object-cover ring-1 ring-neutral-200"
+                  />
+                  <div>
+                    <div className="mb-1 text-xs font-medium text-neutral-500">
+                      Yazid from HoudLab
+                    </div>
+                    <div className="inline-block max-w-[68ch] rounded-2xl rounded-tl-md bg-white px-4 py-2 shadow-sm ring-1 ring-neutral-200">
+                      {m.text}
+                    </div>
+                    <div className="mt-1 text-xs text-neutral-500">{m.at}</div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  key={m.id}
+                  className="mb-4 flex flex-row-reverse items-start gap-3"
+                >
+                  <div>
+                    <div className="inline-block max-w-[68ch] rounded-2xl rounded-tr-md bg-neutral-900 text-white px-4 py-2 shadow-sm">
+                      {m.text}
+                    </div>
+                    <div className="mt-1 text-right text-xs text-neutral-500">
+                      {m.at}
+                    </div>
+                  </div>
+                </div>
+              )
+            )}
+
+            {/* User typing bubble (appears after last message) */}
+            {userTyping && (
+              <div className="mb-4 flex flex-row-reverse items-start gap-3">
+                <div>
+                  <div className="inline-block rounded-2xl rounded-tr-md bg-neutral-900 text-white px-4 py-2 shadow-sm">
+                    <span className="inline-flex gap-1 align-middle">
+                      <span className="animate-pulse">●</span>
+                      <span className="animate-pulse [animation-delay:150ms]">
+                        ●
+                      </span>
+                      <span className="animate-pulse [animation-delay:300ms]">
+                        ●
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="p-3 border-t bg-white shrink-0">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                sendAgent();
+              }}
+              className="flex gap-2"
+            >
+              <input
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  // emit agent typing while there's text
+                  const active = !!e.target.value.trim();
+                  if (active) {
+                    const now = Date.now();
+                    if (now - (lastTypingSentAt.current || 0) > 800) {
+                      emitTyping(true);
+                    }
+                  } else {
+                    emitTyping(false);
+                  }
+                }}
+                onBlur={() => emitTyping(false)}
+                placeholder="Reply as selected agent…"
+                className="flex-1 border rounded-full px-4 py-2"
+              />
+              <button
+                className="px-4 py-2 rounded-full bg-black text-white"
+                disabled={!input.trim() || !selectedConv || !selectedAgentId}
+              >
+                Send
+              </button>
+            </form>
+            {status && (
+              <div className="mt-2 text-xs text-red-600">{status}</div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Mobile drawer */}
+      {listOpen && (
+        <div className="md:hidden fixed inset-0 z-50">
+          {/* Overlay */}
+          <button
+            className="absolute inset-0 bg-black/40"
+            aria-label="Close conversations"
+            onClick={() => setListOpen(false)}
+          />
+          {/* Panel */}
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="absolute inset-y-0 left-0 w-[88%] max-w-[360px] bg-white shadow-xl ring-1 ring-black/5
+                 translate-x-0 transition-transform duration-200 ease-out"
+          >
+            {/* Drawer header */}
+            <div className="flex items-center justify-between p-3 border-b">
+              <div className="font-medium">Conversations</div>
+              <button
+                onClick={() => setListOpen(false)}
+                className="inline-flex items-center justify-center rounded-md border px-2 py-1"
+                aria-label="Close"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M6 6l12 12M18 6L6 18"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Drawer content: reuse your header + list */}
+            {/* Drawer content: SIDEBAR + SEARCH + LIST */}
+            <div className="flex h-full min-h-0 flex-col overflow-hidden">
+              {/* --- Sidebar chunk (from your left column), compact for mobile --- */}
+              {/* --- Sidebar chunk (mobile-friendly) --- */}
+              <div className="shrink-0 border-b bg-white p-4">
+                <header className="flex items-center justify-between">
+                  {/* Left: logo + name */}
+                  <div className="flex items-center gap-2">
+                    <img
+                      src="../hyhy.png"
+                      alt="Houd Lab Logo"
+                      className="h-10 w-auto"
+                    />
+                    <div className="text-sm font-semibold leading-tight">
+                      Houd Lab
+                      <br />
+                      <span className="text-[#FABC4B] font-[Amiri]">
+                        مقر رئيسي
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right: availability pill (flexed on same line) */}
+                  <div className="flex-shrink-0">
+                    <DashboardAvailabilityToggle />
+                  </div>
+                </header>
+
+                {/* Hidden clock on mobile, visible md+ */}
+                <div className="mt-4 hidden md:block">
+                  <hr className="my-4" />
+                  <LiveClock timeZone="Africa/Casablanca" />
+                </div>
+              </div>
+
+              {/* --- Search bar (reuse your `header` JSX) --- */}
+              <div className="shrink-0 border-b bg-white">{header}</div>
+
+              {/* --- Conversations list (same mapping as desktop) --- */}
+              <div className="flex-1 overflow-y-auto">
+                {convs.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      setSelectedConv(c);
+                      const sp = new URLSearchParams(window.location.search);
+                      sp.set("c", c.id);
+                      history.replaceState(
+                        {},
+                        "",
+                        `${location.pathname}?${sp.toString()}`
+                      );
+                      setListOpen(false); // CLOSE drawer after select
+                    }}
+                    className={`w-full text-left px-3 py-3 border-b hover:bg-neutral-50 ${
+                      selectedConv?.id === c.id ? "bg-neutral-100" : ""
+                    }`}
+                  >
+                    <div className="text-xs text-neutral-500">
+                      {new Date(c.created_at).toLocaleString()}
+                    </div>
+
+                    <div className="font-medium truncate flex items-center gap-1.5">
+                      {c.last?.role !== "agent" && c.last?.text ? (
+                        <Loader
+                          size={16}
+                          strokeWidth={3}
+                          className="text-[#FABC4B]"
+                        />
+                      ) : null}
+                      <span
+                        className={`truncate font-normal ${
+                          c.last?.role !== "agent"
+                            ? "text-black font-medium"
+                            : "text-neutral-400"
+                        }`}
+                      >
+                        {c.last?.text || "(no messages yet)"}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+                {!convs.length && (
+                  <div className="p-6 text-sm text-neutral-500">
+                    No conversations found.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
