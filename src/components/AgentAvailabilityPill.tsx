@@ -1,12 +1,23 @@
+const OFFLINE_LABEL = "Offline — FAQs available";
+const OFFLINE_TIME = "Until 7 AM (GMT+1)";
+
 export default function AgentAvailabilityPill({
   status = "unavailable",
+  isWorkPage = false,
 }: {
   status?: "available" | "unavailable";
+  isWorkPage?: boolean;
 }) {
   const isAvailable = status === "available";
 
   return (
-    <div className="ml-auto shrink-0 md:self-center order-1 md:order-none flex flex-col items-end">
+    <div
+      className={
+        isWorkPage
+          ? "flex flex-col items-start"
+          : "ml-auto shrink-0 md:self-center order-1 md:order-none flex flex-col items-end"
+      }
+    >
       {/* Pill label */}
       <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white/70 px-3 py-1.5 text-[11px] text-neutral-700">
         {/* Pulse dot */}
@@ -24,18 +35,19 @@ export default function AgentAvailabilityPill({
 
         {/* Label */}
         <span className="font-medium text-xs">
-          {isAvailable
-            ? "Estimated response: 2 min"
-            : "Unavailable — until 7 AM (GMT+1)"}
+          {isAvailable ? "Estimated response: 2 min" : OFFLINE_LABEL}
         </span>
       </div>
 
-      {/* Secondary line */}
-      {/* {isAvailable && (
-        <span className="mt-1 text-[10px] text-neutral-500">
-        
+      {!isAvailable && (
+        <span
+          className={`mt-1 text-[10px] text-neutral-500 ${
+            isWorkPage ? "text-left" : "text-right"
+          }`}
+        >
+          {OFFLINE_TIME}
         </span>
-      )} */}
+      )}
     </div>
   );
 }

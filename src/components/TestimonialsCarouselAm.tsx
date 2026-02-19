@@ -123,10 +123,24 @@ export default function TestimonialsCarouselAm({
         </div>
       </div>
 
-      {/* controls/dots (positioned absolutely; don't affect height) */}
-      {/* <button className="absolute left-2 top-1/2 -translate-y-1/2 ..." />
-      <button className="absolute right-2 top-1/2 -translate-y-1/2 ..." />
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2" /> */}
+      <div className="mt-3 flex items-center justify-center gap-2">
+        {items.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            aria-label={`Go to testimonial ${i + 1}`}
+            aria-current={i === index ? "true" : "false"}
+            className={[
+              "h-2 w-2 rounded-full transition",
+              i === index ? "bg-neutral-600" : "bg-neutral-300",
+            ].join(" ")}
+            onClick={() => {
+              stopAutoplay();
+              scrollTo(i);
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

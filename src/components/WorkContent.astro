@@ -1,0 +1,398 @@
+---
+import ProjectShowcase from "@/components/ProjectShowcase.astro";
+import WorkNavigation from "@/components/WorkNavigation.tsx";
+
+const {
+  scrollContainerId,
+  showMobileHeader = true,
+  updateHash = true,
+  showFooter = true,
+} = Astro.props as {
+  scrollContainerId?: string;
+  showMobileHeader?: boolean;
+  updateHash?: boolean;
+  showFooter?: boolean;
+};
+
+import zemium1 from "@/works/zemium/1.jpeg";
+import zemium2 from "@/works/zemium/2.jpg";
+import zemium3 from "@/works/zemium/3.jpg";
+
+import allied1 from "@/works/allied/allied1.jpg";
+import allied2 from "@/works/allied/allied2.jpg";
+import allied3 from "@/works/allied/allied3.jpg";
+import allied3a from "@/works/allied/allied3a.jpg";
+import allied3b from "@/works/allied/allied3b.jpg";
+
+import casablanca1 from "@/works/casablanca/casablanca1.jpg";
+import casablanca2 from "@/works/casablanca/casablanca2.jpg";
+import casablanca3a from "@/works/casablanca/casablanca3a.jpg";
+import casablanca3b from "@/works/casablanca/casablanca3b.jpg";
+
+import vf1 from "@/works/vf/vf1.jpg";
+import vf2a from "@/works/vf/vf2a.jpg";
+import vf2b from "@/works/vf/vf2b.jpg";
+import vf3 from "@/works/vf/vf3.jpg";
+import vf4 from "@/works/vf/vf4.jpg";
+import vf5 from "@/works/vf/vf5.jpg";
+import vf6 from "@/works/vf/vf6.jpg";
+import vf7 from "@/works/vf/vf7.jpg";
+
+import selenitis1 from "@/works/selenitis/selenitis1.jpg";
+import selenitis2 from "@/works/selenitis/selenitis2.jpg";
+import selenitis3a from "@/works/selenitis/selenitis3a.jpg";
+import selenitis3b from "@/works/selenitis/selenitis3b.jpg";
+
+import folklore1 from "@/works/folklore/folklore1.jpg";
+import folklore2a from "@/works/folklore/folklore2a.jpg";
+import folklore2b from "@/works/folklore/folklore2b.jpg";
+
+import pve1 from "@/works/pve/pve1.jpg";
+import pve2 from "@/works/pve/pve2.jpg";
+import pve3a from "@/works/pve/pve3a.jpg";
+import pve3c from "@/works/pve/pve3c.jpg";
+
+import knockout1 from "@/works/knockout/knockout1.jpg";
+import knockout2a from "@/works/knockout/knockout2a.jpg";
+import knockout2b from "@/works/knockout/knockout2b.jpg";
+
+import masterpiece1 from "@/works/masterpiece/masterpiece1.jpg";
+import masterpiece2 from "@/works/masterpiece/masterpiece2.jpg";
+import masterpiece3a from "@/works/masterpiece/masterpiece3a.jpg";
+import masterpiece3b from "@/works/masterpiece/masterpiece3b.jpg";
+
+import afus1 from "@/works/afus/afus-remastered-1.jpg";
+import afus2 from "@/works/afus/afus-remastered-2.jpg";
+import afus3 from "@/works/afus/afus3.jpg";
+import afus4 from "@/works/afus/afus4.jpg";
+
+/* -------------------- AFUS -------------------- */
+const afus = [
+  {
+    variant: "regular",
+    image: { src: afus1, alt: "Afus project overview" },
+  },
+  {
+    variant: "regular",
+    image: { src: afus2, alt: "Afus design details" },
+  },
+  {
+    variant: "two",
+    left: { src: afus3, alt: "Afus interface design left" },
+    right: { src: afus4, alt: "Afus visual elements right" },
+  },
+];
+
+/* -------------------- ZEMIUM -------------------- */
+const zemium = [
+  {
+    variant: "regular",
+    image: { src: zemium1, alt: "Zemium branding and website design overview" },
+  },
+  {
+    variant: "regular",
+    image: { src: zemium2, alt: "Zemium typography and color system details" },
+  },
+  {
+    variant: "regular",
+    image: { src: zemium3, alt: "Zemium website interface on desktop view" },
+  },
+];
+
+/* -------------------- ALLIED -------------------- */
+const allied = [
+  {
+    variant: "regular",
+    image: { src: allied1, alt: "Allied website homepage redesign" },
+  },
+  {
+    variant: "regular",
+    image: { src: allied2, alt: "Allied minimal interface layout" },
+  },
+  {
+    variant: "regular",
+    image: { src: allied3, alt: "Allied clean UI components" },
+  },
+  {
+    variant: "two",
+    left: { src: allied3a, alt: "Allied dark theme card design" },
+    right: { src: allied3b, alt: "Allied light theme interface preview" },
+  },
+];
+
+/* -------------------- CASABLANCA HOTEL -------------------- */
+const casablanca = [
+  {
+    variant: "regular",
+    image: {
+      src: casablanca1,
+      alt: "Casablanca Hotel virtual dashboard interface",
+    },
+  },
+  {
+    variant: "regular",
+    image: {
+      src: casablanca2,
+      alt: "Casablanca Hotel immersive 3D interaction preview",
+    },
+  },
+  {
+    variant: "two",
+    left: {
+      src: casablanca3a,
+      alt: "Casablanca Hotel VR dashboard left screen",
+    },
+    right: {
+      src: casablanca3b,
+      alt: "Casablanca Hotel VR dashboard right screen",
+    },
+  },
+];
+
+/* -------------------- VISIT FOOTBALL -------------------- */
+const vf = [
+  {
+    variant: "regular",
+    image: { src: vf1, alt: "VisitFootball redesigned homepage" },
+  },
+  {
+    variant: "two",
+    left: { src: vf2a, alt: "VisitFootball old design" },
+    right: { src: vf2b, alt: "VisitFootball new redesign" },
+  },
+
+  {
+    variant: "regular",
+    image: { src: vf4, alt: "VisitFootball VIP page" },
+  },
+
+  {
+    variant: "regular",
+    image: { src: vf3, alt: "VisitFootball tickets flow" },
+  },
+  {
+    variant: "regular",
+    image: { src: vf5, alt: "VisitFootball tickets UI" },
+  },
+  {
+    variant: "regular",
+    image: { src: vf6, alt: "VisitFootball quote system" },
+  },
+  {
+    variant: "regular",
+    image: { src: vf7, alt: "VisitFootball dashboard" },
+  },
+];
+
+/* -------------------- SELENITIS -------------------- */
+const selenitis = [
+  {
+    variant: "regular",
+    image: { src: selenitis1, alt: "Selenitis luxury brand identity design" },
+  },
+  {
+    variant: "regular",
+    image: { src: selenitis2, alt: "Selenitis packaging and logo application" },
+  },
+  {
+    variant: "two",
+    left: { src: selenitis3a, alt: "Selenitis typography and brand palette" },
+    right: { src: selenitis3b, alt: "Selenitis identity mockup visuals" },
+  },
+];
+
+/* -------------------- FOLKLORE -------------------- */
+const folklore = [
+  {
+    variant: "regular",
+    image: { src: folklore1, alt: "Folklore 24 brand identity" },
+  },
+  {
+    variant: "two",
+    left: { src: folklore2a, alt: "Folklore 24 packaging left" },
+    right: { src: folklore2b, alt: "Folklore 24 packaging right" },
+  },
+];
+
+/* -------------------- PV ENERGY -------------------- */
+const pve = [
+  {
+    variant: "regular",
+    image: { src: pve1, alt: "PV Energy hero section" },
+  },
+  {
+    variant: "regular",
+    image: { src: pve2, alt: "PV Energy product detail" },
+  },
+  {
+    variant: "two",
+    left: { src: pve3a, alt: "PV Energy comparison left" },
+    right: { src: pve3c, alt: "PV Energy comparison right" },
+  },
+];
+
+/* -------------------- KNOCKOUT -------------------- */
+const knockout = [
+  {
+    variant: "regular",
+    image: { src: knockout1, alt: "Knockout campaign visuals" },
+  },
+  {
+    variant: "two",
+    left: { src: knockout2a, alt: "Knockout social post left" },
+    right: { src: knockout2b, alt: "Knockout social post right" },
+  },
+];
+
+/* -------------------- MASTERPIECE -------------------- */
+const masterpiece = [
+  {
+    variant: "regular",
+    image: { src: masterpiece1, alt: "Masterpiece minimal portfolio overview" },
+  },
+    {
+    variant: "regular",
+    image: { src: masterpiece3a, alt: "Masterpiece case page right" },
+  },
+      {
+    variant: "regular",
+    image: { src: masterpiece2, alt: "Masterpiece case page right" },
+  },
+  {
+    variant: "regular",
+    image: { src: masterpiece3b, alt: "Masterpiece case detail" },
+  },
+];
+---
+
+<WorkNavigation
+  client:load
+  scrollContainerId={scrollContainerId}
+  updateHash={updateHash}
+/>
+<div class="max-w-[1800px] mx-auto relative">
+  {
+    showMobileHeader && (
+      <header class="lg:hidden fixed top-12 left-1/2 -translate-x-1/2 z-50">
+        <div class="flex items-center justify-center gap-6 px-8" role="banner">
+          <a href="/" aria-label="Houd Lab" class="flex items-center gap-3 group">
+            <img
+              src="/hyhy.png"
+              alt="Houd Lab Logo"
+              class="h-12 w-auto transition-transform duration-300 group-hover:scale-105"
+            />
+          </a>
+        </div>
+      </header>
+    )
+  }
+  <!-- <SmoothScroll client:load /> -->
+
+  <section id="afus" data-work="afus">
+    <ProjectShowcase
+      titleAr="أفوس"
+      subtitle="Designing the identity and digital experience for Afus."
+      rows={afus}
+      anchorId="afus"
+    />
+  </section>
+
+  <section id="zemium" data-work="zemium" class="scroll-mt-[320px] mt-12">
+    <ProjectShowcase
+      titleAr="زيــميوم"
+      subtitle="Designing the identity and website for a leading SAP recruitment firm."
+      rows={zemium}
+      anchorId="zemium"
+    />
+  </section>
+
+  <section id="allied" class="scroll-mt-[320px] mt-12">
+    <ProjectShowcase
+      titleAr="ألايــد"
+      subtitle="We redesigned a clean, minimal digital presence for Allied."
+      rows={allied}
+      anchorId="allied"
+    />
+  </section>
+
+  <section id="casablanca" class="scroll-mt-[320px] mt-12">
+    <ProjectShowcase
+      titleAr="فندق كازابلانكا"
+      subtitle="Virtual reality dashboard experience for Casablanca Hotel."
+      rows={casablanca}
+      anchorId="casablanca"
+    />
+  </section>
+
+  <section id="vf" class="scroll-mt-[320px] mt-12">
+    <ProjectShowcase
+      titleAr="فيزيت فوتبول"
+      subtitle="We redesigned the complete booking experience for football fans worldwide."
+      rows={vf}
+      anchorId="vf"
+    />
+  </section>
+
+  <section id="selenitis" class="scroll-mt-[320px] mt-12">
+    <ProjectShowcase
+      titleAr="ســيلينيتيس"
+      subtitle="Crafting a timeless identity for a luxury brand."
+      rows={selenitis}
+      anchorId="selenitis"
+    />
+  </section>
+
+  <section id="folklore" class="scroll-mt-[320px] mt-12">
+    <ProjectShowcase
+      titleAr="فــولكلور ٢٤"
+      subtitle="Creating the brand and landing page for a cultural moroccan storytelling project."
+      rows={folklore}
+      anchorId="folklore"
+    />
+  </section>
+
+  <section id="pve" class="scroll-mt-[320px] mt-12">
+    <ProjectShowcase
+      titleAr="بي في إنيرجي"
+      subtitle="Branding and designing the landing experience for a solar energy startup."
+      rows={pve}
+      anchorId="pve"
+    />
+  </section>
+
+  <section id="knockout" class="scroll-mt-[320px] mt-12">
+    <ProjectShowcase
+      titleAr="نـوك آوت"
+      subtitle="Creating bold social visuals and ad campaigns for Knockout."
+      rows={knockout}
+      anchorId="knockout"
+    />
+  </section>
+
+  <section id="masterpiece" class="scroll-mt-[320px] mt-12">
+    <ProjectShowcase
+      titleAr="ماستر بيـس"
+      subtitle="Minimal digital portfolio for a product design studio."
+      rows={masterpiece}
+      anchorId="masterpiece"
+    />
+  </section>
+
+  {showFooter && (
+    <footer class="h-20 flex items-center justify-center relative">
+      <footer
+        class="bg-white items-end pb-1 bottom-5 border border-black text-black hover:text-neutral-600 hover:border-neutral-500 hover:bg-neutral-50 fixed rounded-full transition-colors duration-200"
+      >
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-center gap-4">
+          <a
+            href="/"
+            class="text-lg 2xl:text-xl font-medium px-6 py-1 2xl:py-1 2xl:px-6 rounded-full transition-all duration-200"
+          >
+            Back
+          </a>
+        </div>
+      </footer>
+    </footer>
+  )}
+</div>
+

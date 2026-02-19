@@ -2,10 +2,11 @@
 import "../styles/global.css";
 
 import ChatPanel from "../components/ChatPanel";
-import KageCarousel from "@/components/KageCarousel";
 import KageModal from "@/components/KageModal";
 import Footer from "../components/Footer.astro";
 import TestimonialsCard from "@/components/TestimonialsCard";
+import ProjectsModal from "@/components/ProjectsModal";
+import WorkContent from "@/components/WorkContent.astro";
 
 import TestimonialsCarouselAm, {
   Testimonial,
@@ -16,36 +17,10 @@ import TestimonialsMobile from "@/components/TestimonialsMobile";
 // (optional) define your items somewhere:
 import { testimonialsHome as testimonials } from "@/data/testimonials";
 
-const demo = [
-  {
-    id: 1,
-    type: "image",
-    src: "/carousel/zemium/mockup.jpg",
-    caption: "Zemium",
-    durationMs: 6500,
-    ctaLabel: "Discover",
-    ctaHref: "/work#zemium",
-  },
-
-  {
-    id: 2,
-    type: "image",
-    src: "/carousel/vf/mockup2.jpg",
-    caption: "VisitFootball",
-    durationMs: 7500,
-    ctaLabel: "Discover",
-    ctaHref: "/work#vf",
-  },
-  {
-    id: 3,
-    type: "image",
-    src: "/carousel/folklore/mockup2.jpg",
-    ctaLabel: "Discover",
-    caption: "The Mxsterpiece",
-    durationMs: 6500,
-    ctaHref: "/work#masterpiece",
-  },
-];
+const sampleVideo = {
+  src: "https://d3vlq52qrgdnc2.cloudfront.net/UIUX-Showreel-preview-big.mp4",
+  poster: "/carousel/vf/mockup2.jpg",
+};
 
 const rows = [
   {
@@ -155,7 +130,10 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
           class="max-w-6xl mx-auto px-4 sm:px-6 pt-15 lg:pt-16 min-h-[100svh]"
         >
           <section class="relative min-h-[calc(100svh-5rem)] flex flex-col">
-            <ChatPanel client:load className="flex-1 min-h-0 z-20" />
+            <ChatPanel
+              client:load
+              className="flex-1 min-h-[60svh] lg:min-h-[65vh] z-20"
+            />
           </section>
         </main>
 
@@ -266,18 +244,41 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
               </svg>
             </div>
 
-            <ChatPanel client:load className="flex-1 min-h-0 z-20" />
+            <ChatPanel
+              client:load
+              className="flex-1 min-h-[60svh] lg:min-h-[65vh] z-20"
+            />
           </div>
 
           <!-- RIGHT -->
           <aside
             class="col-span-12 lg:col-span-3 flex flex-col gap-6 min-h-0 overflow-hidden reveal-up-secondary"
           >
-            <KageCarousel
-              stories={demo}
-              client:load
-              className="flex-1 min-h-0 "
-            />
+            <div class="rounded-2xl border border-neutral-200 overflow-hidden flex flex-col gap-3 p-4 flex-1 min-h-0">
+              <div class="relative w-full flex-1 min-h-0 bg-neutral-900 rounded-xl overflow-hidden">
+                <video
+                  class="absolute inset-0 h-full w-full object-cover"
+                  src={sampleVideo.src}
+                  poster={sampleVideo.poster}
+                  autoplay
+                  muted
+                  loop
+                  playsinline
+                />
+              </div>
+              <ProjectsModal
+                client:load
+                triggerLabel="discover our projects"
+                triggerClassName="w-full border-0 bg-[#FABC4B]/90 px-4 py-3 text-xs font-semibold text-neutral-900 uppercase transition hover:brightness-95"
+              >
+                <WorkContent
+                  showMobileHeader={false}
+                  scrollContainerId="projects-modal-scroll"
+                  updateHash={false}
+                  showFooter={false}
+                />
+              </ProjectsModal>
+            </div>
             <div class="rounded-2xl max-w-full p-0">
               <TestimonialsCarouselAm
                 client:load

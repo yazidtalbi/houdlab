@@ -47,11 +47,28 @@ export const POST: APIRoute = async ({ request }) => {
       )}`;
 
       notifySlack(
-        slackBlocks("💬 New user message", {
-          Conversation: `<${url}|${conversationId}>`, // clickable link
-          Preview: preview,
-          At: data.created_at,
-        })
+        {
+          text: preview,
+          blocks: [
+            {
+              type: "header",
+              text: { type: "plain_text", text: preview },
+            },
+            {
+              type: "section",
+              fields: [
+                {
+                  type: "mrkdwn",
+                  text: `*Conversation:*\n<${url}|${conversationId}>`,
+                },
+                {
+                  type: "mrkdwn",
+                  text: `*At:*\n${data.created_at}`,
+                },
+              ],
+            },
+          ],
+        }
       );
     }
 

@@ -12,6 +12,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import IntroTrustedSection from "@/components/IntroTrustedSection";
 
 const groups = [
@@ -28,6 +29,11 @@ const groups = [
 type KageModalProps = {
   /** Optional label for the trigger button */
   triggerLabel?: string;
+  /** Optional className for the default trigger button */
+  triggerClassName?: string;
+  /** Optional variant/size for the default trigger button */
+  triggerVariant?: React.ComponentProps<typeof Button>["variant"];
+  triggerSize?: React.ComponentProps<typeof Button>["size"];
   /** Optional: start open (useful for testing) */
   defaultOpen?: boolean;
   /** Optional title/description if you don’t want to inline children */
@@ -43,6 +49,9 @@ type KageModalProps = {
 
 export default function KageModal({
   triggerLabel = "Open modal",
+  triggerClassName,
+  triggerVariant,
+  triggerSize,
   defaultOpen = false,
   title,
   description,
@@ -57,13 +66,18 @@ export default function KageModal({
       <DialogTrigger asChild>
         {trigger ?? (
           <Button
-            className="
+            variant={triggerVariant}
+            size={triggerSize}
+            className={cn(
+              `
     h-9 px-4 text-sm md:h-10 md:px-6 md:text-base
     bg-white border border-black text-black rounded-full
     transition-colors
     md:static md:inset-auto 
    hover:bg-black hover:text-white cursor-pointer
-  "
+  `,
+              triggerClassName,
+            )}
           >
             About
           </Button>

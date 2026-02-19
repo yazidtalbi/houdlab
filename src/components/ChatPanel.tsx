@@ -3,10 +3,10 @@ import { supabaseForConversation } from "../lib/supabaseBrowser";
 import AgentAvailabilityPill from "./AgentAvailabilityPill";
 import { useAvailability } from "@/hooks/useAvailability";
 import { motion } from "framer-motion";
+import faqBank from "@/lib/faqBank";
+import type { ChatMessage } from "@/types/chat";
 
-type Msg = { id: string; role: "user" | "assistant"; text: string; at: string };
-
-const QUICK_PROMPTS = [
+const PRIMARY_CHIPS = [
   {
     label: "Personal Website",
     value: "I need a full website redesign that feels modern and fast",
@@ -25,6 +25,158 @@ const QUICK_PROMPTS = [
   },
 ];
 
+const SECONDARY_CHIPS = [
+  { id: "pricing", label: "Pricing" },
+  { id: "services", label: "Services" },
+  { id: "timeline", label: "Timeline" },
+  { id: "contact", label: "Contact" },
+  { id: "process", label: "Process" },
+  { id: "revisions", label: "Revisions" },
+];
+
+const SECONDARY_ICONS: Record<string, JSX.Element> = {
+  pricing: (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+    >
+      <path
+        d="M8.2 2.2h-4A1.2 1.2 0 0 0 3 3.4v4l5.2 5.2a1.2 1.2 0 0 0 1.7 0l3.9-3.9a1.2 1.2 0 0 0 0-1.7L8.2 2.2Z"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linejoin="round"
+      />
+      <circle cx="5.3" cy="5.3" r="1" fill="currentColor" />
+    </svg>
+  ),
+  services: (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+    >
+      <path
+        d="M9.8 2.5a3.3 3.3 0 0 0-3.7 4.7L2 11.3V14h2.7l4.1-4.1A3.3 3.3 0 0 0 13.5 6l-2.3 2.3-2-2 2.6-3.8Z"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linejoin="round"
+      />
+    </svg>
+  ),
+  timeline: (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+    >
+      <circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3" />
+      <path
+        d="M8 4.8v3.6l2.4 1.5"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  ),
+  contact: (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+    >
+      <rect
+        x="2.2"
+        y="3.5"
+        width="11.6"
+        height="9"
+        rx="1.3"
+        stroke="currentColor"
+        stroke-width="1.3"
+      />
+      <path
+        d="m3 4.5 5 3.8 5-3.8"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  ),
+  process: (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+    >
+      <circle cx="3.5" cy="4" r="1.4" fill="currentColor" />
+      <circle cx="12.5" cy="12" r="1.4" fill="currentColor" />
+      <path
+        d="M4.8 4.7h3.6a2.4 2.4 0 0 1 2.4 2.4v1.5a2.4 2.4 0 0 1-2.4 2.4H7.2"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  ),
+  revisions: (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+    >
+      <path
+        d="M12.3 6.2A4.6 4.6 0 0 0 4.2 5.1"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+      />
+      <path
+        d="M4.1 2.9v2.7h2.7"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <path
+        d="M3.7 9.8a4.6 4.6 0 0 0 8.1 1.1"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+      />
+      <path
+        d="M11.9 13.1v-2.7H9.2"
+        stroke="currentColor"
+        stroke-width="1.3"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  ),
+};
+
+function SecondaryIcon({ id }: { id: string }) {
+  return (
+    <span className="text-[#FABC4B]">
+      {SECONDARY_ICONS[id] ?? SECONDARY_ICONS.process}
+    </span>
+  );
+}
+
 const STORE_KEY = "houdlab_chat_messages_v1";
 const CONV_KEY = "houdlab_conversation_id_v1";
 const LAST_ASSISTANT_KEY = "houdlab_chat_last_assistant_at_v1";
@@ -32,9 +184,66 @@ const LAST_ASSISTANT_KEY = "houdlab_chat_last_assistant_at_v1";
 const ASSISTANT_TITLE = "Yazid";
 const ASSISTANT_LABELS = ["Community Manager"];
 
+const OFFLINE_AUTOREPLY =
+  "Thanks — we received this. A Houdlab specialist will reply as soon as possible.";
+
+type LocalMessage = ChatMessage & { at?: string; isAuto?: boolean };
+
+const AUTO_RESPONSE_CUTOFF_HOUR_GMT1 = 18;
+const GMT1_OFFSET_MINUTES = 60;
+
 function fmtTime(iso?: string) {
   const d = iso ? new Date(iso) : new Date();
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function isAfterGmt1Cutoff(iso?: string) {
+  const d = iso ? new Date(iso) : new Date();
+  const utcMinutes = d.getUTCHours() * 60 + d.getUTCMinutes();
+  const gmt1Minutes = (utcMinutes + GMT1_OFFSET_MINUTES + 1440) % 1440;
+  return gmt1Minutes >= AUTO_RESPONSE_CUTOFF_HOUR_GMT1 * 60;
+}
+
+function normalizeStoredMessages(raw: unknown): LocalMessage[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((m) => {
+      if (!m || typeof m !== "object") return null;
+      const id = "id" in m ? String((m as any).id) : null;
+      if (!id) return null;
+      const role = (m as any).role === "assistant" ? "assistant" : "user";
+      const kind = (m as any).kind === "faq" ? "faq" : "text";
+      const createdAt =
+        typeof (m as any).createdAt === "string"
+          ? (m as any).createdAt
+          : new Date().toISOString();
+      const at = typeof (m as any).at === "string" ? (m as any).at : undefined;
+      if (kind === "faq") {
+        const faqId =
+          typeof (m as any).faqId === "string" ? (m as any).faqId : "";
+        if (!faqId) return null;
+        return {
+          id,
+          role: "assistant",
+          kind: "faq",
+          faqId,
+          createdAt,
+          isAuto: typeof (m as any).isAuto === "boolean" ? (m as any).isAuto : true,
+          ...(at ? { at } : {}),
+        };
+      }
+      const text = typeof (m as any).text === "string" ? (m as any).text : "";
+      return {
+        id,
+        role,
+        kind: "text",
+        text,
+        createdAt,
+        isAuto: typeof (m as any).isAuto === "boolean" ? (m as any).isAuto : false,
+        ...(at ? { at } : {}),
+      };
+    })
+    .filter(Boolean) as LocalMessage[];
 }
 
 function AssistantHeader({ showNew = false }: { showNew?: boolean }) {
@@ -64,7 +273,15 @@ function AssistantHeader({ showNew = false }: { showNew?: boolean }) {
   );
 }
 
-export default function ChatPanel({ className = "" }: { className?: string }) {
+export default function ChatPanel({ 
+  className = "",
+  isWorkPage = false,
+  onToggleCollapse
+}: { 
+  className?: string;
+  isWorkPage?: boolean;
+  onToggleCollapse?: () => void;
+}) {
   // --- Title badge ---
   const originalTitleRef = useRef<string>(""); // ✅ single declaration
   const titleTimerRef = useRef<number | null>(null);
@@ -188,10 +405,11 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
   const isUnavailable = status === "unavailable";
 
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Msg[]>([]);
+  const [messages, setMessages] = useState<LocalMessage[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [showPrompts, setShowPrompts] = useState(true);
   const [typing, setTyping] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -225,6 +443,19 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     [conversationId]
   );
 
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+    setIsOnline(navigator.onLine);
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   // find the latest assistant message id
   const lastAssistantId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -233,7 +464,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     return null;
   }, [messages]);
 
-  function stopTypingSoon(ms = 800) {
+  function stopTypingSoon(ms = 4800) {
     if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
     typingTimerRef.current = window.setTimeout(() => setTyping(false), ms);
   }
@@ -283,7 +514,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     // Update the optimistic message in place
     setMessages((prev) =>
       prev.map((m) =>
-        m.id === tempId ? { ...m, id: dbId, at: fmtTime(created_at) } : m
+        m.id === tempId ? { ...m, id: dbId, createdAt: created_at } : m
       )
     );
 
@@ -331,12 +562,19 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
       seenIds.current.add(dbId);
       setMessages((prev) => [
         ...prev,
-        { id: dbId, role, text, at: fmtTime(created) },
+        {
+          id: dbId,
+          role,
+          kind: "text",
+          text,
+          isAuto: false,
+          createdAt: created,
+        },
       ]);
       lastSeenIso.current = created;
 
       if (role === "assistant") {
-        stopTypingSoon(1200);
+        stopTypingSoon(5200);
         try {
           localStorage.setItem(LAST_ASSISTANT_KEY, String(created));
         } catch {}
@@ -353,8 +591,8 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     try {
       const raw = localStorage.getItem(STORE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as Msg[];
-        if (Array.isArray(parsed) && parsed.length) {
+        const parsed = normalizeStoredMessages(JSON.parse(raw));
+        if (parsed.length) {
           setMessages(parsed);
           setShowPrompts(false);
           parsed.forEach((m) => {
@@ -508,14 +746,16 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
             {
               id: dbId,
               role,
+              kind: "text",
               text: String(row.text),
-              at: fmtTime(String(row.created_at)),
+              isAuto: false,
+              createdAt: String(row.created_at),
             },
           ]);
           lastSeenIso.current = String(row.created_at);
 
           if (role === "assistant") {
-            stopTypingSoon(1200);
+            stopTypingSoon(5200);
             try {
               localStorage.setItem(LAST_ASSISTANT_KEY, String(row.created_at));
             } catch {}
@@ -551,10 +791,10 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
               window.clearTimeout(typingExpireTimer.current);
             typingExpireTimer.current = window.setTimeout(
               () => setTyping(false),
-              2500
+              6500
             );
           } else {
-            setTyping(false);
+            stopTypingSoon(4800);
           }
         }
       })
@@ -634,6 +874,34 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     if (!trimmed) return;
     if (showPrompts) setShowPrompts(false);
 
+    if (!isOnline) {
+      const nowIso = new Date().toISOString();
+      const tempId = `tmp_${crypto.randomUUID()}`;
+      const optimistic: LocalMessage = {
+        id: tempId,
+        role: "user",
+        kind: "text",
+        text: trimmed,
+        createdAt: nowIso,
+      };
+      setMessages((m) => [...m, optimistic]);
+      seenIds.current.add(tempId);
+      setInput("");
+
+      setMessages((m) => [
+        ...m,
+        {
+          id: `tmp_${crypto.randomUUID()}`,
+          role: "assistant",
+          kind: "text",
+          text: OFFLINE_AUTOREPLY,
+          isAuto: true,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      return;
+    }
+
     let convId = conversationId;
     try {
       if (!convId) convId = await ensureConversation();
@@ -649,11 +917,12 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     const tempId = `tmp_${crypto.randomUUID()}`;
     const nowMs = Date.now();
 
-    const optimistic: Msg = {
+    const optimistic: LocalMessage = {
       id: tempId,
       role: "user",
+      kind: "text",
       text: trimmed,
-      at: fmtTime(),
+      createdAt: new Date().toISOString(),
     };
 
     pending.current.push({ tempId, role: "user", text: trimmed, atMs: nowMs });
@@ -698,7 +967,7 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
           setMessages((prev) =>
             prev.map((m) =>
               m.id === tempId
-                ? { ...m, id: dbId, at: fmtTime(String(dbMsg.created_at)) }
+                ? { ...m, id: dbId, createdAt: String(dbMsg.created_at) }
                 : m
             )
           );
@@ -713,13 +982,36 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
     }
   }
 
+  function handleSecondaryChipClick(chipId: string, label: string) {
+    const entry = faqBank[chipId];
+    if (!entry) return;
+    if (showPrompts) setShowPrompts(false);
+    const nowIso = new Date().toISOString();
+    const userMessage: LocalMessage = {
+      id: `tmp_${crypto.randomUUID()}`,
+      role: "user",
+      kind: "text",
+      text: label,
+      createdAt: nowIso,
+    };
+    const faqMessage: LocalMessage = {
+      id: `tmp_${crypto.randomUUID()}`,
+      role: "assistant",
+      kind: "faq",
+      faqId: chipId,
+      isAuto: true,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, userMessage, faqMessage]);
+  }
+
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     send(input);
   }
 
   const groups = useMemo(() => {
-    type G = { role: "user" | "assistant"; items: Msg[] };
+    type G = { role: "user" | "assistant"; items: LocalMessage[] };
     const out: G[] = [];
     let prev: "user" | "assistant" | null = null;
     for (const m of messages) {
@@ -761,55 +1053,106 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`relative h-full min-h-0 flex flex-col rounded-3xl bg-gray-100 p-2 md:p-3 ${className}`}
+      className={`relative h-full min-h-0 flex flex-col rounded-3xl bg-gray-100 ${isWorkPage ? "p-4" : "p-2 md:p-3"} ${className}`}
     >
-      {/* Top banner */}
-      <div className="rounded-2xl bg-white md:p-5 p-4">
-        <h1 className="font-display text-4xl md:text-6xl font-medium leading-[1.1] tracking-[-0.02em] pb-2 lg:pb-0">
-          Establishing <br />
-          <span className="text-[#FABC4B]">Brands</span> &{" "}
-          <span className="text-[#FABC4B]">Products</span>
-        </h1>
-        <hr className="md:mt-5 mt-2  border-neutral-200" />
-
-        {/* STACK on mobile/tablet, row on desktop */}
-        <div className="md:mt-5 mt-3 flex flex-col gap-3 xl:flex-row xl:items-start lg:justify-between">
-          {/* Avatars + text: also stacked on mobile/tablet */}
-          <div className="flex items-center gap-3 lg:flex-row lg:items-center lg:gap-3 flex-1 min-w-0 mt-2 lg:mt-0">
-            <div className="flex -space-x-3 shrink-0">
-              <img
-                src="/avatars/a2.png"
-                alt="Assistant 1 from Houd Lab"
-                className="h-10 w-10 rounded-full border-2 border-white"
-              />
-              <img
-                src="/avatars/a3.png"
-                alt="Assistant 2 from Houd Lab"
-                className="h-10 w-10 rounded-full border-2 border-white"
-              />
-              <img
-                src="/avatars/a1.png"
-                alt="Assistant 3 from Houd Lab"
-                className="h-10 w-10 rounded-full border-2 border-white"
-              />
+      {/* Header with avatar (for work page) */}
+      {isWorkPage && (
+        <div className="rounded-2xl bg-white md:p-4 p-3 mb-2 border-b border-neutral-200 relative">
+          <div className="flex items-start gap-3">
+            <img
+              src="/avatars/yazid.png"
+              alt="Yazid"
+              className={`h-10 w-10 rounded-full object-cover ${isUnavailable ? "grayscale" : ""}`}
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-neutral-900">{ASSISTANT_TITLE}</span>
+                <span className="text-neutral-400">·</span>
+                <span className="text-sm text-neutral-600">{ASSISTANT_LABELS[0]}</span>
+              </div>
+              <div className="mt-2 flex items-start justify-start">
+                <AgentAvailabilityPill status={status} isWorkPage={true} />
+              </div>
             </div>
-            <p className="text-xs md:text-sm text-neutral-700 font-medium leading-snug">
-              Chat with an expert right now,
-              <br className="block md:hidden lg:block" /> and get your project
-              scope in minutes.
-            </p>
           </div>
+          {/* Collapse button on the right */}
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="absolute top-4 right-4 z-40 p-2 rounded-full bg-white hover:bg-neutral-50 border border-neutral-200 transition-colors"
+              aria-label="Collapse chat"
+              title="Collapse chat"
+            >
+              <svg
+                className="w-4 h-4 text-neutral-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
 
-          {/* Availability pill moves below on mobile/tablet */}
-          <div className="self-start lg:self-auto mt-0 lg:mt-0">
-            <AgentAvailabilityPill status={status} />
+      {/* Top banner - hidden on work page */}
+      {!isWorkPage && (
+        <div className="shrink-0 rounded-2xl bg-white px-4 py-3 md:px-5 md:py-3.5">
+          <h1 className="font-display text-[2rem] md:text-[2.75rem] font-medium leading-[1.05] tracking-[-0.02em]">
+            Establishing <br />
+            <span className="text-[#FABC4B]">Brands</span> &{" "}
+            <span className="text-[#FABC4B]">Products</span>
+          </h1>
+          <hr className="mt-3 border-neutral-200" />
+
+          {/* STACK on mobile/tablet, row on desktop */}
+          <div className="mt-3 flex flex-col gap-2 xl:flex-row xl:items-center lg:justify-between">
+            {/* Avatars + text: also stacked on mobile/tablet */}
+            <div className="flex items-center gap-3 lg:flex-row lg:items-center lg:gap-3 flex-1 min-w-0">
+              <div className="flex -space-x-3 shrink-0">
+                <img
+                  src="/avatars/a2.png"
+                  alt="Assistant 1 from Houd Lab"
+                  className="h-8 w-8 md:h-9 md:w-9 rounded-full border-2 border-white"
+                />
+                <img
+                  src="/avatars/a3.png"
+                  alt="Assistant 2 from Houd Lab"
+                  className="h-8 w-8 md:h-9 md:w-9 rounded-full border-2 border-white"
+                />
+                <img
+                  src="/avatars/a1.png"
+                  alt="Assistant 3 from Houd Lab"
+                  className="h-8 w-8 md:h-9 md:w-9 rounded-full border-2 border-white"
+                />
+              </div>
+              <p className="text-xs md:text-sm text-neutral-700 font-medium leading-snug">
+                Chat with an expert right now,
+                <br className="block md:hidden lg:block" /> and get your project
+                scope in minutes.
+              </p>
+            </div>
+
+            {/* Availability pill moves below on mobile/tablet */}
+            <div className="self-start lg:self-auto mt-0 lg:mt-0">
+              <AgentAvailabilityPill status={status} />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Messages area — on mobile add dynamic bottom padding via CSS var */}
       <div
         ref={scrollRef}
+        data-lenis-prevent
+        data-lenis-prevent-wheel
+        data-lenis-prevent-touch
         className="flex-1 min-h-0 overflow-y-auto rounded-2xl p-4 pb-2 lg:pb-4"
         style={{
           paddingBottom: "var(--chat-mobile-pad, 0px)",
@@ -818,46 +1161,102 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
         {groups.map((g, gi) => (
           <div key={gi} className="mb-4 last:mb-2 lg:last:mb-4">
             {g.role === "assistant" ? (
-              <div className="flex items-start gap-3">
-                {/* Fixed-size avatar wrapper to prevent shrinking on mobile/tablet */}
-                <div className="relative size-10 flex-none shrink-0">
-                  <img
-                    src="/avatars/yazid.png"
-                    alt="Assistant avatar"
-                    className="size-10 w-10 rounded-full object-cover block"
-                  />
-                  {/* yellow rotated square badge */}
-                  <div className="absolute -bottom-1  left-1">
-                    <div className="h-2  w-2  bg-[#FABC4B] rotate-45 ring-2 ring-gray-100 rounded-[1px]" />
-                  </div>
-                </div>
+              <div className="flex items-start gap-2">
+                {/* Fixed-size avatar wrapper - smaller on work page */}
+                {(() => {
+                  const lastItem = g.items[g.items.length - 1];
+                  const afterCutoff = isAfterGmt1Cutoff(lastItem?.createdAt);
+                  const hasHuman = g.items.some((m) => !m.isAuto);
+                  const showAvatar = !afterCutoff || hasHuman;
+                  return (
+                    showAvatar && (
+                    <div
+                      className={`relative flex-none shrink-0 ${isWorkPage ? "size-8" : "size-10"}`}
+                    >
+                      <img
+                        src="/avatars/yazid.png"
+                        alt="Assistant avatar"
+                        className={`${isWorkPage ? "h-8 w-8" : "size-10 w-10"} rounded-full object-cover block`}
+                      />
+                      {/* yellow rotated square badge */}
+                      <div className="absolute -bottom-1 left-1">
+                        <div
+                          className={`${isWorkPage ? "h-1.5 w-1.5" : "h-2 w-2"} bg-[#FABC4B] rotate-45 ring-2 ring-gray-100 rounded-[1px]`}
+                        />
+                      </div>
+                    </div>
+                    )
+                  );
+                })()}
 
                 <div>
-                  <AssistantHeader />
+                  {!isWorkPage && <AssistantHeader />}
                   <div className="space-y-1.5">
-                    {g.items.map((m) => (
-                      <div key={m.id}>
-                        {/* show the badge only for the most recent assistant message */}
+                    {g.items.map((m) => {
+                      const entry = m.kind === "faq" ? faqBank[m.faqId] : null;
+                      return (
+                        <div key={m.id}>
+                          {/* show the badge only for the most recent assistant message */}
                         {showNewBadge && lastAssistantId === m.id && (
-                          <div className="flex items-center gap-2 mb-2 text-[11px] font-semibold text-neutral-500">
-                            <div className="flex-1 h-px bg-neutral-300" />
-                            <span className="flex items-center gap-1 text-[#FABC4B]">
-                              ✦ New message
-                            </span>
-                            <div className="flex-1 h-px bg-neutral-300" />
+                          <div className="mb-2 text-[11px] font-semibold text-neutral-500 text-center">
+                            ----- New message -----
                           </div>
                         )}
 
-                        <Bubble
-                          id={m.id}
-                          className="inline-block max-w-[68ch] rounded-2xl rounded-tl-md bg-white px-4 py-2 ring-1 ring-neutral-200"
-                        >
-                          {m.text}
-                        </Bubble>
-                      </div>
-                    ))}
+                          {m.kind === "faq" && entry ? (
+                            <Bubble
+                              id={m.id}
+                              className={`inline-block max-w-[68ch] rounded-2xl rounded-tl-md px-4 py-3 ring-1 ${
+                                m.isAuto
+                                  ? "bg-amber-50 ring-amber-200"
+                                  : "bg-white ring-neutral-200"
+                              }`}
+                            >
+                              <div className="text-sm font-semibold text-neutral-900">
+                                {entry.title}
+                              </div>
+                              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-700">
+                                {entry.body.map((item) => (
+                                  <li key={item}>{item}</li>
+                                ))}
+                              </ul>
+                              {entry.cta && (
+                                <a
+                                  href={entry.cta.href}
+                                  className="mt-3 inline-flex items-center justify-center rounded-full border border-neutral-900 px-3 py-1.5 text-xs font-semibold text-neutral-900 transition hover:bg-neutral-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2"
+                                >
+                                  {entry.cta.label}
+                                </a>
+                              )}
+                            </Bubble>
+                          ) : (
+                            <Bubble
+                              id={m.id}
+                              className={`inline-block max-w-[68ch] rounded-2xl rounded-tl-md px-4 py-2 ring-1 ${
+                                m.isAuto
+                                  ? "bg-amber-50 ring-amber-200"
+                                  : "bg-white ring-neutral-200"
+                              }`}
+                            >
+                              {m.kind === "text" ? m.text : null}
+                            </Bubble>
+                          )}
+                        </div>
+                      );
+                    })}
                     <div className="mt-1 text-xs text-neutral-500">
-                      {g.items[g.items.length - 1].at}
+                      {(() => {
+                        const lastItem = g.items[g.items.length - 1];
+                        const afterCutoff = isAfterGmt1Cutoff(lastItem?.createdAt);
+                        const autoOnly = g.items.every((m) => m.isAuto);
+                        const showAutoLabel = afterCutoff && (autoOnly || isUnavailable);
+                        return (
+                          <>
+                            {showAutoLabel ? "Automatic response at " : ""}
+                            {lastItem?.at ?? fmtTime(lastItem?.createdAt)}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -871,12 +1270,13 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
                         id={m.id}
                         className="inline-block max-w-[68ch] rounded-2xl rounded-tr-md bg-black text-white px-4 py-2 ml-24 text-left"
                       >
-                        {m.text}
+                        {m.kind === "text" ? m.text : null}
                       </Bubble>
                     </div>
                   ))}
                   <div className="mt-1 text-right text-xs text-neutral-500">
-                    {g.items[g.items.length - 1].at}
+                    {g.items[g.items.length - 1].at ??
+                      fmtTime(g.items[g.items.length - 1].createdAt)}
                   </div>
                 </div>
               </div>
@@ -889,13 +1289,15 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={BUBBLE_REVEAL}
-            className="mb-4 flex items-start gap-3 transform-gpu will-change-transform will-change-opacity"
+            className="mb-4 flex items-start gap-2 transform-gpu will-change-transform will-change-opacity"
           >
-            <img
-              src="/avatars/yazid.png"
-              alt=""
-              className="h-8 w-8 rounded-full object-cover ring-2 ring-white"
-            />
+            {!isUnavailable && (
+              <img
+                src="/avatars/yazid.png"
+                alt=""
+                className={`${isWorkPage ? "h-8 w-8" : "h-8 w-8"} rounded-full object-cover ring-2 ring-white`}
+              />
+            )}
             <div className="inline-block rounded-2xl rounded-tl-md bg-white px-4 py-2 ring-1 ring-neutral-200">
               <span className="inline-flex gap-1 align-middle">
                 <span className="animate-pulse text-xs">●</span>
@@ -914,17 +1316,25 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
       </div>
 
       {/* Quick prompts — fixed on mobile/tablet above composer; desktop inline */}
-      {showPrompts && (
-        <>
-          {/* mobile/tablet */}
-          <div
-            className="fixed inset-x-4 z-40 flex flex-wrap gap-2 px-3 py-2 lg:hidden"
-            style={{
-              bottom:
-                "calc(82px + var(--kb, 0px) + env(safe-area-inset-bottom))",
-            }}
-          >
-            {QUICK_PROMPTS.map((p) => (
+      <>
+        {/* mobile/tablet */}
+        <div
+          className={`lg:hidden flex flex-wrap gap-2 ${
+            isWorkPage
+              ? "fixed inset-x-4 z-40 px-3 py-2"
+              : "mt-3 px-2 py-1"
+          }`}
+          style={
+            isWorkPage
+              ? {
+                  bottom:
+                    "calc(82px + var(--kb, 0px) + env(safe-area-inset-bottom))",
+                }
+              : undefined
+          }
+        >
+          {showPrompts && !isUnavailable &&
+            PRIMARY_CHIPS.map((p) => (
               <button
                 key={p.label}
                 type="button"
@@ -953,11 +1363,32 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
                 </span>
               </button>
             ))}
-          </div>
+          {isUnavailable && (
+            <>
+              <div className="w-full text-[10px] font-semibold text-neutral-400">
+                FAQ shortcuts
+              </div>
+              {SECONDARY_CHIPS.map((chip) => (
+                <button
+                  key={chip.id}
+                  type="button"
+                  onClick={() => handleSecondaryChipClick(chip.id, chip.label)}
+                  className="group rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-600 hover:bg-white active:scale-[0.99] transition"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <SecondaryIcon id={chip.id} />
+                    <span className="font-semibold">{chip.label}</span>
+                  </span>
+                </button>
+              ))}
+            </>
+          )}
+        </div>
 
-          {/* desktop — unchanged inline version */}
-          <div className="hidden lg:mt-3 lg:px-5 lg:max-h-40 lg:overflow-y-auto lg:flex-shrink-0 lg:flex lg:flex-wrap lg:gap-2">
-            {QUICK_PROMPTS.map((p) => (
+        {/* desktop — unchanged inline version */}
+        <div className="hidden lg:mt-3 lg:px-5 lg:max-h-40 lg:overflow-y-auto lg:flex-shrink-0 lg:flex lg:flex-wrap lg:gap-2">
+          {showPrompts && !isUnavailable &&
+            PRIMARY_CHIPS.map((p) => (
               <button
                 key={p.label}
                 type="button"
@@ -986,9 +1417,28 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
                 </span>
               </button>
             ))}
-          </div>
-        </>
-      )}
+          {isUnavailable && (
+            <>
+              <div className="w-full text-[10px] font-semibold text-neutral-400">
+                FAQ shortcuts
+              </div>
+              {SECONDARY_CHIPS.map((chip) => (
+                <button
+                  key={chip.id}
+                  type="button"
+                  onClick={() => handleSecondaryChipClick(chip.id, chip.label)}
+                  className="group rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-600 hover:bg-white active:scale-[0.99] transition"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <SecondaryIcon id={chip.id} />
+                    <span className="font-semibold">{chip.label}</span>
+                  </span>
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+      </>
 
       {/* Composer — fixed on mobile/tablet, normal flow on desktop */}
       <form
@@ -998,6 +1448,11 @@ export default function ChatPanel({ className = "" }: { className?: string }) {
           bottom: "calc(20px + var(--kb, 0px) + env(safe-area-inset-bottom))",
         }}
       >
+        {!isOnline && (
+          <div className="mb-2 text-[11px] font-semibold text-amber-600">
+            Offline mode
+          </div>
+        )}
         <div className="relative flex items-center">
           <input
             id="chat-input"
