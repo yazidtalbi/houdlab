@@ -438,6 +438,10 @@ export default function ChatPanel({
   const lastTypingSentAt = useRef<number>(0);
   const typingChanRef = useRef<any>(null);
 
+  // --- Assistant countdown (first reply ETA) ---
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const countdownTimerRef = useRef<number | null>(null);
+
   const sb = useMemo(
     () => (conversationId ? supabaseForConversation(conversationId) : null),
     [conversationId]
@@ -456,10 +460,13 @@ export default function ChatPanel({
     };
   }, []);
 
-  // find the latest assistant message id
+  // find the latest *human* assistant message id (ignore FAQ / auto replies)
   const lastAssistantId = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === "assistant") return messages[i].id;
+      const m = messages[i];
+      if (m.role === "assistant" && m.kind === "text" && !m.isAuto) {
+        return m.id;
+      }
     }
     return null;
   }, [messages]);
@@ -669,6 +676,10 @@ export default function ChatPanel({
       if (typingTimerRef.current) window.clearTimeout(typingTimerRef.current);
       if (typingExpireTimer.current)
         window.clearTimeout(typingExpireTimer.current);
+      if (countdownTimerRef.current) {
+        window.clearInterval(countdownTimerRef.current);
+        countdownTimerRef.current = null;
+      }
     };
   }, []);
 
@@ -763,6 +774,12 @@ export default function ChatPanel({
 
             // ✅ Only badge after history is loaded (avoids flashing on initial load)
             if (historyLoadedRef.current) pingNewBadge();
+            // assistant replied: stop any pending countdown
+            if (countdownTimerRef.current) {
+              window.clearInterval(countdownTimerRef.current);
+              countdownTimerRef.current = null;
+            }
+            setCountdown(null);
           }
         }
       )
@@ -930,6 +947,25 @@ export default function ChatPanel({
     seenIds.current.add(tempId);
     setInput("");
 
+    // If this is effectively the first user message (no assistant yet),
+    // start a short “assistant is connecting” countdown (max 2 minutes).
+    if (!lastAssistantId && !countdownTimerRef.current) {
+      setCountdown(120);
+      countdownTimerRef.current = window.setInterval(() => {
+        setCountdown((prev) => {
+          if (prev == null) return prev;
+          if (prev <= 1) {
+            if (countdownTimerRef.current) {
+              window.clearInterval(countdownTimerRef.current);
+              countdownTimerRef.current = null;
+            }
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
     try {
       const res = await fetch("/api/chat/message", {
         method: "POST",
@@ -1027,6 +1063,13 @@ export default function ChatPanel({
 
   // 👇 Slightly longer, velvety reveal
   const BUBBLE_REVEAL = { duration: 0.28, ease: [0.22, 1, 0.36, 1] } as const;
+
+  function formatCountdown(sec: number | null) {
+    if (sec == null) return "";
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  }
 
   function Bubble({
     id,
@@ -1158,52 +1201,34 @@ export default function ChatPanel({
           paddingBottom: "var(--chat-mobile-pad, 0px)",
         }}
       >
-        {groups.map((g, gi) => (
+        {groups.map((g, gi) => {
+          const isFirstUserGroup = g.role === "user" && gi === 0;
+          const shouldShowCountdown =
+            countdown !== null && !lastAssistantId && isFirstUserGroup;
+
+          return (
           <div key={gi} className="mb-4 last:mb-2 lg:last:mb-4">
             {g.role === "assistant" ? (
-              <div className="flex items-start gap-2">
-                {/* Fixed-size avatar wrapper - smaller on work page */}
-                {(() => {
-                  const lastItem = g.items[g.items.length - 1];
-                  const afterCutoff = isAfterGmt1Cutoff(lastItem?.createdAt);
-                  const hasHuman = g.items.some((m) => !m.isAuto);
-                  const showAvatar = !afterCutoff || hasHuman;
-                  return (
-                    showAvatar && (
-                    <div
-                      className={`relative flex-none shrink-0 ${isWorkPage ? "size-8" : "size-10"}`}
-                    >
-                      <img
-                        src="/avatars/yazid.png"
-                        alt="Assistant avatar"
-                        className={`${isWorkPage ? "h-8 w-8" : "size-10 w-10"} rounded-full object-cover block`}
-                      />
-                      {/* yellow rotated square badge */}
-                      <div className="absolute -bottom-1 left-1">
-                        <div
-                          className={`${isWorkPage ? "h-1.5 w-1.5" : "h-2 w-2"} bg-[#FABC4B] rotate-45 ring-2 ring-gray-100 rounded-[1px]`}
-                        />
-                      </div>
-                    </div>
-                    )
-                  );
-                })()}
+              <div>
+                {/* show the badge only for the most recent assistant message, above avatar + header */}
+                {showNewBadge && lastAssistantId && (
+                  <div className="mb-2 text-[11px] font-semibold text-neutral-500 text-center">
+                    ----- New message -----
+                  </div>
+                )}
 
-                <div>
-                  {!isWorkPage && <AssistantHeader />}
-                  <div className="space-y-1.5">
-                    {g.items.map((m) => {
-                      const entry = m.kind === "faq" ? faqBank[m.faqId] : null;
-                      return (
-                        <div key={m.id}>
-                          {/* show the badge only for the most recent assistant message */}
-                        {showNewBadge && lastAssistantId === m.id && (
-                          <div className="mb-2 text-[11px] font-semibold text-neutral-500 text-center">
-                            ----- New message -----
-                          </div>
-                        )}
-
-                          {m.kind === "faq" && entry ? (
+                {/*
+                  For pure FAQ auto-responses (FAQ shortcuts), hide avatar + assistant header
+                  and just show the FAQ bubbles inline.
+                */}
+                {g.items.every((m) => m.kind === "faq") ? (
+                  <div>
+                    <div className="space-y-1.5">
+                      {g.items.map((m) => {
+                        // In this branch, all messages are FAQ kind
+                        const entry = faqBank[m.faqId];
+                        return (
+                          <div key={m.id}>
                             <Bubble
                               id={m.id}
                               className={`inline-block max-w-[68ch] rounded-2xl rounded-tl-md px-4 py-3 ring-1 ${
@@ -1213,53 +1238,148 @@ export default function ChatPanel({
                               }`}
                             >
                               <div className="text-sm font-semibold text-neutral-900">
-                                {entry.title}
+                                {entry?.title}
                               </div>
-                              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-700">
-                                {entry.body.map((item) => (
-                                  <li key={item}>{item}</li>
-                                ))}
-                              </ul>
-                              {entry.cta && (
-                                <a
-                                  href={entry.cta.href}
-                                  className="mt-3 inline-flex items-center justify-center rounded-full border border-neutral-900 px-3 py-1.5 text-xs font-semibold text-neutral-900 transition hover:bg-neutral-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2"
-                                >
-                                  {entry.cta.label}
-                                </a>
+                              {entry && (
+                                <>
+                                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-700">
+                                    {entry.body.map((item) => (
+                                      <li key={item}>{item}</li>
+                                    ))}
+                                  </ul>
+                                  {entry.cta && (
+                                    <a
+                                      href={entry.cta.href}
+                                      className="mt-3 inline-flex items-center justify-center rounded-full border border-neutral-900 px-3 py-1.5 text-xs font-semibold text-neutral-900 transition hover:bg-neutral-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2"
+                                    >
+                                      {entry.cta.label}
+                                    </a>
+                                  )}
+                                </>
                               )}
                             </Bubble>
-                          ) : (
-                            <Bubble
-                              id={m.id}
-                              className={`inline-block max-w-[68ch] rounded-2xl rounded-tl-md px-4 py-2 ring-1 ${
-                                m.isAuto
-                                  ? "bg-amber-50 ring-amber-200"
-                                  : "bg-white ring-neutral-200"
-                              }`}
-                            >
-                              {m.kind === "text" ? m.text : null}
-                            </Bubble>
-                          )}
-                        </div>
-                      );
-                    })}
-                    <div className="mt-1 text-xs text-neutral-500">
-                      {(() => {
-                        const lastItem = g.items[g.items.length - 1];
-                        const afterCutoff = isAfterGmt1Cutoff(lastItem?.createdAt);
-                        const autoOnly = g.items.every((m) => m.isAuto);
-                        const showAutoLabel = afterCutoff && (autoOnly || isUnavailable);
-                        return (
-                          <>
-                            {showAutoLabel ? "Automatic response at " : ""}
-                            {lastItem?.at ?? fmtTime(lastItem?.createdAt)}
-                          </>
+                          </div>
                         );
-                      })()}
+                      })}
+                      <div className="mt-1 text-xs text-neutral-500">
+                        {(() => {
+                          const lastItem = g.items[g.items.length - 1];
+                          const afterCutoff = isAfterGmt1Cutoff(lastItem?.createdAt);
+                          const autoOnly = g.items.every((m) => m.isAuto);
+                          const showAutoLabel =
+                            afterCutoff && (autoOnly || isUnavailable);
+                          return (
+                            <>
+                              {showAutoLabel ? "Automatic response at " : ""}
+                              {lastItem?.at ?? fmtTime(lastItem?.createdAt)}
+                            </>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-start gap-2">
+                    {/* Fixed-size avatar wrapper - smaller on work page */}
+                    {(() => {
+                      const lastItem = g.items[g.items.length - 1];
+                      const afterCutoff = isAfterGmt1Cutoff(lastItem?.createdAt);
+                      const hasHuman = g.items.some((m) => !m.isAuto);
+                      const showAvatar = !afterCutoff || hasHuman;
+                      return (
+                        showAvatar && (
+                          <div
+                            className={`relative flex-none shrink-0 ${
+                              isWorkPage ? "size-8" : "size-10"
+                            }`}
+                          >
+                            <img
+                              src="/avatars/yazid.png"
+                              alt="Assistant avatar"
+                              className={`${
+                                isWorkPage ? "h-8 w-8" : "size-10 w-10"
+                              } rounded-full object-cover block`}
+                            />
+                            {/* yellow rotated square badge */}
+                            <div className="absolute -bottom-1 left-1">
+                              <div
+                                className={`${
+                                  isWorkPage ? "h-1.5 w-1.5" : "h-2 w-2"
+                                } bg-[#FABC4B] rotate-45 ring-2 ring-gray-100 rounded-[1px]`}
+                              />
+                            </div>
+                          </div>
+                        )
+                      );
+                    })()}
+
+                    <div>
+                      {!isWorkPage && <AssistantHeader />}
+                      <div className="space-y-1.5">
+                        {g.items.map((m) => {
+                          const entry = m.kind === "faq" ? faqBank[m.faqId] : null;
+                          return (
+                            <div key={m.id}>
+                              {m.kind === "faq" && entry ? (
+                                <Bubble
+                                  id={m.id}
+                                  className={`inline-block max-w-[68ch] rounded-2xl rounded-tl-md px-4 py-3 ring-1 ${
+                                    m.isAuto
+                                      ? "bg-amber-50 ring-amber-200"
+                                      : "bg-white ring-neutral-200"
+                                  }`}
+                                >
+                                  <div className="text-sm font-semibold text-neutral-900">
+                                    {entry.title}
+                                  </div>
+                                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-neutral-700">
+                                    {entry.body.map((item) => (
+                                      <li key={item}>{item}</li>
+                                    ))}
+                                  </ul>
+                                  {entry.cta && (
+                                    <a
+                                      href={entry.cta.href}
+                                      className="mt-3 inline-flex items-center justify-center rounded-full border border-neutral-900 px-3 py-1.5 text-xs font-semibold text-neutral-900 transition hover:bg-neutral-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2"
+                                    >
+                                      {entry.cta.label}
+                                    </a>
+                                  )}
+                                </Bubble>
+                              ) : (
+                                <Bubble
+                                  id={m.id}
+                                  className={`inline-block max-w-[68ch] rounded-2xl rounded-tl-md px-4 py-2 ring-1 ${
+                                    m.isAuto
+                                      ? "bg-amber-50 ring-amber-200"
+                                      : "bg-white ring-neutral-200"
+                                  }`}
+                                >
+                                  {m.kind === "text" ? m.text : null}
+                                </Bubble>
+                              )}
+                            </div>
+                          );
+                        })}
+                        <div className="mt-1 text-xs text-neutral-500">
+                          {(() => {
+                            const lastItem = g.items[g.items.length - 1];
+                            const afterCutoff = isAfterGmt1Cutoff(lastItem?.createdAt);
+                            const autoOnly = g.items.every((m) => m.isAuto);
+                            const showAutoLabel =
+                              afterCutoff && (autoOnly || isUnavailable);
+                            return (
+                              <>
+                                {showAutoLabel ? "Automatic response at " : ""}
+                                {lastItem?.at ?? fmtTime(lastItem?.createdAt)}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex flex-row-reverse items-start gap-3">
@@ -1278,11 +1398,31 @@ export default function ChatPanel({
                     {g.items[g.items.length - 1].at ??
                       fmtTime(g.items[g.items.length - 1].createdAt)}
                   </div>
+
+                  {/* Assistant incoming countdown directly under the very first user group,
+                      visually aligned on the assistant (left) side */}
+                  {shouldShowCountdown && (
+                    <div className="mt-3 flex justify-start">
+                      <div className="max-w-[68ch] rounded-2xl border border-amber-200 bg-amber-50/90 px-4 py-3 text-xs md:text-sm text-neutral-800 flex flex-col gap-1.5 text-left">
+                        <div className="font-semibold">
+                          An assistant is connecting to your chat
+                        </div>
+                        <div className="text-[11px] md:text-xs text-neutral-700">
+                          This usually takes under 2 minutes.
+                        </div>
+                        <div className="mt-1 flex justify-start">
+                          <span className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-3 py-1 text-[11px] md:text-xs font-semibold text-white tracking-wide">
+                            {formatCountdown(countdown)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
-        ))}
+        )})}
 
         {typing && (
           <motion.div

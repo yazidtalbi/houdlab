@@ -1,5 +1,5 @@
 const OFFLINE_LABEL = "Offline — FAQs available";
-const OFFLINE_TIME = "Until 7 AM (GMT+1)";
+const OFFLINE_TIME = "Until 8 AM (GMT+1)";
 
 export default function AgentAvailabilityPill({
   status = "unavailable",

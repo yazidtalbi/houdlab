@@ -11,7 +11,7 @@ const {
   subtitle,
   rows = [],
   className = "",
-  imgQuality = 90,
+  imgQuality = 95,
   imgFormat = "jpeg",
   // NEW: provide a stable anchor id for this section (e.g., "zemium")
   anchorId,
@@ -25,17 +25,21 @@ const {
   anchorId?: string;
 };
 
-const baseImg = "rounded-2xl w-full h-auto object-cover";
-const borderedImg = "rounded-2xl border border-gray-200 w-full h-auto object-cover";
+const baseImg =
+  "rounded-2xl w-full h-auto object-cover [content-visibility:auto] [contain-intrinsic-size:1000px_600px]";
+const borderedImg =
+  "rounded-2xl border border-gray-200 w-full h-auto object-cover [content-visibility:auto] [contain-intrinsic-size:1000px_600px]";
 
 const isImportedAsset = (src: any) =>
   typeof src === "object" && src && "src" in src && "width" in src && "height" in src;
 
-const widthsSingle = [640, 768, 1024, 1280, 1536, 1920];
-const widthsHalf = [480, 640, 768, 960, 1024, 1280, 1536, 1920];
+const widthsSingle = [640, 768, 1024, 1536, 1920, 2560];
+const widthsHalf = [480, 640, 768, 960, 1024, 1536, 1920, 2560];
 
-const sizesSingle = "(min-width:1280px) 1152px, (min-width:768px) 80vw, 100vw";
-const sizesHalf = "(min-width:1280px) 576px, (min-width:768px) 40vw, 100vw";
+const sizesSingle =
+  "(min-width:1536px) 1440px, (min-width:1280px) 1440px, (min-width:768px) 80vw, 100vw";
+const sizesHalf =
+  "(min-width:1536px) 720px, (min-width:1280px) 720px, (min-width:768px) 40vw, 100vw";
 ---
 
 <!-- Make the whole section a hover group; set id for the hash target -->

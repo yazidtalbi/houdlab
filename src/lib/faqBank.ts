@@ -4,9 +4,9 @@ export const faqBank: FaqBank = {
   pricing: {
     title: "Pricing is scoped to your goals",
     body: [
-      "Most branding + website projects start at $3,500.",
-      "High-converting landing pages typically start at $1,500.",
-      "Web apps usually start around $6,000, depending on features.",
+      "Branding projects are typically around $800.",
+      "Website design / redesign is usually around $1,600.",
+      "Web apps start at $3,000 depending on features.",
       "Final pricing depends on complexity, content, and timeline.",
       "Share your scope and we will send a clear estimate.",
     ],
@@ -34,8 +34,7 @@ export const faqBank: FaqBank = {
     title: "Best ways to reach us",
     body: [
       "Email: hello@houdlab.com",
-      "WhatsApp: +212 6XX XXX XXX",
-      "Hours: Mon–Fri, 9:00–18:00 (GMT+1)",
+      "Hours: Everyday, 9:00–18:00 (GMT+1)",
     ],
     cta: { label: "Email hello@houdlab.com", href: "mailto:hello@houdlab.com" },
   },
